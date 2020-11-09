@@ -1,9 +1,9 @@
 /*eslint no-unused-vars: 0*/
 
-import React, {PureComponent} from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import History from './history';
-import {uuid4} from './utils';
+import { uuid4 } from './utils';
 import Select from './select';
 import Pencil from './pencil';
 import Line from './line';
@@ -80,6 +80,11 @@ class SketchField extends PureComponent {
     className: PropTypes.string,
     // Style options to pass to container div of canvas
     style: PropTypes.object,
+
+    //add image 
+    image: PropTypes.string,
+    //resize
+    callResize: PropTypes.bool
   };
 
   static defaultProps = {
@@ -93,21 +98,24 @@ class SketchField extends PureComponent {
     widthCorrection: 0,
     heightCorrection: 0,
     forceValue: false,
-    onObjectAdded:()=>null,
-    onObjectModified:()=>null,
-    onObjectRemoved:()=>null,
-    onMouseDown:()=>null,
-    onMouseMove:()=>null,
-    onMouseUp:()=>null,
-    onMouseOut:()=>null,
-    onObjectMoving:()=>null,
-    onObjectScaling:()=>null,
-    onObjectRotating:()=>null,
+    image: null,
+    callResize: false,
+    onObjectAdded: () => null,
+    onObjectModified: () => null,
+    onObjectRemoved: () => null,
+    onMouseDown: () => null,
+    onMouseMove: () => null,
+    onMouseUp: () => null,
+    onMouseOut: () => null,
+    onObjectMoving: () => null,
+    onObjectScaling: () => null,
+    onObjectRotating: () => null,
   };
 
   state = {
     parentWidth: 550,
-    action: true
+    action: true,
+    imageUrl: null
   };
   _initTools = (fabricCanvas) => {
     this._tools = {};
@@ -155,19 +163,33 @@ class SketchField extends PureComponent {
    */
   addImg = (dataUrl, options = {}) => {
     let canvas = this._fc;
+    canvas.clear();
+    this._resize();
     fabric.Image.fromURL(dataUrl, (oImg) => {
-      let opts = {
-        left: Math.random() * (canvas.getWidth() - oImg.width * 0.5),
-        top: Math.random() * (canvas.getHeight() - oImg.height * 0.5),
-        scale: 0.5
-      };
-      Object.assign(opts, options);
-      oImg.scale(opts.scale);
+      let widthFactor = canvas.getWidth() / oImg.width;
+      let heightFactor = canvas.getHeight() / oImg.height;
+      let scaleFactor = Math.min(widthFactor, heightFactor);
       oImg.set({
-        'left': opts.left,
-        'top': opts.top
-      });
+        //width:window.canvas.getWidth(),
+        //height:window.canvas.getHeight(),
+        selectable: false,
+        hasControls: false,
+        hasBorders: false,
+        hasRotatingPoint: false,
+      })
+      // let opts = {
+      //   left: Math.random() * (canvas.getWidth() - oImg.width * 0.5),
+      //   top: Math.random() * (canvas.getHeight() - oImg.height * 0.5),
+      //   scale: 0.5
+      // };
+      // Object.assign(opts, options);
+      oImg.scale(scaleFactor);
+      // oImg.set({
+      //   'left': opts.left,
+      //   'top': opts.top
+      // });
       canvas.add(oImg);
+      canvas.renderAll();
     });
   };
 
@@ -175,7 +197,7 @@ class SketchField extends PureComponent {
    * Action when an object is added to the canvas
    */
   _onObjectAdded = (e) => {
-    const {onObjectAdded} = this.props;
+    const { onObjectAdded } = this.props;
     if (!this.state.action) {
       this.setState({ action: true });
       return
@@ -195,7 +217,7 @@ class SketchField extends PureComponent {
    * Action when an object is moving around inside the canvas
    */
   _onObjectMoving = (e) => {
-    const {onObjectMoving} = this.props;
+    const { onObjectMoving } = this.props;
     onObjectMoving(e);
   };
 
@@ -203,7 +225,7 @@ class SketchField extends PureComponent {
    * Action when an object is scaling inside the canvas
    */
   _onObjectScaling = (e) => {
-    const {onObjectScaling} = this.props;
+    const { onObjectScaling } = this.props;
     onObjectScaling(e);
   };
 
@@ -211,12 +233,12 @@ class SketchField extends PureComponent {
    * Action when an object is rotating inside the canvas
    */
   _onObjectRotating = (e) => {
-    const {onObjectRotating} = this.props;
+    const { onObjectRotating } = this.props;
     onObjectRotating(e);
   };
 
   _onObjectModified = (e) => {
-    const {onObjectModified} = this.props;
+    const { onObjectModified } = this.props;
     let obj = e.target;
     obj.__version += 1;
     let prevState = JSON.stringify(obj.__originalState);
@@ -232,7 +254,7 @@ class SketchField extends PureComponent {
    * Action when an object is removed from the canvas
    */
   _onObjectRemoved = (e) => {
-    const {onObjectRemoved} = this.props;
+    const { onObjectRemoved } = this.props;
     let obj = e.target;
     if (obj.__removed) {
       obj.__version += 1;
@@ -246,7 +268,7 @@ class SketchField extends PureComponent {
    * Action when the mouse button is pressed down
    */
   _onMouseDown = (e) => {
-    const{onMouseDown} = this.props;
+    const { onMouseDown } = this.props;
     this._selectedTool.doMouseDown(e);
     onMouseDown(e);
   };
@@ -255,7 +277,7 @@ class SketchField extends PureComponent {
    * Action when the mouse cursor is moving around within the canvas
    */
   _onMouseMove = (e) => {
-    const {onMouseMove} = this.props;
+    const { onMouseMove } = this.props;
     this._selectedTool.doMouseMove(e);
     onMouseMove(e);
   };
@@ -264,7 +286,7 @@ class SketchField extends PureComponent {
    * Action when the mouse cursor is moving out from the canvas
    */
   _onMouseOut = (e) => {
-    const {onMouseOut} = this.props;
+    const { onMouseOut } = this.props;
     this._selectedTool.doMouseOut(e);
     if (this.props.onChange) {
       let onChange = this.props.onChange;
@@ -276,7 +298,7 @@ class SketchField extends PureComponent {
   };
 
   _onMouseUp = (e) => {
-    const {onMouseUp} = this.props;
+    const { onMouseUp } = this.props;
     this._selectedTool.doMouseUp(e);
     // Update the final state to new-generated object
     // Ignore Path object since it would be created after mouseUp
@@ -304,11 +326,14 @@ class SketchField extends PureComponent {
    * @param e the resize event
    * @private
    */
+
   _resize = (e, canvasWidth = null, canvasHeight = null) => {
     if (e) e.preventDefault();
     let { widthCorrection, heightCorrection } = this.props;
     let canvas = this._fc;
     let { offsetWidth, clientHeight } = this._container;
+
+    // let containerHeight = Math.round(800 / (1280 / overlayWidth));
     let prevWidth = canvasWidth || canvas.getWidth();
     let prevHeight = canvasHeight || canvas.getHeight();
     let wfactor = ((offsetWidth - widthCorrection) / prevWidth).toFixed(2);
@@ -338,12 +363,64 @@ class SketchField extends PureComponent {
       obj.top = tempTop;
       obj.setCoords()
     }
+
     this.setState({
       parentWidth: offsetWidth
     });
     canvas.renderAll();
     canvas.calcOffset();
   };
+
+
+  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
+  //   if (e) e.preventDefault();
+  //   let canvas = this._fc;
+
+  //   let { offsetWidth, clientHeight } = this._container;
+  //   var overlayWidth = this._container.clientWidth;
+  //   var overlayHeight = Math.round(800 / (1280 / overlayWidth));
+  //   var overlayContrain = overlayWidth / overlayHeight;
+  //   console.log('[ONEPTWOP] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
+
+
+
+  //   var scaleMultiplier = overlayWidth / canvas.width;
+  //   var scaleHeightMultiplier = overlayHeight / canvas.height;
+  //   var objects = canvas.getObjects();
+  //   for (var i in objects) {
+  //     if (objects[i].type == "image" || scaleLandmarks) {
+  //       //objects[i].width = objects[i].width * scaleMultiplier;
+  //       //objects[i].height = objects[i].height * scaleHeightMultiplier;
+  //       objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+  //       objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+  //       this.scaleFactor = this.scaleFactor * scaleMultiplier;
+  //     }
+  //     objects[i].left = objects[i].left * scaleMultiplier;
+  //     objects[i].top = objects[i].top * scaleMultiplier;
+  //     objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
+  //     objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
+  //     objects[i].setCoords();
+  //   }
+  //   var obj = canvas.backgroundImage;
+  //   if (obj) {
+  //     obj.scaleX = obj.scaleX * scaleMultiplier;
+  //     obj.scaleY = obj.scaleY * scaleMultiplier;
+  //   }
+  //   console.log("[ONEPTWOP] resize canvas dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
+  //   canvas.discardActiveObject();
+  //   canvas.setWidth(canvas.getWidth() * scaleMultiplier);
+  //   canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
+  //   canvas.renderAll();
+  //   canvas.calcOffset();
+
+
+  //   this.setState({
+  //     parentWidth: offsetWidth
+  //   });
+  //   canvas.renderAll();
+  //   canvas.calcOffset();
+  // };
+
 
   /**
    * Sets the background color for this sketch
@@ -488,7 +565,7 @@ class SketchField extends PureComponent {
     let canvas = this._fc;
     setTimeout(() => {
       canvas.loadFromJSON(json, () => {
-        if(this.props.tool === Tool.DefaultTool){
+        if (this.props.tool === Tool.DefaultTool) {
           canvas.isDrawingMode = canvas.selection = false;
           canvas.forEachObject((o) => o.selectable = o.evented = false);
         }
@@ -621,7 +698,7 @@ class SketchField extends PureComponent {
   };
 
   callEvent = (e, eventFunction) => {
-    if(this._selectedTool)
+    if (this._selectedTool)
       eventFunction(e);
   }
 
@@ -646,7 +723,7 @@ class SketchField extends PureComponent {
     this._backgroundColor(backgroundColor)
 
     let selectedTool = this._tools[tool];
-    if(selectedTool)
+    if (selectedTool)
       selectedTool.configureCanvas(this.props);
     this._selectedTool = selectedTool;
 
@@ -662,7 +739,7 @@ class SketchField extends PureComponent {
     canvas.on('object:removed', e => this.callEvent(e, this._onObjectRemoved));
     canvas.on('mouse:down', e => this.callEvent(e, this._onMouseDown));
     canvas.on('mouse:move', e => this.callEvent(e, this._onMouseMove));
-    canvas.on('mouse:up', e =>  this.callEvent(e, this._onMouseUp));
+    canvas.on('mouse:up', e => this.callEvent(e, this._onMouseUp));
     canvas.on('mouse:out', e => this.callEvent(e, this._onMouseOut));
     canvas.on('object:moving', e => this.callEvent(e, this._onObjectMoving));
     canvas.on('object:scaling', e => this.callEvent(e, this._onObjectScaling));
@@ -696,7 +773,7 @@ class SketchField extends PureComponent {
       this._selectedTool = this._tools[this.props.tool];
       //Bring the cursor back to default if it is changed by a tool
       this._fc.defaultCursor = 'default';
-      if(this._selectedTool){
+      if (this._selectedTool) {
         this._selectedTool.configureCanvas(this.props);
       }
     }
@@ -705,10 +782,25 @@ class SketchField extends PureComponent {
       this._backgroundColor(this.props.backgroundColor)
     }
 
+    if (this.props.image !== this.state.imageUrl) {
+      this.addImg(this.props.image);
+      this.setState({ imageUrl: this.props.image });
+    }
+
     if ((this.props.value !== prevProps.value) || (this.props.value && this.props.forceValue)) {
       this.fromJSON(this.props.value);
     }
+
+    // if (this.props.callResize !== this.state.callResize) {
+    //   this._resize();
+    //   this.setState({ callResize: this.props.callResize });
+    // }
+
   };
+
+  componentWillUnmount() {
+    console.log("component unmounted --------------------------------------------------------------------------------------->");
+  }
 
   render = () => {
     let {
