@@ -120,7 +120,11 @@ class SketchField extends PureComponent {
     scaleFactor: 1,
     rotation: 0,
     flipApplied: false,
-    crosshairMode: false
+    crosshairMode: false,
+    crosshairMoveMode: false,
+    crosshairDeleteMode: false,
+    deleteAllLandmarks: false,
+    resetAllLandmarks: false
   }
 
   _fc = null
@@ -1031,6 +1035,22 @@ class SketchField extends PureComponent {
     if (this.props.crosshairMode !== this.state.crosshairMode) {
       this.setState({ crosshairMode: this.props.crosshairMode });
     }
+
+    if (this.props.crosshairMoveMode !== this.state.crosshairMoveMode) {
+      this.setState({ crosshairMoveMode: this.props.crosshairMoveMode });
+    }
+
+    if (this.props.crosshairDeleteMode !== this.state.crosshairDeleteMode) {
+      this.setState({ crosshairDeleteMode: this.props.crosshairDeleteMode });
+    }
+
+    if (this.props.deleteAllLandmarks !== this.state.deleteAllLandmarks) {
+      this.setState({ deleteAllLandmarks: this.props.deleteAllLandmarks });
+    }
+
+    if (this.props.resetAllLandmarks !== this.state.resetAllLandmarks) {
+      this.setState({ resetAllLandmarks: this.props.resetAllLandmarks });
+    }
   }
   onChangeSize = (width, height) => {
     // if (this.state.imageUrl !== null) {
@@ -1120,6 +1140,27 @@ class SketchField extends PureComponent {
   }
 
 
+  updateOnepTwop = (saveAs, landmarks = []) => {
+    console.log("updateOnepTwop method");
+    // if (this.sbpfApplyClick) {
+    //   this.oneptwop.inscopix.bpf = {
+    //     sigma1: $("#deltaSBFSnapSigmaOne").val() * 1,
+    //     sigma2: $("#deltaSBFSnapSigmaTwo").val() * 1,
+    //     offset: $("#deltaSBFSnapOffset").val() * 1,
+    //     gain: $("#deltaSBFSnapGain").val() * 1
+    //   }
+    // }
+    // this.oneptwop.inscopix.adapter_lsm = {
+    //   rotation: parseInt($(".transforms-rotate-data").val()),
+    //   flip_horizontal: $("#flip-horizontal").hasClass("active")
+    // };
+    let landMarks = this._fc ? JSON.parse(JSON.stringify(this._fc.toJSON(['cnWidth', 'cnHeight']))) : [];
+    let oneptwop = this.props.oneptwop;
+    oneptwop.inscopix.frontend = landMarks.objects.filter(o => o.type !== "image");
+    this.props.oneptwopFrontend(oneptwop);
+  }
+
+
 
 
 
@@ -1176,7 +1217,18 @@ class SketchField extends PureComponent {
             imageData={''}
             oneptwop={this.props.oneptwop}
             rotateAndScale={this.rotateAndScale}
-            crosshairMode={this.state.crosshairMode} />}
+            crosshairMode={this.state.crosshairMode}
+            crosshairMoveMode={this.state.crosshairMoveMode}
+            crosshairDeleteMode={this.state.crosshairDeleteMode}
+            deleteAllLandmarks={this.state.deleteAllLandmarks}
+            oneptwopCompare={this.props.oneptwopCompare}
+            oneptwopDefault={this.props.oneptwopDefault}
+            // updateSlider={this.props.updateSlider}
+            // applyFlip={this.props.applyFlip}
+            resetAllLandmarks={this.state.resetAllLandmarks}
+            updateOnepTwop={this.updateOnepTwop}
+          />}
+
       </div>
     )
   }

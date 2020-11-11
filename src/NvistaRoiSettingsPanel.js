@@ -13,7 +13,11 @@ class NvistaRoiSettings extends Component {
             lmColorUsed: ['#ff0000', '#0000ff', '#ffff00', '#ff00ff', '#00ff00', '#00ffff', '#ffa500', '#ffffff', '#008000', '#800080'],
             lmColorIndex: 0,
 
-            crosshairMode: false
+            crosshairMode: false,
+            crosshairMoveMode: false,
+            crosshairDeleteMode: false,
+            deleteAllLandmarks: false,
+            resetAllLandmarks: false
         };
         this.deleteAll = this.deleteAll.bind(this);
         this.enterCrosshairMode = this.enterCrosshairMode.bind(this);
@@ -26,20 +30,20 @@ class NvistaRoiSettings extends Component {
 
     resetLandmarks() {
         var self = this;
-        if (this.props.oneptwop.oneptwopCompare.inscopix.adapter_lsm.rotation !== this.props.oneptwop.oneptwop.inscopix.adapter_lsm.rotation) {
-            self.props.oneptwop.updateSlider(this.props.oneptwop.oneptwopCompare.inscopix.adapter_lsm.rotation, false);
-        }
+        // if (this.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== this.props.oneptwop.inscopix.adapter_lsm.rotation) {
+        //     self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, false);
+        // }
 
-        if (this.props.oneptwop.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== this.props.oneptwop.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
-            self.props.oneptwop.applyFlip(this.props.oneptwop.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal, false);
-        }
+        // if (this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
+        //     self.props.applyFlip(this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal, false);
+        // }
 
         var objects = this.state.canvas.getObjects('path');
         for (let i in objects) {
             this.state.canvas.remove(objects[i]);
         }
         let defaultColors = ['#ff0000', '#0000ff', '#ffff00', '#ff00ff', '#00ff00', '#00ffff', '#ffa500', '#ffffff', '#008000', '#800080'];
-        fabric.util.enlivenObjects(this.props.oneptwop.oneptwopCompare.inscopix.frontend, function (objects) {
+        fabric.util.enlivenObjects(this.props.oneptwopCompare.inscopix.frontend, function (objects) {
             var origRenderOnAddRemove = window.canvas.renderOnAddRemove;
             window.canvas.renderOnAddRemove = false;
 
@@ -76,13 +80,13 @@ class NvistaRoiSettings extends Component {
                         }
                     })
                 })
-                if (self.props.oneptwop.oneptwopCompare.inscopix.adapter_lsm.rotation !== self.props.oneptwop.oneptwop.inscopix.adapter_lsm.rotation) {
-                    self.props.oneptwop.updateSlider(self.props.oneptwop.oneptwop.inscopix.adapter_lsm.rotation, false);
-                }
-                if (self.props.oneptwop.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== self.props.oneptwop.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
-                    self.props.oneptwop.applyFlip(self.props.oneptwop.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
-                }
-                self.props.oneptwop.oneptwop.inscopix.frontend = JSON.parse((JSON.stringify(self.props.oneptwop.oneptwopCompare.inscopix.frontend)));
+                // if (self.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== self.props.oneptwop.inscopix.adapter_lsm.rotation) {
+                //     self.props.updateSlider(self.props.oneptwop.inscopix.adapter_lsm.rotation, false);
+                // }
+                // if (self.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
+                //     self.props.applyFlip(self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
+                // }
+                self.props.oneptwop.inscopix.frontend = JSON.parse((JSON.stringify(self.props.oneptwopCompare.inscopix.frontend)));
 
             })
         });
@@ -95,7 +99,7 @@ class NvistaRoiSettings extends Component {
         }
         this.state.canvas.renderAll();
         let defaultColors = ['#ff0000', '#0000ff', '#ffff00', '#ff00ff', '#00ff00', '#00ffff', '#ffa500', '#ffffff', '#008000', '#800080'];
-        document.getElementById("clearAllLandmark").classList.add("active");
+        // document.getElementById("clearAllLandmark").classList.add("active");
         /*document.getElementById("addLandmark").classList.remove("active");
         document.getElementById("moveLandmark").classList.remove("active");
         document.getElementById("deleteLandmark").classList.remove("active");*/
@@ -104,11 +108,11 @@ class NvistaRoiSettings extends Component {
             lmColorIndex: 0,
             lmColorUsed: defaultColors
         })
-        setTimeout(() => {
-            document.getElementById("clearAllLandmark").classList.remove("active");
-        }, 1000)
+        // setTimeout(() => {
+        //     document.getElementById("clearAllLandmark").classList.remove("active");
+        // }, 1000)
         let landMarks = this.state.canvas ? JSON.parse(JSON.stringify(this.state.canvas.getObjects().filter(o => o.type !== "image"))) : [];
-        window.updateOnepTwopData('_landmarks', landMarks);
+        this.props.updateOnepTwop('_landmarks', landMarks);
     }
 
     enterCrosshairMode() {
@@ -195,10 +199,10 @@ class NvistaRoiSettings extends Component {
     exitCrosshairMode(event) {
         console.log("[ONEPTWOP] landmarks mode: move landmarks");
         let self = this;
-        document.getElementById("clearAllLandmark").classList.remove("active");
-        document.getElementById("deleteLandmark").classList.remove("active");
-        document.getElementById("addLandmark").classList.remove("active");
-        document.getElementById("moveLandmark").classList.add("active");
+        // document.getElementById("clearAllLandmark").classList.remove("active");
+        // document.getElementById("deleteLandmark").classList.remove("active");
+        // document.getElementById("addLandmark").classList.remove("active");
+        // document.getElementById("moveLandmark").classList.add("active");
         self.state.canvas.forEachObject(function (o) {
             if (o.type !== "image") {
                 o.selectable = true;
@@ -217,10 +221,10 @@ class NvistaRoiSettings extends Component {
     deleteCrosshairMode(event) {
         console.log("[ONEPTWOP] Landmarks mode: delete landmarks");
         let self = this;
-        document.getElementById("clearAllLandmark").classList.remove("active");
-        document.getElementById("addLandmark").classList.remove("active");
-        document.getElementById("moveLandmark").classList.remove("active");
-        document.getElementById("deleteLandmark").classList.add("active");
+        // document.getElementById("clearAllLandmark").classList.remove("active");
+        // document.getElementById("addLandmark").classList.remove("active");
+        // document.getElementById("moveLandmark").classList.remove("active");
+        // document.getElementById("deleteLandmark").classList.add("active");
         self.state.canvas.defaultCursor = 'default';
         self.state.canvas.forEachObject(function (o) {
             o.selectable = false;
@@ -234,7 +238,7 @@ class NvistaRoiSettings extends Component {
             }
             let landMarks = self.state.canvas ? JSON.parse(JSON.stringify(self.state.canvas.getObjects().filter(o => o.type !== "image"))) : [];
             console.log("[ONEPTWOP] List of Landmarks after deleting objects: ", JSON.stringify(landMarks));
-            window.updateOnepTwopData('_landmarks', landMarks);
+            self.props.updateOnepTwop('_landmarks', landMarks);
         });
 
     }
@@ -258,8 +262,8 @@ class NvistaRoiSettings extends Component {
             });
             if (updateLandmarks) {
                 let landMarks = self.state.canvas ? JSON.parse(JSON.stringify(self.state.canvas.getObjects().filter(o => o.type !== "image"))) : [];
-                // window.updateOnepTwopData('_landmarks', landMarks);
-                // console.log("[ONEPTWOP] Updated list of landmarks objects: ", JSON.stringify(landMarks));
+                this.props.updateOnepTwop('_landmarks', landMarks);
+                console.log("[ONEPTWOP] Updated list of landmarks objects: ", JSON.stringify(landMarks));
             }
         }
     }
@@ -375,6 +379,26 @@ class NvistaRoiSettings extends Component {
         if (this.props.crosshairMode !== this.state.crosshairMode) {
             this.enterCrosshairMode();
             this.setState({ crosshairMode: this.props.crosshairMode });
+        }
+
+        if (this.props.crosshairMoveMode !== this.state.crosshairMoveMode) {
+            this.exitCrosshairMode();
+            this.setState({ crosshairMoveMode: this.props.crosshairMoveMode });
+        }
+
+        if (this.props.crosshairDeleteMode !== this.state.crosshairDeleteMode) {
+            this.deleteCrosshairMode();
+            this.setState({ crosshairDeleteMode: this.props.crosshairDeleteMode });
+        }
+
+        if (this.props.deleteAllLandmarks !== this.state.deleteAllLandmarks) {
+            this.deleteAll();
+            this.setState({ deleteAllLandmarks: this.props.deleteAllLandmarks });
+        }
+
+        if (this.props.resetAllLandmarks !== this.state.resetAllLandmarks) {
+            this.resetLandmarks();
+            this.setState({ resetAllLandmarks: this.props.resetAllLandmarks });
         }
     }
     componentWillUnmount() {
