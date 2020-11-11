@@ -134,6 +134,7 @@
   "dependencies": {
     "prop-types": "^15.6.2",
     "react": "^16.6.1",
-    "react-dom": "^16.6.1"
+    "react-dom": "^16.6.1",
+    "react-resize-detector": "^5.2.0"
   }
 }
