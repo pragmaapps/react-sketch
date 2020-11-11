@@ -15,6 +15,7 @@ import Tool from './tools'
 import RectangleLabel from './rectangle-label'
 import DefaultTool from './defaul-tool'
 import ReactResizeDetector from 'react-resize-detector'
+import NvistaRoiSettings from './NvistaRoiSettingsPanel'
 
 const fabric = require('fabric').fabric
 
@@ -118,10 +119,12 @@ class SketchField extends PureComponent {
     imageUrl: null,
     scaleFactor: 1,
     rotation: 0,
-    flipApplied: false
+    flipApplied: false,
+    crosshairMode: false
   }
 
   _fc = null
+  childRef = React.createRef();
 
   _initTools = fabricCanvas => {
     this._tools = {}
@@ -523,6 +526,73 @@ class SketchField extends PureComponent {
     }
   }
 
+
+  _resize = (e, canvasWidth = null, canvasHeight = null) => {
+    let canvas = this._fc;
+
+    if (canvas && canvas.upperCanvasEl) {
+      var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+    }
+    else {
+      var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
+    }
+    // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+    // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
+    var overlayHeight = Math.round(800 / (1280 / overlayWidth));
+    var overlayContrain = overlayWidth / overlayHeight;
+    console.log('[ONEPTWOP] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
+    this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
+
+
+  };
+
+  getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
+    let canvas = this._fc;
+    // let { offsetWidth, clientHeight } = this._container;
+
+    if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
+      var scaleMultiplier = newWidth / canvas.width;
+      var scaleHeightMultiplier = newHeight / canvas.height;
+      var objects = canvas.getObjects();
+
+      for (var i in objects) {
+        if (objects[i].type == "image" || scaleLandmarks) {
+          // objects[i].width = objects[i].width * scaleMultiplier;
+          // objects[i].height = objects[i].height * scaleHeightMultiplier;
+          objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+          objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+          objects[i].setCoords();
+          let scaleFactor = this.state.scaleFactor * scaleMultiplier;
+          this.setState({ scaleFactor });
+        }
+        objects[i].left = objects[i].left * scaleMultiplier;
+        objects[i].top = objects[i].top * scaleMultiplier;
+        objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
+        objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
+        objects[i].setCoords();
+      }
+      var obj = canvas.backgroundImage;
+      if (obj) {
+        obj.scaleX = obj.scaleX * scaleMultiplier;
+        obj.scaleY = obj.scaleY * scaleMultiplier;
+      }
+      console.log("[ONEPTWOP] Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
+      canvas.discardActiveObject();
+      canvas.setWidth(canvas.getWidth() * scaleMultiplier);
+      canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
+      canvas.renderAll();
+      canvas.calcOffset();
+      // this.setState({
+      //   parentWidth: offsetWidth
+      // });
+      // var boss = window.canvas.getObjects().filter(o => o.type == "image")[0];
+      // if (boss) {
+      //   this.bindLandmarks();
+      // }
+    }
+  }
+
+
   /**
    * Sets the background color for this sketch
    * @param color in rgba or hex format
@@ -613,6 +683,7 @@ class SketchField extends PureComponent {
    * @returns {*} true if we can undo otherwise false
    */
   canUndo = () => {
+
     return this._history.canUndo()
   }
 
@@ -622,6 +693,7 @@ class SketchField extends PureComponent {
    * @returns {*} true if we can redo otherwise false
    */
   canRedo = () => {
+
     return this._history.canRedo()
   }
 
@@ -692,6 +764,7 @@ class SketchField extends PureComponent {
     return discarded
   }
 
+
   /**
    * Remove selected object from the canvas
    */
@@ -724,6 +797,7 @@ class SketchField extends PureComponent {
   }
 
   paste = () => {
+
     // clone again, so you can do multiple copies.
     this._clipboard.clone(clonedObj => {
       let canvas = this._fc
@@ -804,7 +878,8 @@ class SketchField extends PureComponent {
 
   callEvent = (e, eventFunction) => {
     // console.log("inside callEvet method");
-    if (this._selectedTool) eventFunction(e)
+    if (this._selectedTool)
+      eventFunction(e);
   }
 
   componentDidMount = () => {
@@ -867,13 +942,13 @@ class SketchField extends PureComponent {
 
     // setTimeout(() => {
     this._resize()
-    // }, 3000);
+      // }, 3000);
 
-    // if (image !== null) {
-    // this.addImg(image);
-    // }
-    // initialize canvas with controlled value if exists
-    ;(value || defaultValue) && this.fromJSON(value || defaultValue)
+      // if (image !== null) {
+      // this.addImg(image);
+      // }
+      // initialize canvas with controlled value if exists
+      ; (value || defaultValue) && this.fromJSON(value || defaultValue)
   }
 
   componentWillUnmount = () =>
@@ -902,6 +977,7 @@ class SketchField extends PureComponent {
     if (this.props.backgroundColor !== prevProps.backgroundColor) {
       this._backgroundColor(this.props.backgroundColor)
     }
+
 
     if (this.props.image !== this.state.imageUrl) {
       this.addImg(this.props.image)
@@ -951,6 +1027,10 @@ class SketchField extends PureComponent {
         flipApplied: this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
       })
     }
+
+    if (this.props.crosshairMode !== this.state.crosshairMode) {
+      this.setState({ crosshairMode: this.props.crosshairMode });
+    }
   }
   onChangeSize = (width, height) => {
     // if (this.state.imageUrl !== null) {
@@ -975,7 +1055,7 @@ class SketchField extends PureComponent {
       }
       var relationship = o.relationship
       var newTransform = multiply(boss.calcTransformMatrix(), relationship)
-      opt = fabric.util.qrDecompose(newTransform)
+      let opt = fabric.util.qrDecompose(newTransform)
       o.set({
         flipX: false,
         flipY: false
@@ -1004,38 +1084,44 @@ class SketchField extends PureComponent {
   }
 
   rotateAndScale = (obj, angle) => {
-    var width = this._fc.getWidth()
-    var height = this._fc.getHeight()
-    var cos_theta = Math.cos((angle * Math.PI) / 180)
-    var sin_theta = Math.sin((angle * Math.PI) / 180)
-    var x_scale =
-      width / (Math.abs(width * cos_theta) + Math.abs(height * sin_theta))
-    var y_scale =
-      height / (Math.abs(width * sin_theta) + Math.abs(height * cos_theta))
-    var scale = Math.min(x_scale, y_scale)
-    var actScale = this.state.scaleFactor * scale
-    // get the transformMatrix array
-    var rotateMatrix = [cos_theta, -sin_theta, sin_theta, cos_theta, 0, 0]
-    var scaleMatrix = [actScale, 0, 0, actScale, 0, 0]
-    // console.log(scaleMatrix, "scaleMatrix");
-    // console.log(rotateMatrix, "rotateMatrix");
-    //var scaleMatrix = [scale, 0 , 0, scale, 0, 0];
-    var rsT = fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix)
+    if (obj) {
+      var width = this._fc.getWidth()
+      var height = this._fc.getHeight()
+      var cos_theta = Math.cos((angle * Math.PI) / 180)
+      var sin_theta = Math.sin((angle * Math.PI) / 180)
+      var x_scale =
+        width / (Math.abs(width * cos_theta) + Math.abs(height * sin_theta))
+      var y_scale =
+        height / (Math.abs(width * sin_theta) + Math.abs(height * cos_theta))
+      var scale = Math.min(x_scale, y_scale)
+      var actScale = this.state.scaleFactor * scale
+      // get the transformMatrix array
+      var rotateMatrix = [cos_theta, -sin_theta, sin_theta, cos_theta, 0, 0]
+      var scaleMatrix = [actScale, 0, 0, actScale, 0, 0]
+      // console.log(scaleMatrix, "scaleMatrix");
+      // console.log(rotateMatrix, "rotateMatrix");
+      //var scaleMatrix = [scale, 0 , 0, scale, 0, 0];
+      var rsT = fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix)
 
-    // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
-    var options = fabric.util.qrDecompose(rsT)
-    // console.log(options, "options");
-    var newCenter = { x: this._fc.getWidth() / 2, y: this._fc.getHeight() / 2 }
+      // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
+      var options = fabric.util.qrDecompose(rsT)
+      // console.log(options, "options");
+      var newCenter = { x: this._fc.getWidth() / 2, y: this._fc.getHeight() / 2 }
 
-    // reset transformMatrix to identity and resets flips since negative scale resulting from decompose, will automatically set them.
-    //obj.flipX = false;
-    obj.flipY = false
-    obj.set(options)
+      // reset transformMatrix to identity and resets flips since negative scale resulting from decompose, will automatically set them.
+      //obj.flipX = false;
+      obj.flipY = false
+      obj.set(options)
 
-    // position the object in the center given from translateX and translateY
-    obj.setPositionByOrigin(newCenter, 'center', 'center')
-    obj.setCoords()
+      // position the object in the center given from translateX and translateY
+      obj.setPositionByOrigin(newCenter, 'center', 'center')
+      obj.setCoords();
+    }
   }
+
+
+
+
 
   render = () => {
     let { className, style, width, height } = this.props
@@ -1051,6 +1137,8 @@ class SketchField extends PureComponent {
       width ? { width: '100%' } : { width: '100%' },
       height ? { height: height } : { height: containerH }
     )
+
+
     return (
       <div
         className={className}
@@ -1081,6 +1169,14 @@ class SketchField extends PureComponent {
           </canvas>
         </div>
         {/* </ReactResizeDetector> */}
+        {this._fc !== null &&
+          <NvistaRoiSettings
+            canvasProps={this._fc}
+            landMarks={[]}
+            imageData={''}
+            oneptwop={this.props.oneptwop}
+            rotateAndScale={this.rotateAndScale}
+            crosshairMode={this.state.crosshairMode} />}
       </div>
     )
   }
