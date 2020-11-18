@@ -457,80 +457,80 @@ class SketchField extends PureComponent {
   // canvas.calcOffset();
   // };
 
-  _resize = (e, canvasWidth = null, canvasHeight = null) => {
-    let canvas = this._fc
+  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
+  //   let canvas = this._fc
 
-    if (canvas && canvas.upperCanvasEl) {
-      var overlayWidth = document.getElementById('onep-twop-container-2')
-        .offsetWidth
-    } else {
-      var overlayWidth = document.getElementById('oneptwop-container')
-        .offsetWidth
-    }
-    // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-    // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
-    var overlayHeight = Math.round(800 / (1280 / overlayWidth))
-    var overlayContrain = overlayWidth / overlayHeight
-    console.log(
-      '[ONEPTWOP] Color Overlay Width:',
-      overlayWidth,
-      overlayHeight,
-      overlayContrain
-    )
-    this.getCanvasAtResoution(overlayWidth, overlayHeight, false)
-  }
+  //   if (canvas && canvas.upperCanvasEl) {
+  //     var overlayWidth = document.getElementById('onep-twop-container-2')
+  //       .offsetWidth
+  //   } else {
+  //     var overlayWidth = document.getElementById('oneptwop-container')
+  //       .offsetWidth
+  //   }
+  //   // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+  //   // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
+  //   var overlayHeight = Math.round(800 / (1280 / overlayWidth))
+  //   var overlayContrain = overlayWidth / overlayHeight
+  //   console.log(
+  //     '[ONEPTWOP] Color Overlay Width:',
+  //     overlayWidth,
+  //     overlayHeight,
+  //     overlayContrain
+  //   )
+  //   this.getCanvasAtResoution(overlayWidth, overlayHeight, false)
+  // }
 
-  getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
-    let canvas = this._fc
-    // let { offsetWidth, clientHeight } = this._container;
+  // getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
+  //   let canvas = this._fc
+  //   // let { offsetWidth, clientHeight } = this._container;
 
-    if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
-      var scaleMultiplier = newWidth / canvas.width
-      var scaleHeightMultiplier = newHeight / canvas.height
-      var objects = canvas.getObjects()
+  //   if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
+  //     var scaleMultiplier = newWidth / canvas.width
+  //     var scaleHeightMultiplier = newHeight / canvas.height
+  //     var objects = canvas.getObjects()
 
-      for (var i in objects) {
-        if (objects[i].type == 'image' || scaleLandmarks) {
-          // objects[i].width = objects[i].width * scaleMultiplier;
-          // objects[i].height = objects[i].height * scaleHeightMultiplier;
-          objects[i].scaleX = objects[i].scaleX * scaleMultiplier
-          objects[i].scaleY = objects[i].scaleY * scaleMultiplier
-          objects[i].setCoords()
-          let scaleFactor = this.state.scaleFactor * scaleMultiplier
-          this.setState({ scaleFactor })
-        }
-        objects[i].left = objects[i].left * scaleMultiplier
-        objects[i].top = objects[i].top * scaleMultiplier
-        objects[i].cnWidth = canvas.getWidth() * scaleMultiplier
-        objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier
-        objects[i].setCoords()
-      }
-      var obj = canvas.backgroundImage
-      if (obj) {
-        obj.scaleX = obj.scaleX * scaleMultiplier
-        obj.scaleY = obj.scaleY * scaleMultiplier
-      }
-      console.log(
-        '[ONEPTWOP] Resize Canvas Dimensions: ',
-        canvas.getWidth() * scaleMultiplier,
-        canvas.getHeight() * scaleHeightMultiplier
-      )
-      canvas.discardActiveObject()
-      canvas.setWidth(canvas.getWidth() * scaleMultiplier)
-      canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier)
-      canvas.renderAll()
-      canvas.calcOffset()
-      // this.setState({
-      // parentWidth: offsetWidth
-      // });
-      // var boss = window.canvas.getObjects().filter(o => o.type == "image")[0];
-      // if (boss) {
-      // this.bindLandmarks();
-      // }
-    }
-  }
+  //     for (var i in objects) {
+  //       if (objects[i].type == 'image' || scaleLandmarks) {
+  //         // objects[i].width = objects[i].width * scaleMultiplier;
+  //         // objects[i].height = objects[i].height * scaleHeightMultiplier;
+  //         objects[i].scaleX = objects[i].scaleX * scaleMultiplier
+  //         objects[i].scaleY = objects[i].scaleY * scaleMultiplier
+  //         objects[i].setCoords()
+  //         let scaleFactor = this.state.scaleFactor * scaleMultiplier
+  //         this.setState({ scaleFactor })
+  //       }
+  //       objects[i].left = objects[i].left * scaleMultiplier
+  //       objects[i].top = objects[i].top * scaleMultiplier
+  //       objects[i].cnWidth = canvas.getWidth() * scaleMultiplier
+  //       objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier
+  //       objects[i].setCoords()
+  //     }
+  //     var obj = canvas.backgroundImage
+  //     if (obj) {
+  //       obj.scaleX = obj.scaleX * scaleMultiplier
+  //       obj.scaleY = obj.scaleY * scaleMultiplier
+  //     }
+  //     console.log(
+  //       '[ONEPTWOP] Resize Canvas Dimensions: ',
+  //       canvas.getWidth() * scaleMultiplier,
+  //       canvas.getHeight() * scaleHeightMultiplier
+  //     )
+  //     canvas.discardActiveObject()
+  //     canvas.setWidth(canvas.getWidth() * scaleMultiplier)
+  //     canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier)
+  //     canvas.renderAll()
+  //     canvas.calcOffset()
+  //     // this.setState({
+  //     // parentWidth: offsetWidth
+  //     // });
+  //     // var boss = window.canvas.getObjects().filter(o => o.type == "image")[0];
+  //     // if (boss) {
+  //     // this.bindLandmarks();
+  //     // }
+  //   }
+  // }
 
-  
+
   _resize = (e, canvasWidth = null, canvasHeight = null) => {
     let canvas = this._fc;
 
@@ -560,42 +560,67 @@ class SketchField extends PureComponent {
       var objects = canvas.getObjects();
 
       for (var i in objects) {
-        if (objects[i].type == "image" || scaleLandmarks) {
+        if (objects[i].type === "image" || scaleLandmarks) {
+          console.log(objects[i].type, "type");
           // objects[i].width = objects[i].width * scaleMultiplier;
           // objects[i].height = objects[i].height * scaleHeightMultiplier;
           objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
           objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
           objects[i].setCoords();
-          let scaleFactor = this.state.scaleFactor * scaleMultiplier;
+          var scaleFactor = this.state.scaleFactor * scaleMultiplier;
           this.setState({ scaleFactor });
         }
+        console.log(objects[i].type, "type");
+        // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+        // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
         objects[i].left = objects[i].left * scaleMultiplier;
         objects[i].top = objects[i].top * scaleMultiplier;
         objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
         objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
         objects[i].setCoords();
       }
+
+
       var obj = canvas.backgroundImage;
       if (obj) {
         obj.scaleX = obj.scaleX * scaleMultiplier;
         obj.scaleY = obj.scaleY * scaleMultiplier;
       }
+
       console.log("[ONEPTWOP] Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
       canvas.discardActiveObject();
       canvas.setWidth(canvas.getWidth() * scaleMultiplier);
       canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
       canvas.renderAll();
       canvas.calcOffset();
+
       // this.setState({
       //   parentWidth: offsetWidth
       // });
-      // var boss = window.canvas.getObjects().filter(o => o.type == "image")[0];
-      // if (boss) {
-      //   this.bindLandmarks();
-      // }
+      var boss = canvas.getObjects().filter(o => o.type == "image")[0];
+      if (boss) {
+        this.bindLandmarks();
+      }
     }
   }
 
+  bindLandmarks = () => {
+    let canvas = this._fc;
+    var multiply = fabric.util.multiplyTransformMatrices;
+    var invert = fabric.util.invertTransform;
+    var boss = canvas.getObjects().filter(o => o.type == "image");
+    var minions = canvas.getObjects().filter(o => o.type !== "image");
+    var bossTransform = boss[0].calcTransformMatrix();
+    var invertedBossTransform = invert(bossTransform);
+    minions.forEach(o => {
+      var desiredTransform = multiply(
+        invertedBossTransform,
+        o.calcTransformMatrix()
+      );
+      // save the desired relation here.
+      o.relationship = desiredTransform;
+    });
+  }
 
   /**
    * Sets the background color for this sketch
@@ -1008,15 +1033,15 @@ class SketchField extends PureComponent {
     if (
       this.props.oneptwop.inscopix.adapter_lsm.rotation !== this.state.rotation && this._fc.item(0)
     ) {
-        this.rotateAndScale(
-          this._fc.item(0),
-          -this.props.oneptwop.inscopix.adapter_lsm.rotation
-        )
-        this.updateLandmarksPosition()
-        this._fc.renderAll()
-        this.setState({
-          rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
-        })
+      this.rotateAndScale(
+        this._fc.item(0),
+        -this.props.oneptwop.inscopix.adapter_lsm.rotation
+      )
+      this.updateLandmarksPosition()
+      this._fc.renderAll()
+      this.setState({
+        rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
+      })
     }
 
     if (
@@ -1050,6 +1075,9 @@ class SketchField extends PureComponent {
 
     if (this.props.resetAllLandmarks !== this.state.resetAllLandmarks) {
       this.setState({ resetAllLandmarks: this.props.resetAllLandmarks });
+    }
+    if (this.props.activePanels !== prevProps.activePanels) {
+      this._resize();
     }
   }
   onChangeSize = (width, height) => {
@@ -1142,28 +1170,28 @@ class SketchField extends PureComponent {
   updateLandmarks = () => {
     var currentRotation = this.props.oneptwop.inscopix.adapter_lsm.rotation;
     var isFliped = this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal;
-    if(isFliped) {
-        this.applyFlip(false, true);
+    if (isFliped) {
+      this.applyFlip(false, true);
     }
     this.props.updateSlider(0, true);
     let points = []
-    if(this.props.oneptwop.inscopix.frontend.length > 0) {
-        this.props.oneptwop.inscopix.frontend = this.props.oneptwop.inscopix.frontend.filter(o => o.type !== "image")
-        this.props.oneptwop.inscopix.frontend.map( (item, key) => {
-            let x,y
-            x = item.left + (item.width / 2);
-            y = item.top + (item.height / 2);
-            points.push({x,y})
-        })
-        this.props.oneptwop.inscopix.landmarks = {points: points}
+    if (this.props.oneptwop.inscopix.frontend.length > 0) {
+      this.props.oneptwop.inscopix.frontend = this.props.oneptwop.inscopix.frontend.filter(o => o.type !== "image")
+      this.props.oneptwop.inscopix.frontend.map((item, key) => {
+        let x, y
+        x = item.left + (item.width / 2);
+        y = item.top + (item.height / 2);
+        points.push({ x, y })
+      })
+      this.props.oneptwop.inscopix.landmarks = { points: points }
     } else {
-        this.props.oneptwop.inscopix.landmarks = { points: [] }
+      this.props.oneptwop.inscopix.landmarks = { points: [] }
     }
     this.props.updateSlider(currentRotation, true);
-    if(isFliped) {
-        this.applyFlip(true, true);
+    if (isFliped) {
+      this.applyFlip(true, true);
     }
-}
+  }
 
   updateOnepTwop = (saveAs, landmarks = []) => {
     console.log("updateOnepTwop method");
