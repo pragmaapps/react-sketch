@@ -30,13 +30,13 @@ class NvistaRoiSettings extends Component {
 
     resetLandmarks() {
         var self = this;
-        // if (this.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== this.props.oneptwop.inscopix.adapter_lsm.rotation) {
-        //     self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, false);
-        // }
+        if (this.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== this.props.oneptwop.inscopix.adapter_lsm.rotation) {
+            self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, false);
+        }
 
-        // if (this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
-        //     self.props.applyFlip(this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal, false);
-        // }
+        if (this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
+            self.props.applyFlip(this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal, false);
+        }
 
         var objects = this.state.canvas.getObjects('path');
         for (let i in objects) {
@@ -80,12 +80,12 @@ class NvistaRoiSettings extends Component {
                         }
                     })
                 })
-                // if (self.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== self.props.oneptwop.inscopix.adapter_lsm.rotation) {
-                //     self.props.updateSlider(self.props.oneptwop.inscopix.adapter_lsm.rotation, false);
-                // }
-                // if (self.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
-                //     self.props.applyFlip(self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
-                // }
+                if (self.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== self.props.oneptwop.inscopix.adapter_lsm.rotation) {
+                    self.props.updateSlider(self.props.oneptwop.inscopix.adapter_lsm.rotation, false);
+                }
+                if (self.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
+                    self.props.applyFlip(self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
+                }
                 self.props.oneptwop.inscopix.frontend = JSON.parse((JSON.stringify(self.props.oneptwopCompare.inscopix.frontend)));
 
             })
@@ -284,7 +284,7 @@ class NvistaRoiSettings extends Component {
         }
         window.canvas.loadFromJSON(`{"objects":${JSON.stringify(landMarks)}}`, function () {
             if (self.props.imageData) {
-                self.props.oneptwop.updateSbpfTransformValues(self.props.imageData, self.props.loadFromSession);
+                self.props.updateSbpfTransformValues(self.props.imageData, self.props.loadFromSession);
             } else {
                 self.props.rotateAndScale(window.canvas.item(0), -0);
             }

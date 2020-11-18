@@ -530,7 +530,7 @@ class SketchField extends PureComponent {
     }
   }
 
-
+  
   _resize = (e, canvasWidth = null, canvasHeight = null) => {
     let canvas = this._fc;
 
@@ -1006,17 +1006,17 @@ class SketchField extends PureComponent {
     // }
 
     if (
-      this.props.oneptwop.inscopix.adapter_lsm.rotation !== this.state.rotation
+      this.props.oneptwop.inscopix.adapter_lsm.rotation !== this.state.rotation && this._fc.item(0)
     ) {
-      this.rotateAndScale(
-        this._fc.item(0),
-        -this.props.oneptwop.inscopix.adapter_lsm.rotation
-      )
-      this.updateLandmarksPosition()
-      this._fc.renderAll()
-      this.setState({
-        rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
-      })
+        this.rotateAndScale(
+          this._fc.item(0),
+          -this.props.oneptwop.inscopix.adapter_lsm.rotation
+        )
+        this.updateLandmarksPosition()
+        this._fc.renderAll()
+        this.setState({
+          rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
+        })
     }
 
     if (
@@ -1139,6 +1139,31 @@ class SketchField extends PureComponent {
     }
   }
 
+  updateLandmarks = () => {
+    var currentRotation = this.props.oneptwop.inscopix.adapter_lsm.rotation;
+    var isFliped = this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal;
+    if(isFliped) {
+        this.applyFlip(false, true);
+    }
+    this.props.updateSlider(0, true);
+    let points = []
+    if(this.props.oneptwop.inscopix.frontend.length > 0) {
+        this.props.oneptwop.inscopix.frontend = this.props.oneptwop.inscopix.frontend.filter(o => o.type !== "image")
+        this.props.oneptwop.inscopix.frontend.map( (item, key) => {
+            let x,y
+            x = item.left + (item.width / 2);
+            y = item.top + (item.height / 2);
+            points.push({x,y})
+        })
+        this.props.oneptwop.inscopix.landmarks = {points: points}
+    } else {
+        this.props.oneptwop.inscopix.landmarks = { points: [] }
+    }
+    this.props.updateSlider(currentRotation, true);
+    if(isFliped) {
+        this.applyFlip(true, true);
+    }
+}
 
   updateOnepTwop = (saveAs, landmarks = []) => {
     console.log("updateOnepTwop method");
@@ -1210,11 +1235,11 @@ class SketchField extends PureComponent {
           </canvas>
         </div>
         {/* </ReactResizeDetector> */}
-        {this._fc !== null &&
+        {this._fc !== null && this._fc.item(0) &&
           <NvistaRoiSettings
             canvasProps={this._fc}
-            landMarks={[]}
-            imageData={''}
+            landMarks={this.props.oneptwop.inscopix.frontend}
+            imageData={this.props.oneptwop}
             oneptwop={this.props.oneptwop}
             rotateAndScale={this.rotateAndScale}
             crosshairMode={this.state.crosshairMode}
@@ -1223,10 +1248,12 @@ class SketchField extends PureComponent {
             deleteAllLandmarks={this.state.deleteAllLandmarks}
             oneptwopCompare={this.props.oneptwopCompare}
             oneptwopDefault={this.props.oneptwopDefault}
-            // updateSlider={this.props.updateSlider}
-            // applyFlip={this.props.applyFlip}
+            updateSlider={this.props.updateSlider}
+            applyFlip={this.applyFlip}
             resetAllLandmarks={this.state.resetAllLandmarks}
             updateOnepTwop={this.updateOnepTwop}
+            loadFromSession={this.props.loadFromSession}
+            updateSbpfTransformValues={this.props.updateSbpfTransformValues}
           />}
 
       </div>
