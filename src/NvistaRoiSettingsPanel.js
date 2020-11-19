@@ -31,7 +31,7 @@ class NvistaRoiSettings extends Component {
     resetLandmarks() {
         var self = this;
         if (this.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== this.props.oneptwop.inscopix.adapter_lsm.rotation) {
-            self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, false);
+            self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, true);
         }
 
         if (this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
@@ -130,7 +130,7 @@ class NvistaRoiSettings extends Component {
         self.state.canvas.on('mouse:up', function (event) {
             let landmarkList = JSON.parse(JSON.stringify(self.state.canvas.getObjects()));
             if (landmarkList && landmarkList.length > 10) {
-                alert("Warning Only 10 landmarks are allowed. Please remove a landmark before adding additional landmark.");
+                self.props.handleMiraErrorPopup("Only 10 landmarks are allowed. Please remove a landmark before adding additional landmark.","Warning");
                 return false;
             }
             if (!event.target || event.target.type !== 'image') {

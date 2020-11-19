@@ -921,6 +921,8 @@ class SketchField extends PureComponent {
       image
     } = this.props
 
+    //console.log("value is coming in component did mount before starttttt-- > ", this._fc);
+
     // let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
     let canvas = (this._fc = new fabric.Canvas(
       this._canvas,
@@ -978,6 +980,44 @@ class SketchField extends PureComponent {
       // }
       // initialize canvas with controlled value if exists
       ; (value || defaultValue) && this.fromJSON(value || defaultValue)
+
+  //console.log("value is coming in component did mount -- > ", this.props.image, " and ---- >>>>>> ", this.props.oneptwop);
+
+   /*if (this.props.image) {
+    this.addImg(this.props.image)
+    this.setState({
+      imageUrl: this.props.image,
+      scaleFactor: this.state.scaleFactor,
+    });
+
+    console.log("value is coming in component did mount iffff -- > ", this._fc, " andddddd --- > ", this._fc.item(0));
+
+    setTimeout(() => {
+      console.log("value is coming in settimeout ---- >>> ", this._fc.item(0) )
+    },5000)
+
+    this.rotateAndScale(
+      this._fc.item(0),
+      -this.props.oneptwop.inscopix.adapter_lsm.rotation
+    )
+    this.updateLandmarksPosition()
+    this._fc.renderAll()
+    this.setState({
+      rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
+    });
+
+    /*this.applyFlip(
+      this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal,
+      false
+    )
+    this.setState({
+      flipApplied: this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
+    })
+
+  }*/
+
+
+
   }
 
   componentWillUnmount = () =>
@@ -1009,12 +1049,13 @@ class SketchField extends PureComponent {
 
 
     if (this.props.image !== this.state.imageUrl) {
+      console.log("value is coming in component did updateeeee iff image props -- > ", this.props.image, " and ---- >>>>>> ", this.props.oneptwop);
       this.addImg(this.props.image)
       this.setState({
         imageUrl: this.props.image,
-        scaleFactor: 1,
-        rotation: 0,
-        flipApplied: false
+        scaleFactor: this.state.scaleFactor,
+        rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation,
+        flipApplied: this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
       })
     }
 
@@ -1132,6 +1173,7 @@ class SketchField extends PureComponent {
   }
 
   rotateAndScale = (obj, angle) => {
+    //console.log("values are coming in rotate --- > ", obj, " and angle --- > ", angle);
     if (obj) {
       var width = this._fc.getWidth()
       var height = this._fc.getHeight()
@@ -1173,7 +1215,7 @@ class SketchField extends PureComponent {
     if (isFliped) {
       this.applyFlip(false, true);
     }
-    this.props.updateSlider(0, true);
+    this.props.updateSlider(0);
     let points = []
     if (this.props.oneptwop.inscopix.frontend.length > 0) {
       this.props.oneptwop.inscopix.frontend = this.props.oneptwop.inscopix.frontend.filter(o => o.type !== "image")
@@ -1187,7 +1229,7 @@ class SketchField extends PureComponent {
     } else {
       this.props.oneptwop.inscopix.landmarks = { points: [] }
     }
-    this.props.updateSlider(currentRotation, true);
+    this.props.updateSlider(currentRotation);
     if (isFliped) {
       this.applyFlip(true, true);
     }
@@ -1213,9 +1255,18 @@ class SketchField extends PureComponent {
     this.props.oneptwopFrontend(oneptwop);
   }
 
-
-
-
+  removeAddOrMoveMode = () => {
+    window.canvas = this._fc;
+    if(window.canvas.upperCanvasEl) {
+        window.canvas.discardActiveObject();
+        window.canvas.forEachObject(function(o) {
+            o.selectable = false;
+        });
+        window.canvas.off('mouse:up');
+        window.canvas.hoverCursor = window.canvas.defaultCursor = 'default';
+        window.canvas.renderAll();
+    }
+}
 
   render = () => {
     let { className, style, width, height } = this.props
@@ -1282,6 +1333,7 @@ class SketchField extends PureComponent {
             updateOnepTwop={this.updateOnepTwop}
             loadFromSession={this.props.loadFromSession}
             updateSbpfTransformValues={this.props.updateSbpfTransformValues}
+            handleMiraErrorPopup={this.props.handleMiraErrorPopup}
           />}
 
       </div>
