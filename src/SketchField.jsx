@@ -124,7 +124,11 @@ class SketchField extends PureComponent {
     crosshairMoveMode: false,
     crosshairDeleteMode: false,
     deleteAllLandmarks: false,
-    resetAllLandmarks: false
+    resetAllLandmarks: false,
+    frontEnd: [],
+    updateLandmarksForOtherWindow: false,
+    lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
+
   }
 
   _fc = null
@@ -604,8 +608,8 @@ class SketchField extends PureComponent {
     }
   }
 
-  bindLandmarks = () => {
-    let canvas = this._fc;
+  bindLandmarks = (updateLandmarks = false, canvasData) => {
+    let canvas = canvasData ? canvasData : this._fc;
     var multiply = fabric.util.multiplyTransformMatrices;
     var invert = fabric.util.invertTransform;
     var boss = canvas.getObjects().filter(o => o.type == "image");
@@ -620,6 +624,11 @@ class SketchField extends PureComponent {
       // save the desired relation here.
       o.relationship = desiredTransform;
     });
+    if (updateLandmarks) {
+      let landMarks = canvas ? JSON.parse(JSON.stringify(canvas.getObjects().filter(o => o.type !== "image"))) : [];
+      this.updateOnepTwop('_landmarks');
+      console.log("[ONEPTWOP] Updated list of landmarks objects: ", JSON.stringify(landMarks));
+  }
   }
 
   /**
@@ -911,6 +920,103 @@ class SketchField extends PureComponent {
       eventFunction(e);
   }
 
+  addLandmarks = (canvas,frontEnd) => {
+    let self = this;
+    console.log("canvas is coming in the add landmark with thissss variable --- >>> ", this._fc);
+     console.log("canvas is coming in the add landmark --- >>> ", canvas);
+     console.log("canvas is coming in the add landmark with oneptwop --- >>> ", frontEnd);
+
+      canvas.selection = false;
+        let imageObject = JSON.parse(JSON.stringify(canvas.getObjects()));
+        let landMarks = frontEnd;
+        if (landMarks.length > 0) {
+            landMarks.splice(0, 0, imageObject[0]);
+        } else {
+            landMarks = imageObject;
+        }
+      canvas.loadFromJSON(`{"objects":${JSON.stringify(landMarks)}}`, function () {
+        console.log("canvas is coming in the add landmark load from json --- >>> ", landMarks);
+        if (self.props.oneptwop) {
+            self.props.updateSbpfTransformValues(self.props.oneptwop, self.props.loadFromSession);
+        } else {
+            self.rotateAndScale(canvas.item(0), -0);
+        }
+        console.log("canvas is coming in the add landmark load from json beforeeee first iffff --- >>> ", canvas.item(1), " and cnwidth -- > ",canvas.item(1).cnWidth, " and width -- > ",canvas.getWidth());
+        //if (canvas.item(1) && canvas.item(1).cnWidth !== canvas.getWidth()) {
+          console.log("canvas is coming in the add landmark load from json first iffff --- >>> ", canvas.item(1));
+            var scaleMultiplier = canvas.getWidth() / canvas.item(1).cnWidth;
+            var objects = canvas.getObjects();
+            console.log("canvas is coming in the add landmark load from json first iffff scalemultiplier --- >>> ",scaleMultiplier, " and -- > ",objects );
+            for (var i in objects) {
+              console.log("canvas is coming in the add landmark load from json first iffff for looopppppp  --- >>> ",i, " and -- > ",objects );
+                if (objects[i].type !== "image") {
+                    objects[i].left = objects[i].left * scaleMultiplier;
+                    objects[i].top = objects[i].top * scaleMultiplier;
+                    objects[i].cnWidth = canvas.getWidth();
+                    objects[i].cnHeight = canvas.getHeight();
+                    objects[i].setCoords();
+                }
+
+            }
+       // }
+        if (canvas) {
+            let fabricList = JSON.parse(JSON.stringify(canvas.getObjects().filter(o => o.type !== "image")));
+            console.log("canvas is coming in the add landmark load from json secondddddd iffff -- >>> ", fabricList);
+            fabricList.map((item, key) => {
+                let color = item.fill
+                self.state.lmColorUsed.map((item, index) => {
+                    if (item == color) {
+                        self.state.lmColorUsed.splice(index, 1)
+                    }
+                })
+            })
+            canvas.forEachObject(function (o) {
+                o.selectable = false;
+            });
+        }
+        var boss = canvas.getObjects().filter(o => o.type == "image")[0];
+      //if (boss) {
+        self.bindLandmarks(true, canvas);
+      //}
+        //canvas.requestRenderAll();
+        canvas.renderAll();
+    });
+
+    canvas.on('object:modified', function (options) {
+      try {
+          var obj = options.target;
+          if (obj.type == "image") {
+              return;
+          }
+          var canvasTL = new fabric.Point(0, 0);
+          var canvasBR = new fabric.Point(canvas.getWidth(), canvas.getHeight());
+          //if object not totally contained in canvas, adjust position
+          if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
+              var objBounds = obj.getBoundingRect();
+              obj.setCoords();
+              var objTL = obj.getPointByOrigin("left", "top");
+              var left = objTL.x;
+              var top = objTL.y;
+
+              if (objBounds.left < canvasTL.x) left = 0;
+              if (objBounds.top < canvasTL.y) top = 0;
+              if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
+              if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
+
+              obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+              obj.setCoords();
+              canvas.renderAll();
+          }
+          self.bindLandmarks(true);
+      }
+      catch (err) {
+          alert("exception in keepObjectInBounds\n\n" + err.message + "\n\n" + err.stack);
+      }
+  });
+  
+    
+  }
+
   componentDidMount = () => {
     let {
       tool,
@@ -981,43 +1087,6 @@ class SketchField extends PureComponent {
       // initialize canvas with controlled value if exists
       ; (value || defaultValue) && this.fromJSON(value || defaultValue)
 
-  //console.log("value is coming in component did mount -- > ", this.props.image, " and ---- >>>>>> ", this.props.oneptwop);
-
-   /*if (this.props.image) {
-    this.addImg(this.props.image)
-    this.setState({
-      imageUrl: this.props.image,
-      scaleFactor: this.state.scaleFactor,
-    });
-
-    console.log("value is coming in component did mount iffff -- > ", this._fc, " andddddd --- > ", this._fc.item(0));
-
-    setTimeout(() => {
-      console.log("value is coming in settimeout ---- >>> ", this._fc.item(0) )
-    },5000)
-
-    this.rotateAndScale(
-      this._fc.item(0),
-      -this.props.oneptwop.inscopix.adapter_lsm.rotation
-    )
-    this.updateLandmarksPosition()
-    this._fc.renderAll()
-    this.setState({
-      rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
-    });
-
-    /*this.applyFlip(
-      this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal,
-      false
-    )
-    this.setState({
-      flipApplied: this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
-    })
-
-  }*/
-
-
-
   }
 
   componentWillUnmount = () =>
@@ -1049,7 +1118,6 @@ class SketchField extends PureComponent {
 
 
     if (this.props.image !== this.state.imageUrl) {
-      console.log("value is coming in component did updateeeee iff image props -- > ", this.props.image, " and ---- >>>>>> ", this.props.oneptwop);
       this.addImg(this.props.image)
       this.setState({
         imageUrl: this.props.image,
@@ -1083,6 +1151,17 @@ class SketchField extends PureComponent {
       this.setState({
         rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
       })
+    }
+    console.log("values are coming in the component did update - --- > ", this.props.oneptwop.inscopix.frontend.length , " and state -- > ", this.state.frontEnd)
+    if (
+      this.props.oneptwop.inscopix.frontend !== this.state.frontEnd && this.state.updateLandmarksForOtherWindow && this._fc
+    ) {
+      this.setState({
+        frontEnd: this.props.oneptwop.inscopix.frontend,
+        updateLandmarksForOtherWindow: false
+      });
+      this.props.addLandmarks(this._fc,this.props.oneptwop.inscopix.frontend)
+      this._fc.renderAll()
     }
 
     if (
@@ -1235,7 +1314,7 @@ class SketchField extends PureComponent {
     }
   }
 
-  updateOnepTwop = (saveAs, landmarks = []) => {
+  updateOnepTwop = (saveAs, updateLandmarksForOtherWindow = false) => {
     console.log("updateOnepTwop method");
     // if (this.sbpfApplyClick) {
     //   this.oneptwop.inscopix.bpf = {
@@ -1253,18 +1332,24 @@ class SketchField extends PureComponent {
     let oneptwop = this.props.oneptwop;
     oneptwop.inscopix.frontend = landMarks.objects.filter(o => o.type !== "image");
     this.props.oneptwopFrontend(oneptwop);
+    /*if (updateLandmarksForOtherWindow) {
+      this.props.addLandmarks()
+    }*/
+    this.setState({
+      updateLandmarksForOtherWindow: updateLandmarksForOtherWindow
+    })
   }
 
   removeAddOrMoveMode = () => {
-    window.canvas = this._fc;
-    if(window.canvas.upperCanvasEl) {
-        window.canvas.discardActiveObject();
-        window.canvas.forEachObject(function(o) {
+    canvas = this._fc;
+    if(canvas.upperCanvasEl) {
+        canvas.discardActiveObject();
+        canvas.forEachObject(function(o) {
             o.selectable = false;
         });
-        window.canvas.off('mouse:up');
-        window.canvas.hoverCursor = window.canvas.defaultCursor = 'default';
-        window.canvas.renderAll();
+        canvas.off('mouse:up');
+        canvas.hoverCursor = canvas.defaultCursor = 'default';
+        canvas.renderAll();
     }
 }
 
