@@ -1,5 +1,3 @@
-/*eslint no-unused-vars: 0*/
-
 import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import History from './history'
@@ -148,8 +146,8 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Enable touch Scrolling on Canvas
-   */
+  * Enable touch Scrolling on Canvas
+  */
   enableTouchScroll = () => {
     let canvas = this._fc
     if (canvas.allowTouchScrolling) return
@@ -157,8 +155,8 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Disable touch Scrolling on Canvas
-   */
+  * Disable touch Scrolling on Canvas
+  */
   disableTouchScroll = () => {
     let canvas = this._fc
     if (canvas.allowTouchScrolling) {
@@ -167,17 +165,17 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Add an image as object to the canvas
-   *
-   * @param dataUrl the image url or Data Url
-   * @param options object to pass and change some options when loading image, the format of the object is:
-   *
-   * {
-   * left: <Number: distance from left of canvas>,
-   * top: <Number: distance from top of canvas>,
-   * scale: <Number: initial scale of image>
-   * }
-   */
+  * Add an image as object to the canvas
+  *
+  * @param dataUrl the image url or Data Url
+  * @param options object to pass and change some options when loading image, the format of the object is:
+  *
+  * {
+  * left: <Number: distance from left of canvas>,
+  * top: <Number: distance from top of canvas>,
+  * scale: <Number: initial scale of image>
+  * }
+  */
   addImg = (dataUrl, options = {}) => {
     let canvas = this._fc
     // canvas.clear();
@@ -226,8 +224,8 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Action when an object is added to the canvas
-   */
+  * Action when an object is added to the canvas
+  */
   _onObjectAdded = e => {
     const { onObjectAdded } = this.props
     if (!this.state.action) {
@@ -246,16 +244,16 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Action when an object is moving around inside the canvas
-   */
+  * Action when an object is moving around inside the canvas
+  */
   _onObjectMoving = e => {
     const { onObjectMoving } = this.props
     onObjectMoving(e)
   }
 
   /**
-   * Action when an object is scaling inside the canvas
-   */
+  * Action when an object is scaling inside the canvas
+  */
   _onObjectScaling = e => {
     const { onObjectScaling } = this.props
 
@@ -263,8 +261,8 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Action when an object is rotating inside the canvas
-   */
+  * Action when an object is rotating inside the canvas
+  */
   _onObjectRotating = e => {
     const { onObjectRotating } = this.props
 
@@ -286,8 +284,8 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Action when an object is removed from the canvas
-   */
+  * Action when an object is removed from the canvas
+  */
   _onObjectRemoved = e => {
     const { onObjectRemoved } = this.props
     let obj = e.target
@@ -300,8 +298,8 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Action when the mouse button is pressed down
-   */
+  * Action when the mouse button is pressed down
+  */
   _onMouseDown = e => {
     const { onMouseDown } = this.props
     this._selectedTool.doMouseDown(e)
@@ -309,8 +307,8 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Action when the mouse cursor is moving around within the canvas
-   */
+  * Action when the mouse cursor is moving around within the canvas
+  */
   _onMouseMove = e => {
     const { onMouseMove } = this.props
     this._selectedTool.doMouseMove(e)
@@ -318,8 +316,8 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Action when the mouse cursor is moving out from the canvas
-   */
+  * Action when the mouse cursor is moving out from the canvas
+  */
   _onMouseOut = e => {
     const { onMouseOut } = this.props
     this._selectedTool.doMouseOut(e)
@@ -356,11 +354,11 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Track the resize of the window and update our state
-   *
-   * @param e the resize event
-   * @private
-   */
+  * Track the resize of the window and update our state
+  *
+  * @param e the resize event
+  * @private
+  */
 
   // _resize = (e, canvasWidth = null, canvasHeight = null) => {
   // if (e) e.preventDefault();
@@ -462,76 +460,76 @@ class SketchField extends PureComponent {
   // };
 
   // _resize = (e, canvasWidth = null, canvasHeight = null) => {
-  //   let canvas = this._fc
+  // let canvas = this._fc
 
-  //   if (canvas && canvas.upperCanvasEl) {
-  //     var overlayWidth = document.getElementById('onep-twop-container-2')
-  //       .offsetWidth
-  //   } else {
-  //     var overlayWidth = document.getElementById('oneptwop-container')
-  //       .offsetWidth
-  //   }
-  //   // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-  //   // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
-  //   var overlayHeight = Math.round(800 / (1280 / overlayWidth))
-  //   var overlayContrain = overlayWidth / overlayHeight
-  //   console.log(
-  //     '[ONEPTWOP] Color Overlay Width:',
-  //     overlayWidth,
-  //     overlayHeight,
-  //     overlayContrain
-  //   )
-  //   this.getCanvasAtResoution(overlayWidth, overlayHeight, false)
+  // if (canvas && canvas.upperCanvasEl) {
+  // var overlayWidth = document.getElementById('onep-twop-container-2')
+  // .offsetWidth
+  // } else {
+  // var overlayWidth = document.getElementById('oneptwop-container')
+  // .offsetWidth
+  // }
+  // // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+  // // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
+  // var overlayHeight = Math.round(800 / (1280 / overlayWidth))
+  // var overlayContrain = overlayWidth / overlayHeight
+  // console.log(
+  // '[ONEPTWOP] Color Overlay Width:',
+  // overlayWidth,
+  // overlayHeight,
+  // overlayContrain
+  // )
+  // this.getCanvasAtResoution(overlayWidth, overlayHeight, false)
   // }
 
   // getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
-  //   let canvas = this._fc
-  //   // let { offsetWidth, clientHeight } = this._container;
+  // let canvas = this._fc
+  // // let { offsetWidth, clientHeight } = this._container;
 
-  //   if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
-  //     var scaleMultiplier = newWidth / canvas.width
-  //     var scaleHeightMultiplier = newHeight / canvas.height
-  //     var objects = canvas.getObjects()
+  // if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
+  // var scaleMultiplier = newWidth / canvas.width
+  // var scaleHeightMultiplier = newHeight / canvas.height
+  // var objects = canvas.getObjects()
 
-  //     for (var i in objects) {
-  //       if (objects[i].type == 'image' || scaleLandmarks) {
-  //         // objects[i].width = objects[i].width * scaleMultiplier;
-  //         // objects[i].height = objects[i].height * scaleHeightMultiplier;
-  //         objects[i].scaleX = objects[i].scaleX * scaleMultiplier
-  //         objects[i].scaleY = objects[i].scaleY * scaleMultiplier
-  //         objects[i].setCoords()
-  //         let scaleFactor = this.state.scaleFactor * scaleMultiplier
-  //         this.setState({ scaleFactor })
-  //       }
-  //       objects[i].left = objects[i].left * scaleMultiplier
-  //       objects[i].top = objects[i].top * scaleMultiplier
-  //       objects[i].cnWidth = canvas.getWidth() * scaleMultiplier
-  //       objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier
-  //       objects[i].setCoords()
-  //     }
-  //     var obj = canvas.backgroundImage
-  //     if (obj) {
-  //       obj.scaleX = obj.scaleX * scaleMultiplier
-  //       obj.scaleY = obj.scaleY * scaleMultiplier
-  //     }
-  //     console.log(
-  //       '[ONEPTWOP] Resize Canvas Dimensions: ',
-  //       canvas.getWidth() * scaleMultiplier,
-  //       canvas.getHeight() * scaleHeightMultiplier
-  //     )
-  //     canvas.discardActiveObject()
-  //     canvas.setWidth(canvas.getWidth() * scaleMultiplier)
-  //     canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier)
-  //     canvas.renderAll()
-  //     canvas.calcOffset()
-  //     // this.setState({
-  //     // parentWidth: offsetWidth
-  //     // });
-  //     // var boss = window.canvas.getObjects().filter(o => o.type == "image")[0];
-  //     // if (boss) {
-  //     // this.bindLandmarks();
-  //     // }
-  //   }
+  // for (var i in objects) {
+  // if (objects[i].type == 'image' || scaleLandmarks) {
+  // // objects[i].width = objects[i].width * scaleMultiplier;
+  // // objects[i].height = objects[i].height * scaleHeightMultiplier;
+  // objects[i].scaleX = objects[i].scaleX * scaleMultiplier
+  // objects[i].scaleY = objects[i].scaleY * scaleMultiplier
+  // objects[i].setCoords()
+  // let scaleFactor = this.state.scaleFactor * scaleMultiplier
+  // this.setState({ scaleFactor })
+  // }
+  // objects[i].left = objects[i].left * scaleMultiplier
+  // objects[i].top = objects[i].top * scaleMultiplier
+  // objects[i].cnWidth = canvas.getWidth() * scaleMultiplier
+  // objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier
+  // objects[i].setCoords()
+  // }
+  // var obj = canvas.backgroundImage
+  // if (obj) {
+  // obj.scaleX = obj.scaleX * scaleMultiplier
+  // obj.scaleY = obj.scaleY * scaleMultiplier
+  // }
+  // console.log(
+  // '[ONEPTWOP] Resize Canvas Dimensions: ',
+  // canvas.getWidth() * scaleMultiplier,
+  // canvas.getHeight() * scaleHeightMultiplier
+  // )
+  // canvas.discardActiveObject()
+  // canvas.setWidth(canvas.getWidth() * scaleMultiplier)
+  // canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier)
+  // canvas.renderAll()
+  // canvas.calcOffset()
+  // // this.setState({
+  // // parentWidth: offsetWidth
+  // // });
+  // // var boss = window.canvas.getObjects().filter(o => o.type == "image")[0];
+  // // if (boss) {
+  // // this.bindLandmarks();
+  // // }
+  // }
   // }
 
 
@@ -599,7 +597,7 @@ class SketchField extends PureComponent {
       canvas.calcOffset();
 
       // this.setState({
-      //   parentWidth: offsetWidth
+      // parentWidth: offsetWidth
       // });
       var boss = canvas.getObjects().filter(o => o.type == "image")[0];
       if (boss) {
@@ -628,13 +626,13 @@ class SketchField extends PureComponent {
       let landMarks = canvas ? JSON.parse(JSON.stringify(canvas.getObjects().filter(o => o.type !== "image"))) : [];
       this.updateOnepTwop('_landmarks');
       console.log("[ONEPTWOP] Updated list of landmarks objects: ", JSON.stringify(landMarks));
-  }
+    }
   }
 
   /**
-   * Sets the background color for this sketch
-   * @param color in rgba or hex format
-   */
+  * Sets the background color for this sketch
+  * @param color in rgba or hex format
+  */
   _backgroundColor = color => {
     if (!color) return
     let canvas = this._fc
@@ -642,13 +640,13 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Zoom the drawing by the factor specified
-   *
-   * The zoom factor is a percentage with regards the original, for example if factor is set to 2
-   * it will double the size whereas if it is set to 0.5 it will half the size
-   *
-   * @param factor the zoom factor
-   */
+  * Zoom the drawing by the factor specified
+  *
+  * The zoom factor is a percentage with regards the original, for example if factor is set to 2
+  * it will double the size whereas if it is set to 0.5 it will half the size
+  *
+  * @param factor the zoom factor
+  */
   zoom = factor => {
     let canvas = this._fc
     let objects = canvas.getObjects()
@@ -664,8 +662,8 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Perform an undo operation on canvas, if it cannot undo it will leave the canvas intact
-   */
+  * Perform an undo operation on canvas, if it cannot undo it will leave the canvas intact
+  */
   undo = () => {
     let history = this._history
     let [obj, prevState, currState] = history.getCurrent()
@@ -690,8 +688,8 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Perform a redo operation on canvas, if it cannot redo it will leave the canvas intact
-   */
+  * Perform a redo operation on canvas, if it cannot redo it will leave the canvas intact
+  */
   redo = () => {
     let history = this._history
     if (history.canRedo()) {
@@ -716,61 +714,61 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Delegation method to check if we can perform an undo Operation, useful to disable/enable possible buttons
-   *
-   * @returns {*} true if we can undo otherwise false
-   */
+  * Delegation method to check if we can perform an undo Operation, useful to disable/enable possible buttons
+  *
+  * @returns {*} true if we can undo otherwise false
+  */
   canUndo = () => {
 
     return this._history.canUndo()
   }
 
   /**
-   * Delegation method to check if we can perform a redo Operation, useful to disable/enable possible buttons
-   *
-   * @returns {*} true if we can redo otherwise false
-   */
+  * Delegation method to check if we can perform a redo Operation, useful to disable/enable possible buttons
+  *
+  * @returns {*} true if we can redo otherwise false
+  */
   canRedo = () => {
 
     return this._history.canRedo()
   }
 
   /**
-   * Exports canvas element to a dataurl image. Note that when multiplier is used, cropping is scaled appropriately
-   *
-   * Available Options are
-   * <table style="width:100%">
-   *
-   * <tr><td><b>Name</b></td><td><b>Type</b></td><td><b>Argument</b></td><td><b>Default</b></td><td><b>Description</b></td></tr>
-   * <tr><td>format</td> <td>String</td> <td><optional></td><td>png</td><td>The format of the output image. Either "jpeg" or "png"</td></tr>
-   * <tr><td>quality</td><td>Number</td><td><optional></td><td>1</td><td>Quality level (0..1). Only used for jpeg.</td></tr>
-   * <tr><td>multiplier</td><td>Number</td><td><optional></td><td>1</td><td>Multiplier to scale by</td></tr>
-   * <tr><td>left</td><td>Number</td><td><optional></td><td></td><td>Cropping left offset. Introduced in v1.2.14</td></tr>
-   * <tr><td>top</td><td>Number</td><td><optional></td><td></td><td>Cropping top offset. Introduced in v1.2.14</td></tr>
-   * <tr><td>width</td><td>Number</td><td><optional></td><td></td><td>Cropping width. Introduced in v1.2.14</td></tr>
-   * <tr><td>height</td><td>Number</td><td><optional></td><td></td><td>Cropping height. Introduced in v1.2.14</td></tr>
-   *
-   * </table>
-   *
-   * @returns {String} URL containing a representation of the object in the format specified by options.format
-   */
+  * Exports canvas element to a dataurl image. Note that when multiplier is used, cropping is scaled appropriately
+  *
+  * Available Options are
+  * <table style="width:100%">
+  *
+  * <tr><td><b>Name</b></td><td><b>Type</b></td><td><b>Argument</b></td><td><b>Default</b></td><td><b>Description</b></td></tr>
+  * <tr><td>format</td> <td>String</td> <td><optional></td><td>png</td><td>The format of the output image. Either "jpeg" or "png"</td></tr>
+  * <tr><td>quality</td><td>Number</td><td><optional></td><td>1</td><td>Quality level (0..1). Only used for jpeg.</td></tr>
+  * <tr><td>multiplier</td><td>Number</td><td><optional></td><td>1</td><td>Multiplier to scale by</td></tr>
+  * <tr><td>left</td><td>Number</td><td><optional></td><td></td><td>Cropping left offset. Introduced in v1.2.14</td></tr>
+  * <tr><td>top</td><td>Number</td><td><optional></td><td></td><td>Cropping top offset. Introduced in v1.2.14</td></tr>
+  * <tr><td>width</td><td>Number</td><td><optional></td><td></td><td>Cropping width. Introduced in v1.2.14</td></tr>
+  * <tr><td>height</td><td>Number</td><td><optional></td><td></td><td>Cropping height. Introduced in v1.2.14</td></tr>
+  *
+  * </table>
+  *
+  * @returns {String} URL containing a representation of the object in the format specified by options.format
+  */
   toDataURL = options => this._fc.toDataURL(options)
 
   /**
-   * Returns JSON representation of canvas
-   *
-   * @param propertiesToInclude Array <optional> Any properties that you might want to additionally include in the output
-   * @returns {string} JSON string
-   */
+  * Returns JSON representation of canvas
+  *
+  * @param propertiesToInclude Array <optional> Any properties that you might want to additionally include in the output
+  * @returns {string} JSON string
+  */
   toJSON = propertiesToInclude => this._fc.toJSON(propertiesToInclude)
 
   /**
-   * Populates canvas with data from the specified JSON.
-   *
-   * JSON format must conform to the one of fabric.Canvas#toDatalessJSON
-   *
-   * @param json JSON string or object
-   */
+  * Populates canvas with data from the specified JSON.
+  *
+  * JSON format must conform to the one of fabric.Canvas#toDatalessJSON
+  *
+  * @param json JSON string or object
+  */
   fromJSON = json => {
     if (!json) return
     let canvas = this._fc
@@ -789,12 +787,12 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Clear the content of the canvas, this will also clear history but will return the canvas content as JSON to be
-   * used as needed in order to undo the clear if possible
-   *
-   * @param propertiesToInclude Array <optional> Any properties that you might want to additionally include in the output
-   * @returns {string} JSON string of the canvas just cleared
-   */
+  * Clear the content of the canvas, this will also clear history but will return the canvas content as JSON to be
+  * used as needed in order to undo the clear if possible
+  *
+  * @param propertiesToInclude Array <optional> Any properties that you might want to additionally include in the output
+  * @returns {string} JSON string of the canvas just cleared
+  */
   clear = propertiesToInclude => {
     let discarded = this.toJSON(propertiesToInclude)
     this._fc.clear()
@@ -804,8 +802,8 @@ class SketchField extends PureComponent {
 
 
   /**
-   * Remove selected object from the canvas
-   */
+  * Remove selected object from the canvas
+  */
   removeSelected = () => {
     let canvas = this._fc
     let activeObj = canvas.getActiveObject()
@@ -861,11 +859,11 @@ class SketchField extends PureComponent {
   }
 
   /**
-   * Sets the background from the dataUrl given
-   *
-   * @param dataUrl the dataUrl to be used as a background
-   * @param options
-   */
+  * Sets the background from the dataUrl given
+  *
+  * @param dataUrl the dataUrl to be used as a background
+  * @param options
+  */
   setBackgroundFromDataUrl = (dataUrl, options = {}) => {
     let canvas = this._fc
     if (options.stretched) {
@@ -920,101 +918,101 @@ class SketchField extends PureComponent {
       eventFunction(e);
   }
 
-  addLandmarks = (canvas,frontEnd) => {
+  addLandmarks = (canvas, frontEnd) => {
     let self = this;
     console.log("canvas is coming in the add landmark with thissss variable --- >>> ", this._fc);
-     console.log("canvas is coming in the add landmark --- >>> ", canvas);
-     console.log("canvas is coming in the add landmark with oneptwop --- >>> ", frontEnd);
+    console.log("canvas is coming in the add landmark --- >>> ", canvas);
+    console.log("canvas is coming in the add landmark with oneptwop --- >>> ", frontEnd);
 
-      canvas.selection = false;
-        let imageObject = JSON.parse(JSON.stringify(canvas.getObjects()));
-        let landMarks = frontEnd;
-        if (landMarks.length > 0) {
-            landMarks.splice(0, 0, imageObject[0]);
-        } else {
-            landMarks = imageObject;
+    canvas.selection = false;
+    let imageObject = JSON.parse(JSON.stringify(canvas.getObjects()));
+    let landMarks = frontEnd;
+    if (landMarks.length > 0) {
+      landMarks.splice(0, 0, imageObject[0]);
+    } else {
+      landMarks = imageObject;
+    }
+    canvas.loadFromJSON(`{"objects":${JSON.stringify(landMarks)}}`, function () {
+      console.log("canvas is coming in the add landmark load from json --- >>> ", landMarks);
+      if (self.props.oneptwop) {
+        self.props.updateSbpfTransformValues(self.props.oneptwop, self.props.loadFromSession);
+      } else {
+        self.rotateAndScale(canvas.item(0), -0);
+      }
+      console.log("canvas is coming in the add landmark load from json beforeeee first iffff --- >>> ", canvas.item(1), " and cnwidth -- > ", canvas.item(1).cnWidth, " and width -- > ", canvas.getWidth());
+      //if (canvas.item(1) && canvas.item(1).cnWidth !== canvas.getWidth()) {
+      console.log("canvas is coming in the add landmark load from json first iffff --- >>> ", canvas.item(1));
+      var scaleMultiplier = canvas.getWidth() / canvas.item(1).cnWidth;
+      var objects = canvas.getObjects();
+      console.log("canvas is coming in the add landmark load from json first iffff scalemultiplier --- >>> ", scaleMultiplier, " and -- > ", objects);
+      for (var i in objects) {
+        console.log("canvas is coming in the add landmark load from json first iffff for looopppppp --- >>> ", i, " and -- > ", objects);
+        if (objects[i].type !== "image") {
+          objects[i].left = objects[i].left * scaleMultiplier;
+          objects[i].top = objects[i].top * scaleMultiplier;
+          objects[i].cnWidth = canvas.getWidth();
+          objects[i].cnHeight = canvas.getHeight();
+          objects[i].setCoords();
         }
-      canvas.loadFromJSON(`{"objects":${JSON.stringify(landMarks)}}`, function () {
-        console.log("canvas is coming in the add landmark load from json --- >>> ", landMarks);
-        if (self.props.oneptwop) {
-            self.props.updateSbpfTransformValues(self.props.oneptwop, self.props.loadFromSession);
-        } else {
-            self.rotateAndScale(canvas.item(0), -0);
-        }
-        console.log("canvas is coming in the add landmark load from json beforeeee first iffff --- >>> ", canvas.item(1), " and cnwidth -- > ",canvas.item(1).cnWidth, " and width -- > ",canvas.getWidth());
-        //if (canvas.item(1) && canvas.item(1).cnWidth !== canvas.getWidth()) {
-          console.log("canvas is coming in the add landmark load from json first iffff --- >>> ", canvas.item(1));
-            var scaleMultiplier = canvas.getWidth() / canvas.item(1).cnWidth;
-            var objects = canvas.getObjects();
-            console.log("canvas is coming in the add landmark load from json first iffff scalemultiplier --- >>> ",scaleMultiplier, " and -- > ",objects );
-            for (var i in objects) {
-              console.log("canvas is coming in the add landmark load from json first iffff for looopppppp  --- >>> ",i, " and -- > ",objects );
-                if (objects[i].type !== "image") {
-                    objects[i].left = objects[i].left * scaleMultiplier;
-                    objects[i].top = objects[i].top * scaleMultiplier;
-                    objects[i].cnWidth = canvas.getWidth();
-                    objects[i].cnHeight = canvas.getHeight();
-                    objects[i].setCoords();
-                }
 
+      }
+      // }
+      if (canvas) {
+        let fabricList = JSON.parse(JSON.stringify(canvas.getObjects().filter(o => o.type !== "image")));
+        console.log("canvas is coming in the add landmark load from json secondddddd iffff -- >>> ", fabricList);
+        fabricList.map((item, key) => {
+          let color = item.fill
+          self.state.lmColorUsed.map((item, index) => {
+            if (item == color) {
+              self.state.lmColorUsed.splice(index, 1)
             }
-       // }
-        if (canvas) {
-            let fabricList = JSON.parse(JSON.stringify(canvas.getObjects().filter(o => o.type !== "image")));
-            console.log("canvas is coming in the add landmark load from json secondddddd iffff -- >>> ", fabricList);
-            fabricList.map((item, key) => {
-                let color = item.fill
-                self.state.lmColorUsed.map((item, index) => {
-                    if (item == color) {
-                        self.state.lmColorUsed.splice(index, 1)
-                    }
-                })
-            })
-            canvas.forEachObject(function (o) {
-                o.selectable = false;
-            });
-        }
-        var boss = canvas.getObjects().filter(o => o.type == "image")[0];
+          })
+        })
+        canvas.forEachObject(function (o) {
+          o.selectable = false;
+        });
+      }
+      var boss = canvas.getObjects().filter(o => o.type == "image")[0];
       //if (boss) {
-        self.bindLandmarks(true, canvas);
+      self.bindLandmarks(true, canvas);
       //}
-        //canvas.requestRenderAll();
-        canvas.renderAll();
+      //canvas.requestRenderAll();
+      canvas.renderAll();
     });
 
     canvas.on('object:modified', function (options) {
       try {
-          var obj = options.target;
-          if (obj.type == "image") {
-              return;
-          }
-          var canvasTL = new fabric.Point(0, 0);
-          var canvasBR = new fabric.Point(canvas.getWidth(), canvas.getHeight());
-          //if object not totally contained in canvas, adjust position
-          if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
-              var objBounds = obj.getBoundingRect();
-              obj.setCoords();
-              var objTL = obj.getPointByOrigin("left", "top");
-              var left = objTL.x;
-              var top = objTL.y;
+        var obj = options.target;
+        if (obj.type == "image") {
+          return;
+        }
+        var canvasTL = new fabric.Point(0, 0);
+        var canvasBR = new fabric.Point(canvas.getWidth(), canvas.getHeight());
+        //if object not totally contained in canvas, adjust position
+        if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
+          var objBounds = obj.getBoundingRect();
+          obj.setCoords();
+          var objTL = obj.getPointByOrigin("left", "top");
+          var left = objTL.x;
+          var top = objTL.y;
 
-              if (objBounds.left < canvasTL.x) left = 0;
-              if (objBounds.top < canvasTL.y) top = 0;
-              if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
-              if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
+          if (objBounds.left < canvasTL.x) left = 0;
+          if (objBounds.top < canvasTL.y) top = 0;
+          if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
+          if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
 
-              obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
-              obj.setCoords();
-              canvas.renderAll();
-          }
-          self.bindLandmarks(true);
+          obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+          obj.setCoords();
+          canvas.renderAll();
+        }
+        self.bindLandmarks(true);
       }
       catch (err) {
-          alert("exception in keepObjectInBounds\n\n" + err.message + "\n\n" + err.stack);
+        alert("exception in keepObjectInBounds\n\n" + err.message + "\n\n" + err.stack);
       }
-  });
-  
-    
+    });
+
+
   }
 
   componentDidMount = () => {
@@ -1029,12 +1027,13 @@ class SketchField extends PureComponent {
 
     //console.log("value is coming in component did mount before starttttt-- > ", this._fc);
 
-    // let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
+    //let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
     let canvas = (this._fc = new fabric.Canvas(
       this._canvas,
       {
         centeredRotation: true,
-        centeredScaling: true
+        centeredScaling: true,
+        //id: "roi-canvas"
       } /*, {
  preserveObjectStacking: false,
  renderOnAddRemove: false,
@@ -1139,42 +1138,45 @@ class SketchField extends PureComponent {
     // this.setState({ callResize: this.props.callResize });
     // }
 
-    if (
-      this.props.oneptwop.inscopix.adapter_lsm.rotation !== this.state.rotation && this._fc.item(0)
-    ) {
-      this.rotateAndScale(
-        this._fc.item(0),
-        -this.props.oneptwop.inscopix.adapter_lsm.rotation
-      )
-      this.updateLandmarksPosition()
-      this._fc.renderAll()
-      this.setState({
-        rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
-      })
-    }
-    console.log("values are coming in the component did update - --- > ", this.props.oneptwop.inscopix.frontend.length , " and state -- > ", this.state.frontEnd)
-    if (
-      this.props.oneptwop.inscopix.frontend !== this.state.frontEnd && this.state.updateLandmarksForOtherWindow && this._fc
-    ) {
-      this.setState({
-        frontEnd: this.props.oneptwop.inscopix.frontend,
-        updateLandmarksForOtherWindow: false
-      });
-      this.props.addLandmarks(this._fc,this.props.oneptwop.inscopix.frontend)
-      this._fc.renderAll()
-    }
+    if (this.props.oneptwop) {
 
-    if (
-      this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal !==
-      this.state.flipApplied
-    ) {
-      this.applyFlip(
-        this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal,
-        false
-      )
-      this.setState({
-        flipApplied: this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
-      })
+      if (
+        this.props.oneptwop.inscopix.adapter_lsm.rotation !== this.state.rotation && this._fc.item(0)
+      ) {
+        this.rotateAndScale(
+          this._fc.item(0),
+          -this.props.oneptwop.inscopix.adapter_lsm.rotation
+        )
+        this.updateLandmarksPosition()
+        this._fc.renderAll()
+        this.setState({
+          rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
+        })
+      }
+      console.log("values are coming in the component did update - --- > ", this.props.oneptwop.inscopix.frontend.length, " and state -- > ", this.state.frontEnd)
+      if (
+        this.props.oneptwop.inscopix.frontend !== this.state.frontEnd && this.state.updateLandmarksForOtherWindow && this._fc
+      ) {
+        this.setState({
+          frontEnd: this.props.oneptwop.inscopix.frontend,
+          updateLandmarksForOtherWindow: false
+        });
+        this.props.addLandmarks(this._fc, this.props.oneptwop.inscopix.frontend)
+        this._fc.renderAll()
+      }
+
+      if (
+        this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal !==
+        this.state.flipApplied
+      ) {
+        this.applyFlip(
+          this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal,
+          false
+        )
+        this.setState({
+          flipApplied: this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
+        })
+      }
     }
 
     if (this.props.crosshairMode !== this.state.crosshairMode) {
@@ -1245,8 +1247,8 @@ class SketchField extends PureComponent {
     this._fc.item(0).setCoords()
     this.updateLandmarksPosition()
     /*if(updateOnepTwop) {
- window.updateOnepTwopData('_transform', []);
- } */
+    window.updateOnepTwopData('_transform', []);
+    } */
     this._fc.requestRenderAll()
     this._fc.renderAll()
   }
@@ -1317,23 +1319,23 @@ class SketchField extends PureComponent {
   updateOnepTwop = (saveAs, updateLandmarksForOtherWindow = false) => {
     console.log("updateOnepTwop method");
     // if (this.sbpfApplyClick) {
-    //   this.oneptwop.inscopix.bpf = {
-    //     sigma1: $("#deltaSBFSnapSigmaOne").val() * 1,
-    //     sigma2: $("#deltaSBFSnapSigmaTwo").val() * 1,
-    //     offset: $("#deltaSBFSnapOffset").val() * 1,
-    //     gain: $("#deltaSBFSnapGain").val() * 1
-    //   }
+    // this.oneptwop.inscopix.bpf = {
+    // sigma1: $("#deltaSBFSnapSigmaOne").val() * 1,
+    // sigma2: $("#deltaSBFSnapSigmaTwo").val() * 1,
+    // offset: $("#deltaSBFSnapOffset").val() * 1,
+    // gain: $("#deltaSBFSnapGain").val() * 1
+    // }
     // }
     // this.oneptwop.inscopix.adapter_lsm = {
-    //   rotation: parseInt($(".transforms-rotate-data").val()),
-    //   flip_horizontal: $("#flip-horizontal").hasClass("active")
+    // rotation: parseInt($(".transforms-rotate-data").val()),
+    // flip_horizontal: $("#flip-horizontal").hasClass("active")
     // };
     let landMarks = this._fc ? JSON.parse(JSON.stringify(this._fc.toJSON(['cnWidth', 'cnHeight']))) : [];
     let oneptwop = this.props.oneptwop;
     oneptwop.inscopix.frontend = landMarks.objects.filter(o => o.type !== "image");
     this.props.oneptwopFrontend(oneptwop);
     /*if (updateLandmarksForOtherWindow) {
-      this.props.addLandmarks()
+    this.props.addLandmarks()
     }*/
     this.setState({
       updateLandmarksForOtherWindow: updateLandmarksForOtherWindow
@@ -1342,16 +1344,16 @@ class SketchField extends PureComponent {
 
   removeAddOrMoveMode = () => {
     canvas = this._fc;
-    if(canvas.upperCanvasEl) {
-        canvas.discardActiveObject();
-        canvas.forEachObject(function(o) {
-            o.selectable = false;
-        });
-        canvas.off('mouse:up');
-        canvas.hoverCursor = canvas.defaultCursor = 'default';
-        canvas.renderAll();
+    if (canvas.upperCanvasEl) {
+      canvas.discardActiveObject();
+      canvas.forEachObject(function (o) {
+        o.selectable = false;
+      });
+      canvas.off('mouse:up');
+      canvas.hoverCursor = canvas.defaultCursor = 'default';
+      canvas.renderAll();
     }
-}
+  }
 
   render = () => {
     let { className, style, width, height } = this.props
@@ -1379,7 +1381,7 @@ class SketchField extends PureComponent {
         <ReactResizeDetector onResize={this.onChangeSize.bind(this)} />
         <div style={{ position: 'absolute' }}>
           <canvas
-            // id='roi-canvas'
+            id={uuid4()}
             // style={{
             // margin: "0 auto",
             // position: "absolute",
@@ -1396,7 +1398,7 @@ class SketchField extends PureComponent {
             ref={c => (this._canvas = c)}
           >
             Sorry, Canvas HTML5 element is not supported by your browser :(
-          </canvas>
+ </canvas>
         </div>
         {/* </ReactResizeDetector> */}
         {this._fc !== null && this._fc.item(0) &&
