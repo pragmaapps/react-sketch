@@ -546,7 +546,7 @@ class SketchField extends PureComponent {
     // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
     var overlayHeight = Math.round(800 / (1280 / overlayWidth));
     var overlayContrain = overlayWidth / overlayHeight;
-    console.log('[ONEPTWOP] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
+    console.log('[MIRA] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
     this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
 
 
@@ -563,7 +563,6 @@ class SketchField extends PureComponent {
 
       for (var i in objects) {
         if (objects[i].type === "image" || scaleLandmarks) {
-          console.log(objects[i].type, "type");
           // objects[i].width = objects[i].width * scaleMultiplier;
           // objects[i].height = objects[i].height * scaleHeightMultiplier;
           objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
@@ -572,7 +571,6 @@ class SketchField extends PureComponent {
           var scaleFactor = this.state.scaleFactor * scaleMultiplier;
           this.setState({ scaleFactor });
         }
-        console.log(objects[i].type, "type");
         // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
         // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
         objects[i].left = objects[i].left * scaleMultiplier;
@@ -589,7 +587,7 @@ class SketchField extends PureComponent {
         obj.scaleY = obj.scaleY * scaleMultiplier;
       }
 
-      console.log("[ONEPTWOP] Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
+      console.log("[MIRA] Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
       canvas.discardActiveObject();
       canvas.setWidth(canvas.getWidth() * scaleMultiplier);
       canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
@@ -625,7 +623,7 @@ class SketchField extends PureComponent {
     if (updateLandmarks) {
       let landMarks = canvas ? JSON.parse(JSON.stringify(canvas.getObjects().filter(o => o.type !== "image"))) : [];
       this.updateOnepTwop('_landmarks');
-      console.log("[ONEPTWOP] Updated list of landmarks objects: ", JSON.stringify(landMarks));
+      console.log("[MIRA] Updated list of landmarks objects: ", JSON.stringify(landMarks));
     }
   }
 
@@ -920,9 +918,6 @@ class SketchField extends PureComponent {
 
   addLandmarks = (canvas, frontEnd) => {
     let self = this;
-    console.log("canvas is coming in the add landmark with thissss variable --- >>> ", this._fc);
-    console.log("canvas is coming in the add landmark --- >>> ", canvas);
-    console.log("canvas is coming in the add landmark with oneptwop --- >>> ", frontEnd);
 
     canvas.selection = false;
     let imageObject = JSON.parse(JSON.stringify(canvas.getObjects()));
@@ -933,20 +928,16 @@ class SketchField extends PureComponent {
       landMarks = imageObject;
     }
     canvas.loadFromJSON(`{"objects":${JSON.stringify(landMarks)}}`, function () {
-      console.log("canvas is coming in the add landmark load from json --- >>> ", landMarks);
       if (self.props.oneptwop) {
         self.props.updateSbpfTransformValues(self.props.oneptwop, self.props.loadFromSession);
       } else {
         self.rotateAndScale(canvas.item(0), -0);
       }
-      console.log("canvas is coming in the add landmark load from json beforeeee first iffff --- >>> ", canvas.item(1), " and cnwidth -- > ", canvas.item(1).cnWidth, " and width -- > ", canvas.getWidth());
+
       //if (canvas.item(1) && canvas.item(1).cnWidth !== canvas.getWidth()) {
-      console.log("canvas is coming in the add landmark load from json first iffff --- >>> ", canvas.item(1));
       var scaleMultiplier = canvas.getWidth() / canvas.item(1).cnWidth;
       var objects = canvas.getObjects();
-      console.log("canvas is coming in the add landmark load from json first iffff scalemultiplier --- >>> ", scaleMultiplier, " and -- > ", objects);
       for (var i in objects) {
-        console.log("canvas is coming in the add landmark load from json first iffff for looopppppp --- >>> ", i, " and -- > ", objects);
         if (objects[i].type !== "image") {
           objects[i].left = objects[i].left * scaleMultiplier;
           objects[i].top = objects[i].top * scaleMultiplier;
@@ -959,7 +950,6 @@ class SketchField extends PureComponent {
       // }
       if (canvas) {
         let fabricList = JSON.parse(JSON.stringify(canvas.getObjects().filter(o => o.type !== "image")));
-        console.log("canvas is coming in the add landmark load from json secondddddd iffff -- >>> ", fabricList);
         fabricList.map((item, key) => {
           let color = item.fill
           self.state.lmColorUsed.map((item, index) => {
@@ -1153,7 +1143,6 @@ class SketchField extends PureComponent {
           rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
         })
       }
-      console.log("values are coming in the component did update - --- > ", this.props.oneptwop.inscopix.frontend.length, " and state -- > ", this.state.frontEnd)
       if (
         this.props.oneptwop.inscopix.frontend !== this.state.frontEnd && this.state.updateLandmarksForOtherWindow && this._fc
       ) {
@@ -1254,7 +1243,6 @@ class SketchField extends PureComponent {
   }
 
   rotateAndScale = (obj, angle) => {
-    //console.log("values are coming in rotate --- > ", obj, " and angle --- > ", angle);
     if (obj) {
       var width = this._fc.getWidth()
       var height = this._fc.getHeight()
@@ -1317,7 +1305,6 @@ class SketchField extends PureComponent {
   }
 
   updateOnepTwop = (saveAs, updateLandmarksForOtherWindow = false) => {
-    console.log("updateOnepTwop method");
     // if (this.sbpfApplyClick) {
     // this.oneptwop.inscopix.bpf = {
     // sigma1: $("#deltaSBFSnapSigmaOne").val() * 1,
@@ -1343,7 +1330,7 @@ class SketchField extends PureComponent {
   }
 
   removeAddOrMoveMode = () => {
-    canvas = this._fc;
+    let canvas = this._fc;
     if (canvas.upperCanvasEl) {
       canvas.discardActiveObject();
       canvas.forEachObject(function (o) {

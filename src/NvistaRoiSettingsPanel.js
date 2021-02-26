@@ -116,7 +116,7 @@ class NvistaRoiSettings extends Component {
     }
 
     enterCrosshairMode() {
-        console.log("[ONEPTWOP] landmarks mode: add landmarks");
+        console.log("[MIRA] landmarks mode: add landmarks");
         let self = this;
 
 
@@ -198,7 +198,7 @@ class NvistaRoiSettings extends Component {
     }
 
     exitCrosshairMode(event) {
-        console.log("[ONEPTWOP] landmarks mode: move landmarks");
+        console.log("[MIRA] landmarks mode: move landmarks");
         let self = this;
         // document.getElementById("clearAllLandmark").classList.remove("active");
         // document.getElementById("deleteLandmark").classList.remove("active");
@@ -220,7 +220,7 @@ class NvistaRoiSettings extends Component {
     }
 
     deleteCrosshairMode(event) {
-        console.log("[ONEPTWOP] Landmarks mode: delete landmarks");
+        console.log("[MIRA] Landmarks mode: delete landmarks");
         let self = this;
         // document.getElementById("clearAllLandmark").classList.remove("active");
         // document.getElementById("addLandmark").classList.remove("active");
@@ -238,7 +238,7 @@ class NvistaRoiSettings extends Component {
                 self.props.canvasProps.remove(options.target);
             }
             let landMarks = self.props.canvasProps ? JSON.parse(JSON.stringify(self.props.canvasProps.getObjects().filter(o => o.type !== "image"))) : [];
-            console.log("[ONEPTWOP] List of Landmarks after deleting objects: ", JSON.stringify(landMarks));
+            console.log("[MIRA] List of Landmarks after deleting objects: ", JSON.stringify(landMarks));
             self.props.updateOnepTwop('_landmarks', landMarks);
         });
 
@@ -264,7 +264,7 @@ class NvistaRoiSettings extends Component {
             if (updateLandmarks) {
                 let landMarks = self.props.canvasProps ? JSON.parse(JSON.stringify(self.props.canvasProps.getObjects().filter(o => o.type !== "image"))) : [];
                 this.props.updateOnepTwop('_landmarks', updateForOtherWindow);
-                console.log("[ONEPTWOP] Updated list of landmarks objects: ", JSON.stringify(landMarks));
+                console.log("[MIRA] Updated list of landmarks objects: ", JSON.stringify(landMarks));
             }
         }
     }
@@ -274,7 +274,6 @@ class NvistaRoiSettings extends Component {
         fabric.Object.prototype.objectCaching = false;
 
         window.canvas = self.props.canvasProps;
-        console.log("canvas is coming in NvistaRoi --- >>> ", this.props.landMarks)
         self.props.canvasProps.selection = false;
         let imageObject = JSON.parse(JSON.stringify(self.props.canvasProps.getObjects()));
         let landMarks = this.props.landMarks;
@@ -370,7 +369,7 @@ class NvistaRoiSettings extends Component {
         });
 
         this.setState({ canvas: self.props.canvasProps }, () => {
-            console.log("[ONEPTWOP] initial list of landmarks objects: ", JSON.stringify(this.props.canvasProps));
+            console.log("[MIRA] initial list of landmarks objects: ", JSON.stringify(this.props.canvasProps));
         });
     }
 
@@ -409,7 +408,7 @@ class NvistaRoiSettings extends Component {
             canvas: null,
             lmColorIndex: 0
         })
-        console.log("[ONEPTWOP]: dispose the canvas and unmount the component")
+        console.log("[MIRA]: dispose the canvas and unmount the component")
     }
 
     render() {
