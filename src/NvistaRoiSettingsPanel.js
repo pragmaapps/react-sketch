@@ -29,6 +29,7 @@ class NvistaRoiSettings extends Component {
     }
 
     resetLandmarks() {
+        console.log('[MIRA] resetLandmarks method');
         var self = this;
         if (this.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== this.props.oneptwop.inscopix.adapter_lsm.rotation) {
             self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, true);
@@ -93,6 +94,7 @@ class NvistaRoiSettings extends Component {
     }
 
     deleteAll() {
+        console.log('[MIRA] deleteAll method');
         var objects = this.props.canvasProps.getObjects('path');
         for (let i in objects) {
             this.props.canvasProps.remove(objects[i]);
@@ -112,10 +114,12 @@ class NvistaRoiSettings extends Component {
         //     document.getElementById("clearAllLandmark").classList.remove("active");
         // }, 1000)
         let landMarks = this.props.canvasProps ? JSON.parse(JSON.stringify(this.props.canvasProps.getObjects().filter(o => o.type !== "image"))) : [];
+        console.log('[MIRA] landMarks', landMarks);
         this.props.updateOnepTwop('_landmarks', landMarks);
     }
 
     enterCrosshairMode() {
+        console.log('[MIRA] enterCrosshairMode method');
         console.log("[MIRA] landmarks mode: add landmarks");
         let self = this;
 
@@ -178,6 +182,7 @@ class NvistaRoiSettings extends Component {
     }
 
     scaleObj(obj, angle) {
+        console.log('[MIRA] scaleObj method');
         let self = this;
         var width = self.props.canvasProps.getWidth();
         var height = self.props.canvasProps.getHeight();
@@ -198,6 +203,7 @@ class NvistaRoiSettings extends Component {
     }
 
     exitCrosshairMode(event) {
+        console.log('[MIRA] exitCrosshairMode method');
         console.log("[MIRA] landmarks mode: move landmarks");
         let self = this;
         // document.getElementById("clearAllLandmark").classList.remove("active");
@@ -220,6 +226,7 @@ class NvistaRoiSettings extends Component {
     }
 
     deleteCrosshairMode(event) {
+        console.log('[MIRA] deleteCrosshairMode method');
         console.log("[MIRA] Landmarks mode: delete landmarks");
         let self = this;
         // document.getElementById("clearAllLandmark").classList.remove("active");
@@ -245,6 +252,7 @@ class NvistaRoiSettings extends Component {
     }
 
     bindLandmarks(updateLandmarks = false, updateForOtherWindow = false) {
+        console.log('[MIRA] bindLandmarks method');
         let self = this;
         var multiply = fabric.util.multiplyTransformMatrices;
         var invert = fabric.util.invertTransform;
@@ -263,6 +271,7 @@ class NvistaRoiSettings extends Component {
             });
             if (updateLandmarks) {
                 let landMarks = self.props.canvasProps ? JSON.parse(JSON.stringify(self.props.canvasProps.getObjects().filter(o => o.type !== "image"))) : [];
+                console.log('[MIRA] updateForOtherWindow', updateForOtherWindow);
                 this.props.updateOnepTwop('_landmarks', updateForOtherWindow);
                 console.log("[MIRA] Updated list of landmarks objects: ", JSON.stringify(landMarks));
             }
