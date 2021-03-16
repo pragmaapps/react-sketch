@@ -149,7 +149,6 @@ class SketchField extends PureComponent {
   * Enable touch Scrolling on Canvas
   */
   enableTouchScroll = () => {
-    console.log('[MIRA] enableTouchScroll method');
     let canvas = this._fc
     if (canvas.allowTouchScrolling) return
     canvas.allowTouchScrolling = true
@@ -159,7 +158,6 @@ class SketchField extends PureComponent {
   * Disable touch Scrolling on Canvas
   */
   disableTouchScroll = () => {
-    console.log('[MIRA] disableTouchScroll method');
     let canvas = this._fc
     if (canvas.allowTouchScrolling) {
       canvas.allowTouchScrolling = false
@@ -179,7 +177,6 @@ class SketchField extends PureComponent {
   * }
   */
   addImg = (dataUrl, options = {}) => {
-    console.log('[MIRA] addImg method');
     let canvas = this._fc
     // canvas.clear();
     // let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
@@ -230,7 +227,6 @@ class SketchField extends PureComponent {
   * Action when an object is added to the canvas
   */
   _onObjectAdded = e => {
-    console.log('[MIRA] _onObjectAdded method');
     const { onObjectAdded } = this.props
     if (!this.state.action) {
       this.setState({ action: true })
@@ -251,7 +247,6 @@ class SketchField extends PureComponent {
   * Action when an object is moving around inside the canvas
   */
   _onObjectMoving = e => {
-    console.log('[MIRA] _onObjectMoving method');
     const { onObjectMoving } = this.props
     onObjectMoving(e)
   }
@@ -260,7 +255,6 @@ class SketchField extends PureComponent {
   * Action when an object is scaling inside the canvas
   */
   _onObjectScaling = e => {
-    console.log('[MIRA] _onObjectScaling method');
     const { onObjectScaling } = this.props
 
     onObjectScaling(e)
@@ -270,14 +264,12 @@ class SketchField extends PureComponent {
   * Action when an object is rotating inside the canvas
   */
   _onObjectRotating = e => {
-    console.log('[MIRA] _onObjectRotating method');
     const { onObjectRotating } = this.props
 
     onObjectRotating(e)
   }
 
   _onObjectModified = e => {
-    console.log('[MIRA] _onObjectModified method');
     const { onObjectModified } = this.props
 
     let obj = e.target
@@ -295,7 +287,6 @@ class SketchField extends PureComponent {
   * Action when an object is removed from the canvas
   */
   _onObjectRemoved = e => {
-    console.log('[MIRA] _onObjectRemoved method');
     const { onObjectRemoved } = this.props
     let obj = e.target
     if (obj.__removed) {
@@ -543,7 +534,6 @@ class SketchField extends PureComponent {
 
 
   _resize = (e, canvasWidth = null, canvasHeight = null) => {
-    console.log('[MIRA] _resize method');
     let canvas = this._fc;
 
     if (canvas && canvas.upperCanvasEl) {
@@ -563,7 +553,6 @@ class SketchField extends PureComponent {
   };
 
   getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
-    console.log('[MIRA] getCanvasAtResoution method');
     let canvas = this._fc;
     // let { offsetWidth, clientHeight } = this._container;
 
@@ -616,7 +605,6 @@ class SketchField extends PureComponent {
   }
 
   bindLandmarks = (updateLandmarks = false, canvasData) => {
-    console.log('[MIRA] bindLandmarks method');
     let canvas = canvasData ? canvasData : this._fc;
     var multiply = fabric.util.multiplyTransformMatrices;
     var invert = fabric.util.invertTransform;
@@ -815,7 +803,6 @@ class SketchField extends PureComponent {
   * Remove selected object from the canvas
   */
   removeSelected = () => {
-    console.log('[MIRA] removeSelected method');
     let canvas = this._fc
     let activeObj = canvas.getActiveObject()
     if (activeObj) {
@@ -876,7 +863,6 @@ class SketchField extends PureComponent {
   * @param options
   */
   setBackgroundFromDataUrl = (dataUrl, options = {}) => {
-    console.log('[MIRA] setBackgroundFromDataUrl method');
     let canvas = this._fc
     if (options.stretched) {
       delete options.stretched
@@ -909,7 +895,6 @@ class SketchField extends PureComponent {
   }
 
   addText = (text, options = {}) => {
-    console.log('[MIRA] addText method');
     let canvas = this._fc
     let iText = new fabric.IText(text, options)
     let opts = {
@@ -932,7 +917,6 @@ class SketchField extends PureComponent {
   }
 
   addLandmarks = (canvas, frontEnd) => {
-    console.log('[MIRA] addLandmarks method');
     let self = this;
 
     canvas.selection = false;
@@ -1149,7 +1133,6 @@ class SketchField extends PureComponent {
       if (
         this.props.oneptwop.inscopix.adapter_lsm.rotation !== this.state.rotation && this._fc.item(0)
       ) {
-        console.log('[MIRA] rotate');
         this.rotateAndScale(
           this._fc.item(0),
           -this.props.oneptwop.inscopix.adapter_lsm.rotation
@@ -1160,13 +1143,9 @@ class SketchField extends PureComponent {
           rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
         })
       }
-      console.log('[MIRA] frontend', this.props.oneptwop.inscopix.frontend);
-      console.log('[MIRA] stateFrontEnd', this.state.frontEnd)
       if (
-        this.props.oneptwop.inscopix.frontend.length !== this.state.frontEnd.length && this._fc
+        this.props.oneptwop.inscopix.frontend !== this.state.frontEnd && this.state.updateLandmarksForOtherWindow && this._fc
       ) {
-        console.log('[MIRA] frontend', this.props.oneptwop.inscopix.frontend);
-        console.log('[MIRA] stateFrontEnd', this.state.frontEnd)
         this.setState({
           frontEnd: this.props.oneptwop.inscopix.frontend,
           updateLandmarksForOtherWindow: false
@@ -1213,7 +1192,6 @@ class SketchField extends PureComponent {
     }
   }
   onChangeSize = (width, height) => {
-    console.log('[MIRA] onChangeSize method');
     // if (this.state.imageUrl !== null) {
     // this.addImg(this.state.imageUrl);
     // // if (this.state.rotation !== 0 && this._fc.item(0)) {
@@ -1226,7 +1204,6 @@ class SketchField extends PureComponent {
   }
 
   updateLandmarksPosition = () => {
-    console.log('[MIRA] updateLandmarksPosition method');
     var multiply = fabric.util.multiplyTransformMatrices
     var invert = fabric.util.invertTransform
     var boss = this._fc.getObjects().filter(o => o.type == 'image')[0]
@@ -1253,7 +1230,6 @@ class SketchField extends PureComponent {
   }
 
   applyFlip = (value, updateOnepTwop) => {
-    console.log('[MIRA] applyFlip method');
     this._fc.item(0).set({
       flipX: value
     })
@@ -1267,7 +1243,6 @@ class SketchField extends PureComponent {
   }
 
   rotateAndScale = (obj, angle) => {
-    console.log('[MIRA] rotateAndScale method');
     if (obj) {
       var width = this._fc.getWidth()
       var height = this._fc.getHeight()
@@ -1304,7 +1279,6 @@ class SketchField extends PureComponent {
   }
 
   updateLandmarks = () => {
-    console.log('[MIRA] updateLandmarks method');
     var currentRotation = this.props.oneptwop.inscopix.adapter_lsm.rotation;
     var isFliped = this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal;
     if (isFliped) {
@@ -1331,8 +1305,6 @@ class SketchField extends PureComponent {
   }
 
   updateOnepTwop = (saveAs, updateLandmarksForOtherWindow = false) => {
-    console.log('[MIRA] updateOnepTwop method');
-    console.log('[MIRA] updateLandmarksForOtherWindow', updateLandmarksForOtherWindow);
     // if (this.sbpfApplyClick) {
     // this.oneptwop.inscopix.bpf = {
     // sigma1: $("#deltaSBFSnapSigmaOne").val() * 1,
@@ -1358,7 +1330,6 @@ class SketchField extends PureComponent {
   }
 
   removeAddOrMoveMode = () => {
-    console.log('[MIRA] removeAddOrMoveMode method');
     let canvas = this._fc;
     if (canvas.upperCanvasEl) {
       canvas.discardActiveObject();
