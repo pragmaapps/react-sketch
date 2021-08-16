@@ -42,7 +42,17 @@ module.exports = {
         include: [Paths.srcPath],
         exclude: /(node_modules|bower_components|lib)/,
         loaders: ['babel-loader']
-      }
+      },
+      {
+        test: /\.svg/,
+        use: {
+          loader: "svg-url-loader",
+          options: {
+            // make all svg images to work in IE
+            iesafe: true,
+          },
+        },
+      },
     ]
   },
   plugins: [
