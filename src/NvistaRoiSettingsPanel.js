@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { fabric } from 'fabric';
 // import RoiShapes from './RoiShapes';
-import plus from '../docs/img/plus.svg';
+import plus from './img/plus.svg';
 
 class NvistaRoiSettings extends Component {
     constructor(props) {
