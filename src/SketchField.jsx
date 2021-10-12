@@ -124,6 +124,7 @@ class SketchField extends PureComponent {
     deleteAllLandmarks: false,
     resetAllLandmarks: false,
     frontEnd: [],
+    canvasHeight:512,
     updateLandmarksForOtherWindow: false,
     lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
 
@@ -601,6 +602,7 @@ class SketchField extends PureComponent {
       if (boss) {
         this.bindLandmarks();
       }
+      this.setState({canvasHeight:canvas.height});
     }
   }
 
@@ -1187,9 +1189,6 @@ class SketchField extends PureComponent {
     if (this.props.resetAllLandmarks !== this.state.resetAllLandmarks) {
       this.setState({ resetAllLandmarks: this.props.resetAllLandmarks });
     }
-    if (this.props.activePanels !== prevProps.activePanels) {
-      this._resize();
-    }
   }
   onChangeSize = (width, height) => {
     // if (this.state.imageUrl !== null) {
@@ -1345,18 +1344,14 @@ class SketchField extends PureComponent {
   render = () => {
     let { className, style, width, height } = this.props
 
-    let containerH = 512
-    if (this._fc) {
-      containerH = this._fc.height
-    }
+    
 
     let canvasDivStyle = Object.assign(
       {},
       style ? style : {},
       width ? { width: '100%' } : { width: '100%' },
-      height ? { height: height } : { height: containerH }
+      height ? { height: height } : { height: this.state.canvasHeight }
     )
-
 
     return (
       <div
