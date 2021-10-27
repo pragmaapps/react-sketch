@@ -1229,10 +1229,12 @@ class SketchField extends PureComponent {
   }
 
   applyFlip = (value, updateOnepTwop) => {
-    this._fc.item(0).set({
-      flipX: value
-    })
-    this._fc.item(0).setCoords()
+    if(this._fc.item(0)){
+      this._fc.item(0).set({
+        flipX: value
+      })
+      this._fc.item(0).setCoords()
+    }
     this.updateLandmarksPosition()
     /*if(updateOnepTwop) {
     window.updateOnepTwopData('_transform', []);
