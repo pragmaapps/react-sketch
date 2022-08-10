@@ -1352,7 +1352,7 @@ class SketchField extends PureComponent {
       {},
       style ? style : {},
       width ? { width: '100%' } : { width: '100%' },
-      height ? { height: height } : { height: this.state.canvasHeight }
+      height ? { height: this.state.canvasHeight } : { height: this.state.canvasHeight }
     )
 
     return (
