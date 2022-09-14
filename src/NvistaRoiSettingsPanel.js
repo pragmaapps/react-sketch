@@ -130,7 +130,7 @@ class NvistaRoiSettings extends Component {
         self.props.canvasProps.on('mouse:up', function (event) {
             let landmarkList = JSON.parse(JSON.stringify(self.props.canvasProps.getObjects()));
             if (landmarkList && landmarkList.length > 10) {
-                self.props.handleMiraErrorPopup("Only 10 landmarks are allowed. Please remove a landmark before adding additional landmark.", "Warning");
+                self.props.handleMiraErrorPopup("Only 10 landmarks are allowed. Please remove a landmark before adding additional landmarks.", "Warning");
                 return false;
             }
             if (!event.target || event.target.type !== 'image') {
