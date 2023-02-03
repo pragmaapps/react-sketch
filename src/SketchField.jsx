@@ -14,6 +14,8 @@ import RectangleLabel from './rectangle-label'
 import DefaultTool from './defaul-tool'
 import ReactResizeDetector from 'react-resize-detector'
 import NvistaRoiSettings from './NvistaRoiSettingsPanel'
+import Ellipse from './ellipse'
+import Polygon from './polygon'
 
 const fabric = require('fabric').fabric
 
@@ -132,6 +134,12 @@ class SketchField extends PureComponent {
 
   _fc = null
   childRef = React.createRef();
+  left1 = 0;
+  top1 = 0 ;
+  scale1x = 0 ;    
+  scale1y = 0 ;    
+  width1 = 0 ;    
+  height1 = 0 ;
 
   _initTools = fabricCanvas => {
     this._tools = {}
@@ -144,6 +152,8 @@ class SketchField extends PureComponent {
     this._tools[Tool.Circle] = new Circle(fabricCanvas)
     this._tools[Tool.Pan] = new Pan(fabricCanvas)
     this._tools[Tool.DefaultTool] = new DefaultTool(fabricCanvas)
+    this._tools[Tool.Ellipse] = new Ellipse(fabricCanvas)
+    this._tools[Tool.Polygon] = new Polygon(fabricCanvas)
   }
 
   /**
@@ -256,7 +266,27 @@ class SketchField extends PureComponent {
   * Action when an object is scaling inside the canvas
   */
   _onObjectScaling = e => {
-    const { onObjectScaling } = this.props
+    const { onObjectScaling } = this.props;
+    var obj = e.target;
+    obj.setCoords();
+    var brNew = obj.getBoundingRect();
+    
+    if (((brNew.width+brNew.left)>=obj.canvas.width) || ((brNew.height+brNew.top)>=obj.canvas.height) || ((brNew.left<0) || (brNew.top<0))) {
+    obj.left = this.left1;
+    obj.top=this.top1;
+    obj.scaleX=this.scale1x;
+    obj.scaleY=this.scale1y;
+    obj.width=this.width1;
+    obj.height=this.height1;
+  }
+    else{    
+      this.left1 =obj.left;
+      this.top1 =obj.top;
+      this.scale1x = obj.scaleX;
+      this.scale1y=obj.scaleY;
+      this.width1=obj.width;
+      this.height1=obj.height;
+    }
 
     onObjectScaling(e)
   }
@@ -271,9 +301,28 @@ class SketchField extends PureComponent {
   }
 
   _onObjectModified = e => {
-    const { onObjectModified } = this.props
+    let obj = e.target;
+    if(obj.height > this._fc.height || obj.width > this._fc.width){
+      return;
+  }      
+    var canvasTL = new fabric.Point(0, 0);
+    var canvasBR = new fabric.Point(this._fc.getWidth(), this._fc.getHeight());
+    if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
+      var objBounds = obj.getBoundingRect();
+      obj.setCoords();
+      var objTL = obj.getPointByOrigin("left", "top");
+      var left = objTL.x;
+      var top = objTL.y;
 
-    let obj = e.target
+      if (objBounds.left < canvasTL.x) left = 0;
+      if (objBounds.top < canvasTL.y) top = 0;
+      if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
+      if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
+
+      obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+      obj.setCoords();
+      this._fc.renderAll();
+    }
     obj.__version += 1
     let prevState = JSON.stringify(obj.__originalState)
     let objState = obj.toJSON()
@@ -281,7 +330,6 @@ class SketchField extends PureComponent {
     obj.__originalState = objState
     let currState = JSON.stringify(objState)
     // this._history.keep([obj, prevState, currState]);
-    onObjectModified(e)
   }
 
   /**
@@ -796,7 +844,7 @@ class SketchField extends PureComponent {
   clear = propertiesToInclude => {
     let discarded = this.toJSON(propertiesToInclude)
     this._fc.clear()
-    this._history.clear()
+    // this._history.clear()
     return discarded
   }
 
@@ -819,7 +867,7 @@ class SketchField extends PureComponent {
         let objState = obj.toJSON()
         obj.__originalState = objState
         let state = JSON.stringify(objState)
-        this._history.keep([obj, state, state])
+        // this._history.keep([obj, state, state])
         canvas.remove(obj)
       })
       canvas.discardActiveObject()
@@ -1099,7 +1147,7 @@ class SketchField extends PureComponent {
       //Bring the cursor back to default if it is changed by a tool
       this._fc.defaultCursor = 'default'
       if (this._selectedTool) {
-        // this._selectedTool.configureCanvas(this.props);
+        this._selectedTool.configureCanvas(this.props);
       }
     }
 
