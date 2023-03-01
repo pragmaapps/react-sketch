@@ -17,14 +17,22 @@ class Rectangle extends FabricCanvasTool {
     this.isDragging = false;
   }
 
-  doMouseDown(options) {
+  doMouseDown(options, props) {
     if(this.isDown){
       if(options.target && options.target.id !== null){
         console.log("if rectangle is already there");
         this.isDown = true
       }else{
-        console.log("if rectangle is already is not there");
-        this.genrateRect(options);
+        let canvas = this._canvas;
+        let objects = canvas.getObjects();
+        if(objects.length < 5){
+          console.log("if rectangle is already is not there");
+          this.genrateRect(options);
+        }else{
+          const { notificationShow } = props
+          notificationShow();
+          console.log(`%c[ROI]%c , maximum 5 roi shapes allowed `, "color:blue; font-weight:bold;", "color:black;");
+        }
       }
     }
   }
@@ -34,6 +42,8 @@ class Rectangle extends FabricCanvasTool {
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
     console.log(pointer,"pointer");
+    let objects = canvas.getObjects();
+    let name = `ROI#${objects.length + 1}`;
     this.startX = pointer.x;
     this.startY = pointer.y;
     this.rect = new fabric.Rect({
@@ -47,7 +57,7 @@ class Rectangle extends FabricCanvasTool {
       strokeWidth: this._width,
       fill: this._fill,
       transparentCorners: false,
-      name: "ROI-RECT",
+      name: name,
       id: new Date().getTime(),
       // selectable: false,
       // evented: false,

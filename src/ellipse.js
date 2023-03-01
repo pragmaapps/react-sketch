@@ -18,14 +18,22 @@ class Ellipse extends FabricCanvasTool {
     this.isDragging = false;
   }
 
-  doMouseDown(options) {
+  doMouseDown(options,props) {
     if(this.isDown){
         if(options.target && options.target.id !== null){
           console.log("if ellipse is already there");
           this.isDown = true
         }else{
+          let canvas = this._canvas;
+          let objects = canvas.getObjects();
+        if(objects.length < 5){
           console.log("if ellipse is already is not there");
           this.genrateEllipse(options);
+        }else{
+          const { notificationShow } = props;
+          notificationShow();
+          console.log(`%c[ROI]%c , maximum 5 roi shapes allowed `, "color:blue; font-weight:bold;", "color:black;");
+        }
         }
      }
   }
@@ -34,6 +42,8 @@ class Ellipse extends FabricCanvasTool {
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
+    let objects = canvas.getObjects();
+    let name = `ROI#${objects.length + 1}`;
     [this.startX, this.startY] = [pointer.x, pointer.y];
     this.ellipse = new fabric.Ellipse({
       left: this.startX, top: this.startY,
@@ -43,7 +53,7 @@ class Ellipse extends FabricCanvasTool {
       strokeWidth: this._width,
       stroke: this._color,
       fill: this._fill,
-      name: "ROI-ELL",
+      name: name,
       transparentCorners: false,
       id: new Date().getTime(),
     evented: true,

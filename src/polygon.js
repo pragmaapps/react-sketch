@@ -31,11 +31,21 @@ class Polygon extends FabricCanvasTool {
   }
 
 
-  doMouseDown(options) {
+  doMouseDown(options, props) {
     if (this.drawMode) {
       if (options.target && options.target.id === this.pointArray[0].id) {
           // when click on the first point
-          this.generatePolygon(this.pointArray);
+          let canvas = this._canvas;
+          let roiTypes = ['rect','ellipse','polygon']; 
+          let objects = canvas.getObjects();
+          objects = objects.filter(object => object.id !== undefined && roiTypes.includes(object.type))
+          if(objects.length < 5){
+            this.generatePolygon(this.pointArray);
+          }else{
+            const { notificationShow } = props;
+            notificationShow();
+            console.log(`%c[ROI]%c , maximum 5 roi shapes allowed `, "color:blue; font-weight:bold;", "color:black;");
+          }
       } else {
           this.addPoint(options);
       }
@@ -194,6 +204,10 @@ class Polygon extends FabricCanvasTool {
 
   generatePolygon = (pointArray) => {
     let canvas = this._canvas;
+    let objects = canvas.getObjects();
+    let roiTypes = ['rect','ellipse','polygon']; 
+    let findIdForObject = objects.filter(object => object.id !== undefined && roiTypes.includes(object.type));
+    let name = `ROI#${findIdForObject.length + 1}`;
     let points = [];
     // collect points and remove them from canvas
     for (const point of pointArray) {
@@ -225,7 +239,7 @@ class Polygon extends FabricCanvasTool {
       centeredRotation: false,
       centeredScaling: false,
       perPixelTargetFind: true,
-      name: "ROI-POLY",
+      name: name,
         //selectable: false
     });
     // if(this.count === 1){
