@@ -10,7 +10,7 @@ class Ellipse extends FabricCanvasTool {
   configureCanvas(props) {
     let canvas = this._canvas;
     canvas.isDrawingMode = canvas.selection = false;
-    canvas.forEachObject((o) => o.selectable = o.evented = false);
+    // canvas.forEachObject((o) => o.selectable = o.evented = false);
     this._width = props.lineWidth;
     this._color = props.lineColor;
     this._fill = props.fillColor;
@@ -21,13 +21,13 @@ class Ellipse extends FabricCanvasTool {
   doMouseDown(options,props) {
     if(this.isDown){
         if(options.target && options.target.id !== null){
-          console.log("if ellipse is already there");
+          console.log("[ROI] If ellipse is already there");
           this.isDown = true
         }else{
           let canvas = this._canvas;
           let objects = canvas.getObjects();
         if(objects.length < 5){
-          console.log("if ellipse is already is not there");
+          console.log("[ROI] If ellipse is already is not there");
           this.genrateEllipse(options);
         }else{
           const { notificationShow } = props;
@@ -48,20 +48,20 @@ class Ellipse extends FabricCanvasTool {
     this.ellipse = new fabric.Ellipse({
       left: this.startX, top: this.startY,
       originX: 'left', originY: 'top',
-      rx: pointer.x-this.startX,
-      ry: pointer.y-this.startY,
+      rx: 20,
+      ry: 20,
       strokeWidth: this._width,
       stroke: this._color,
       fill: this._fill,
       name: name,
+      selectable: false,
+      evented: false,
       transparentCorners: false,
-      id: new Date().getTime(),
-    evented: true,
-    selectable: true
+      id: new Date().getTime()
 
     });
     this.ellipse.setControlsVisibility({ml: false, mb:false, mr: false, mt: false, mtr: false, bl: true, tl: true, br: true, tr: true});
-    canvas.add(this.ellipse).setActiveObject(this.ellipse);
+    canvas.add(this.ellipse);
     this.isDragging = true;
     this.ellipse.edit = true;
   }
@@ -117,9 +117,10 @@ class Ellipse extends FabricCanvasTool {
     }
   }
 
-  doMouseUp(o) {
+  doMouseUp(o, props) {
     this.isDown = true;
     this.isDragging = false;
+    props.onShapeAdded();
   }
 }
 

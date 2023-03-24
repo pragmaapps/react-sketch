@@ -9,7 +9,7 @@ class Rectangle extends FabricCanvasTool {
   configureCanvas(props) {
     let canvas = this._canvas;
     canvas.isDrawingMode = canvas.selection = false;
-    canvas.forEachObject((o) => o.selectable = o.evented = false);
+    // canvas.forEachObject((o) => o.selectable = o.evented = false);
     this._width = props.lineWidth;
     this._color = props.lineColor;
     this._fill = props.fillColor;
@@ -20,13 +20,13 @@ class Rectangle extends FabricCanvasTool {
   doMouseDown(options, props) {
     if(this.isDown){
       if(options.target && options.target.id !== null){
-        console.log("if rectangle is already there");
+        console.log("[ROI] If rectangle is already there");
         this.isDown = true
       }else{
         let canvas = this._canvas;
         let objects = canvas.getObjects();
         if(objects.length < 5){
-          console.log("if rectangle is already is not there");
+          console.log("[ROI] If rectangle is already is not there");
           this.genrateRect(options);
         }else{
           const { notificationShow } = props
@@ -41,7 +41,6 @@ class Rectangle extends FabricCanvasTool {
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
-    console.log(pointer,"pointer");
     let objects = canvas.getObjects();
     let name = `ROI#${objects.length + 1}`;
     this.startX = pointer.x;
@@ -51,21 +50,24 @@ class Rectangle extends FabricCanvasTool {
       top: this.startY,
       originX: 'left',
       originY: 'top',
-      width: pointer.x - this.startX,
-      height: pointer.y - this.startY,
+      width: 20,
+      height: 20,
       stroke: this._color,
       strokeWidth: this._width,
       fill: this._fill,
       transparentCorners: false,
       name: name,
+      selectable: false,
+      evented: false,
       id: new Date().getTime(),
+      hasBorders: false,
       // selectable: false,
       // evented: false,
       // strokeUniform: true,
       // noScaleCache : false,
       angle: 0
     });
-    this.rect.setControlsVisibility({ml: true, mb:true, mr: false, mt: false, mtr: false, bl: true, tl: true, br: true, tr: true});
+    this.rect.setControlsVisibility({ml: false, mb:false, mr: false, mt: false, mtr: false, bl: true, tl: true, br: true, tr: true});
     canvas.add(this.rect);
     this.isDragging = true;
     this.rect.edit = true;
@@ -110,9 +112,11 @@ class Rectangle extends FabricCanvasTool {
     }
   }
 
-  doMouseUp(o) {
+  doMouseUp(o, props) {
     this.isDown = true;
     this.isDragging = false;
+    const { onShapeAdded } = props;
+    onShapeAdded();
   }
 }
 

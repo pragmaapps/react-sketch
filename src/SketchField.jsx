@@ -351,7 +351,7 @@ class SketchField extends PureComponent {
   */
   _onMouseDown = e => {
     const { onMouseDown } = this.props
-    this._selectedTool.doMouseDown(e)
+    this._selectedTool.doMouseDown(e, this.props)
     onMouseDown(e)
   }
 
@@ -381,7 +381,7 @@ class SketchField extends PureComponent {
 
   _onMouseUp = e => {
     const { onMouseUp } = this.props
-    this._selectedTool.doMouseUp(e)
+    this._selectedTool.doMouseUp(e, this.props)
     // Update the final state to new-generated object
     // Ignore Path object since it would be created after mouseUp
     // Assumed the last object in canvas.getObjects() in the newest object

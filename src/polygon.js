@@ -17,7 +17,7 @@ class Polygon extends FabricCanvasTool {
   configureCanvas(props) {
     let canvas = this._canvas;
     canvas.isDrawingMode = canvas.selection = false;
-    canvas.forEachObject((o) => o.selectable = o.evented = false);
+    // canvas.forEachObject((o) => o.selectable = o.evented = false);
     this._width = props.lineWidth;
     this._color = props.lineColor;
     this._fill = props.fillColor;
@@ -33,21 +33,21 @@ class Polygon extends FabricCanvasTool {
 
   doMouseDown(options, props) {
     if (this.drawMode) {
-      if (options.target && options.target.id === this.pointArray[0].id) {
-          // when click on the first point
           let canvas = this._canvas;
           let roiTypes = ['rect','ellipse','polygon']; 
           let objects = canvas.getObjects();
           objects = objects.filter(object => object.id !== undefined && roiTypes.includes(object.type))
-          if(objects.length < 5){
-            this.generatePolygon(this.pointArray);
-          }else{
+          if(objects.length >= 5){
             const { notificationShow } = props;
             notificationShow();
             console.log(`%c[ROI]%c , maximum 5 roi shapes allowed `, "color:blue; font-weight:bold;", "color:black;");
+            return ;
           }
+      if (options.target && options.target.id === this.pointArray[0].id) {
+          // when click on the first point
+            this.generatePolygon(this.pointArray);
       } else {
-          this.addPoint(options);
+            this.addPoint(options);
       }
   }
   
@@ -161,7 +161,6 @@ class Polygon extends FabricCanvasTool {
     if (!this.isDown) return;
     let canvas = this._canvas;
     if (this.isDragging) {
-      console.log("dragging");
       var e = options.e;
       let obj = e.target;
       if(obj.height > obj.canvas.height || obj.width > obj.canvas.width){
@@ -174,7 +173,6 @@ class Polygon extends FabricCanvasTool {
         this.lastPosY = e.clientY;
     } 
     if (this.drawMode) {
-      console.log("drawing");
         if (this.activeLine && this.activeLine.class === 'line') {
             const pointer = this.canvas.getPointer(options.e);
             this.activeLine.set({
@@ -194,12 +192,15 @@ class Polygon extends FabricCanvasTool {
     }
   }
 
-  doMouseUp(o) {
+  doMouseUp(o, props) {
     this.isDown = false;
     let canvas = this._canvas;
     canvas.selection = true;
     this.isDragging = false;
     this.selection = true;
+    this.drawMode = true;
+    const { onShapeAdded } = props;
+    onShapeAdded();
   }
 
   generatePolygon = (pointArray) => {
@@ -229,23 +230,24 @@ class Polygon extends FabricCanvasTool {
     // create polygon from collected points
     const polygon = new fabric.Polygon(points, {
         id: new Date().getTime(),
-        fill: '#f00',
+        fill: this._fill,
         objectCaching: false,
         moveable: false,
-      strokeWidth: 4,
-      stroke: 'green',
-      transparentCorners: false,
-      cornerColor: 'blue',
-      centeredRotation: false,
-      centeredScaling: false,
-      perPixelTargetFind: true,
-      name: name,
-        //selectable: false
+        strokeWidth: this._width,
+        stroke: this._color,
+        transparentCorners: false,
+        // cornerColor: 'blue',
+        centeredRotation: false,
+        centeredScaling: false,
+        perPixelTargetFind: true,
+        name: name,
+        selectable: false,
+        evented: false
     });
     // if(this.count === 1){
       canvas.add(polygon);
       this.toggleDrawPolygon();
-    this.editPolygon();
+      this.editPolygon(polygon);
     // }
     // this.count = 2;
 }
@@ -267,14 +269,11 @@ toggleDrawPolygon = () => {
   }
 }
 
-editPolygon = () => {
+editPolygon = (polygon) => {
   let canvas = this._canvas;
   let activeObject = canvas.getActiveObject();
-  console.log(activeObject,"activeObject");
   if (!activeObject) {
-      activeObject = canvas.getObjects()[13];
-      console.log(canvas.getObjects(),"canvas.getObjects()");
-      console.log(activeObject,"activeObject after");
+      activeObject = polygon;
       canvas.setActiveObject(activeObject);
   }
 
@@ -285,7 +284,6 @@ editPolygon = () => {
   activeObject.cornerStyle = 'circle';
   activeObject.controls = activeObject.points.reduce((acc, point, index) => {
     // this.pointIndex = index;
-    console.log(acc,"acc");
     acc['p' + index] = new fabric.Control({
       pointIndex: index,
       positionHandler: (dim, finalMatrix, fabricObject) =>{
@@ -308,13 +306,10 @@ editPolygon = () => {
 }
 
 polygonPositionHandler = (dim, finalMatrix, fabricObject) => {
-  // console.log(this.pointIndex,"this.pointIndex");
-  console.log(fabricObject,"fabricObject");
   const transformPoint = {
       x: fabricObject.points[this.pointIndex].x - fabricObject.pathOffset.x,
       y: fabricObject.points[this.pointIndex].y - fabricObject.pathOffset.y,
   };
-  console.log(transformPoint,"transformPoint");
   return fabric.util.transformPoint(transformPoint, fabricObject.calcTransformMatrix());
 }
 
