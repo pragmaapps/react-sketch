@@ -27,7 +27,9 @@ class Rectangle extends FabricCanvasTool {
         let objects = canvas.getObjects();
         if(objects.length < 5){
           console.log("[ROI] If rectangle is already is not there");
-          this.genrateRect(options);
+          this.genrateRect(options, props);
+          const { addROIDefaultName, roiDefaultNames } = props;
+          addROIDefaultName(roiDefaultNames);
         }else{
           const { notificationShow } = props
           notificationShow();
@@ -37,12 +39,13 @@ class Rectangle extends FabricCanvasTool {
     }
   }
 
-  genrateRect = (options) => {
+  genrateRect = (options, props) => {
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
     let objects = canvas.getObjects();
-    let name = `ROI#${objects.length + 1}`;
+    let name = props.roiDefaultNames[0];
+    let defaultName = props.roiDefaultNames[0];
     this.startX = pointer.x;
     this.startY = pointer.y;
     this.rect = new fabric.Rect({
@@ -57,6 +60,7 @@ class Rectangle extends FabricCanvasTool {
       fill: this._fill,
       transparentCorners: false,
       name: name,
+      defaultName: defaultName,
       selectable: false,
       evented: false,
       id: new Date().getTime(),

@@ -28,7 +28,9 @@ class Ellipse extends FabricCanvasTool {
           let objects = canvas.getObjects();
         if(objects.length < 5){
           console.log("[ROI] If ellipse is already is not there");
-          this.genrateEllipse(options);
+          this.genrateEllipse(options, props);
+          const { addROIDefaultName } = props
+          addROIDefaultName(props.roiDefaultNames);
         }else{
           const { notificationShow } = props;
           notificationShow();
@@ -38,12 +40,14 @@ class Ellipse extends FabricCanvasTool {
      }
   }
 
-  genrateEllipse = (options) =>{
+  genrateEllipse = (options, props) =>{
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
     let objects = canvas.getObjects();
-    let name = `ROI#${objects.length + 1}`;
+    // let name = `ROI#${objects.length + 1}`;
+    let name = props.roiDefaultNames[0];
+    let defaultName = props.roiDefaultNames[0];
     [this.startX, this.startY] = [pointer.x, pointer.y];
     this.ellipse = new fabric.Ellipse({
       left: this.startX, top: this.startY,
@@ -54,6 +58,7 @@ class Ellipse extends FabricCanvasTool {
       stroke: this._color,
       fill: this._fill,
       name: name,
+      defaultName: defaultName,
       selectable: false,
       evented: false,
       transparentCorners: false,

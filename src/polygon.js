@@ -45,7 +45,9 @@ class Polygon extends FabricCanvasTool {
           }
       if (options.target && this.pointArray[0].id && options.target.id === this.pointArray[0].id) {
           // when click on the first point
-            this.generatePolygon(this.pointArray);
+            this.generatePolygon(this.pointArray, props);
+            const { addROIDefaultName } = props
+            addROIDefaultName(props.roiDefaultNames);
       } else {
             this.addPoint(options);
       }
@@ -203,12 +205,14 @@ class Polygon extends FabricCanvasTool {
     onShapeAdded();
   }
 
-  generatePolygon = (pointArray) => {
+  generatePolygon = (pointArray, props) => {
     let canvas = this._canvas;
     let objects = canvas.getObjects();
     let roiTypes = ['rect','ellipse','polygon']; 
     let findIdForObject = objects.filter(object => object.id !== undefined && roiTypes.includes(object.type));
-    let name = `ROI#${findIdForObject.length + 1}`;
+    // let name = `ROI#${findIdForObject.length + 1}`;
+    let name = props.roiDefaultNames[0];
+    let defaultName = props.roiDefaultNames[0];
     let points = [];
     // collect points and remove them from canvas
     for (const point of pointArray) {
@@ -241,6 +245,7 @@ class Polygon extends FabricCanvasTool {
         centeredScaling: false,
         perPixelTargetFind: true,
         name: name,
+        defaultName: defaultName,
         selectable: false,
         evented: false
     });
