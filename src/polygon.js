@@ -43,7 +43,7 @@ class Polygon extends FabricCanvasTool {
             console.log(`%c[ROI]%c , maximum 5 roi shapes allowed `, "color:blue; font-weight:bold;", "color:black;");
             return ;
           }
-      if (options.target && options.target.id === this.pointArray[0].id) {
+      if (options.target && this.pointArray[0].id && options.target.id === this.pointArray[0].id) {
           // when click on the first point
             this.generatePolygon(this.pointArray);
       } else {

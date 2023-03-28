@@ -1433,7 +1433,7 @@ class SketchField extends PureComponent {
  </canvas>
         </div>
         {/* </ReactResizeDetector> */}
-        {this._fc !== null && this._fc.item(0) &&
+        {this._fc !== null && this._fc.item(0) && this.props.from === undefined &&
           <NvistaRoiSettings
             canvasProps={this._fc}
             landMarks={this.props.oneptwop.inscopix.frontend}
