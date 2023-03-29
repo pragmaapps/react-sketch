@@ -606,12 +606,14 @@ class SketchField extends PureComponent {
     // let { offsetWidth, clientHeight } = this._container;
 
     if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
+      let isMira = this.props.from === undefined ? true : false;  
       var scaleMultiplier = newWidth / canvas.width;
       var scaleHeightMultiplier = newHeight / canvas.height;
       var objects = canvas.getObjects();
 
       for (var i in objects) {
-        if (objects[i].type === "image" || scaleLandmarks) {
+        let isObjectTypeImage = isMira ? objects[i].type === "image" : objects[i].type !== "image";
+        if (isObjectTypeImage || scaleLandmarks) {
           // objects[i].width = objects[i].width * scaleMultiplier;
           // objects[i].height = objects[i].height * scaleHeightMultiplier;
           objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
@@ -650,7 +652,11 @@ class SketchField extends PureComponent {
       if (boss) {
         this.bindLandmarks();
       }
-      this.setState({canvasHeight:canvas.height});
+      this.setState({canvasHeight:canvas.height},()=>{
+        if(!isMira){
+          this.props.onShapeAdded();
+        }
+      });
     }
   }
 
