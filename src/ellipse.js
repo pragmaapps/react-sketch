@@ -18,27 +18,19 @@ class Ellipse extends FabricCanvasTool {
   }
 
   doMouseDown(options, props) {
-    if (this.isDown) {
-      if (options.target && options.target.id !== null) {
-        this.isDown = true;
-      } else {
-        let canvas = this._canvas;
-        let objects = canvas.getObjects();
-        if (objects.length < 5) {
-          this.genrateEllipse(options, props);
-          const { addROIDefaultName } = props;
-          addROIDefaultName(props.roiDefaultNames);
-        } else {
-          const { notificationShow } = props;
-          notificationShow();
-          console.log(
-            `%c[ROI]%c Maximum 5 roi shapes allowed `,
-            "color:blue; font-weight:bold;",
-            "color:black;"
-          );
-        }
-      }
+    if (!this.isDown) return;
+    const { notificationShow, addROIDefaultName } = props;
+    if (this._canvas.getObjects().length >= 5) {
+      notificationShow();
+      console.log(
+        `%c[ROI]%c , maximum 5 roi shapes allowed `,
+        "color:blue; font-weight:bold;",
+        "color:black;"
+      );
+      return;
     }
+    this.genrateEllipse(options, props);
+    addROIDefaultName(props.roiDefaultNames);
   }
 
   genrateEllipse = (options, props) => {
@@ -46,7 +38,6 @@ class Ellipse extends FabricCanvasTool {
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
     let objects = canvas.getObjects();
-    // let name = `ROI#${objects.length + 1}`;
     let name = props.roiDefaultNames[0];
     let defaultName = props.roiDefaultNames[0];
     [this.startX, this.startY] = [pointer.x, pointer.y];
@@ -66,20 +57,9 @@ class Ellipse extends FabricCanvasTool {
       evented: false,
       transparentCorners: false,
       id: new Date().getTime(),
-      cornerSize: 6,
-    });
-    this.ellipse.setControlsVisibility({
-      ml: false,
-      mb: false,
-      mr: false,
-      mt: false,
-      mtr: false,
-      bl: true,
-      tl: true,
-      br: true,
-      tr: true,
     });
     canvas.add(this.ellipse);
+    this.containInsideBoundary(options);
     this.isDragging = true;
     this.ellipse.edit = true;
   };
@@ -89,15 +69,15 @@ class Ellipse extends FabricCanvasTool {
     let canvas = this._canvas;
     var obj = o.target;
     if (this.isDragging) {
+      let pointer = canvas.getPointer(o.e);
       if (
-        this.ellipse.height > this.ellipse.canvas.height ||
-        this.ellipse.width > this.ellipse.canvas.width
+        pointer.x < 0 ||
+        pointer.x > canvas.getWidth() ||
+        pointer.y < 0 ||
+        pointer.y > canvas.getHeight()
       ) {
         return;
       }
-      var canvasTL = new fabric.Point(0, 0);
-      var canvasBR = new fabric.Point(canvas.getWidth(), canvas.getHeight());
-      let pointer = canvas.getPointer(o.e);
       var rx = Math.abs(this.startX - pointer.x) / 2;
       var ry = Math.abs(this.startY - pointer.y) / 2;
       if (rx > this.ellipse.strokeWidth) {
@@ -107,39 +87,7 @@ class Ellipse extends FabricCanvasTool {
         ry -= this.ellipse.strokeWidth / 2;
       }
       this.ellipse.set({ rx: rx, ry: ry });
-
-      if (this.startX > pointer.x) {
-        this.ellipse.set({ originX: "right" });
-      } else {
-        this.ellipse.set({ originX: "left" });
-      }
-      if (this.startY > pointer.y) {
-        this.ellipse.set({ originY: "bottom" });
-      } else {
-        this.ellipse.set({ originY: "top" });
-      }
-      if (!this.ellipse.isContainedWithinRect(canvasTL, canvasBR)) {
-        var objBounds = this.ellipse.getBoundingRect();
-        this.ellipse.setCoords();
-        var objTL = this.ellipse.getPointByOrigin("left", "top");
-        var left = objTL.x;
-        var top = objTL.y;
-
-        if (objBounds.left < canvasTL.x) left = 0;
-        if (objBounds.top < canvasTL.y) top = 0;
-        if (objBounds.top + objBounds.height > canvasBR.y)
-          top = canvasBR.y - objBounds.height;
-        if (objBounds.left + objBounds.width > canvasBR.x)
-          left = canvasBR.x - objBounds.width;
-
-        this.ellipse.setPositionByOrigin(
-          new fabric.Point(left, top),
-          "left",
-          "top"
-        );
-        this.ellipse.setCoords();
-        canvas.renderAll();
-      }
+      this.containInsideBoundary(o);
       canvas.renderAll();
     }
   }
@@ -149,6 +97,45 @@ class Ellipse extends FabricCanvasTool {
     this.isDragging = false;
     props.onShapeAdded();
   }
+
+  containInsideBoundary = (o) => {
+    let canvas = this._canvas;
+    var canvasTL = new fabric.Point(0, 0);
+    var canvasBR = new fabric.Point(canvas.getWidth(), canvas.getHeight());
+    let pointer = canvas.getPointer(o.e);
+    if (this.startX > pointer.x) {
+      this.ellipse.set({ originX: "right" });
+    } else {
+      this.ellipse.set({ originX: "left" });
+    }
+    if (this.startY > pointer.y) {
+      this.ellipse.set({ originY: "bottom" });
+    } else {
+      this.ellipse.set({ originY: "top" });
+    }
+    if (!this.ellipse.isContainedWithinRect(canvasTL, canvasBR)) {
+      var objBounds = this.ellipse.getBoundingRect();
+      this.ellipse.setCoords();
+      var objTL = this.ellipse.getPointByOrigin("left", "top");
+      var left = objTL.x;
+      var top = objTL.y;
+
+      if (objBounds.left < canvasTL.x) left = 0;
+      if (objBounds.top < canvasTL.y) top = 0;
+      if (objBounds.top + objBounds.height > canvasBR.y)
+        top = canvasBR.y - objBounds.height;
+      if (objBounds.left + objBounds.width > canvasBR.x)
+        left = canvasBR.x - objBounds.width;
+
+      this.ellipse.setPositionByOrigin(
+        new fabric.Point(left, top),
+        "left",
+        "top"
+      );
+      this.ellipse.setCoords();
+      canvas.renderAll();
+    }
+  };
 }
 
 export default Ellipse;

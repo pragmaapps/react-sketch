@@ -17,7 +17,24 @@ import NvistaRoiSettings from './NvistaRoiSettingsPanel'
 import Ellipse from './ellipse'
 import Polygon from './polygon'
 
-const fabric = require('fabric').fabric
+let fabric = require('fabric').fabric;
+let controlsVisible = {
+  ml: false,
+  mb: false,
+  mr: false,
+  mt: false,
+  mtr: false,
+  bl: true,
+  tl: true,
+  br: true,
+  tr: true,
+};
+fabric.Object.prototype.setControlsVisibility(controlsVisible);
+fabric.Object.prototype.set({
+  cornerSize: 6,
+  cornerColor : 'blue',
+  cornerStyle : 'circle'
+});
 
 /**
  * Sketch Tool based on FabricJS for React Applications
@@ -1078,7 +1095,7 @@ class SketchField extends PureComponent {
       this._canvas,
       {
         centeredRotation: true,
-        centeredScaling: true,
+        centeredScaling: false,
         //id: "roi-canvas"
       } /*, {
  preserveObjectStacking: false,
@@ -1086,7 +1103,7 @@ class SketchField extends PureComponent {
  skipTargetFind: true
  }*/
     ))
-
+    canvas.centeredScaling = false;
     this._initTools(canvas)
 
     // set initial backgroundColor

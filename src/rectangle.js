@@ -17,27 +17,19 @@ class Rectangle extends FabricCanvasTool {
   }
 
   doMouseDown(options, props) {
-    if (this.isDown) {
-      if (options.target && options.target.id !== null) {
-        this.isDown = true;
-      } else {
-        let canvas = this._canvas;
-        let objects = canvas.getObjects();
-        if (objects.length < 5) {
-          this.genrateRect(options, props);
-          const { addROIDefaultName, roiDefaultNames } = props;
-          addROIDefaultName(roiDefaultNames);
-        } else {
-          const { notificationShow } = props;
-          notificationShow();
-          console.log(
-            `%c[ROI]%c  Maximum 5 roi shapes allowed `,
-            "color:blue; font-weight:bold;",
-            "color:black;"
-          );
-        }
-      }
+    if (!this.isDown) return;
+    const { notificationShow, addROIDefaultName } = props;
+    if (this._canvas.getObjects().length >= 5) {
+      notificationShow();
+      console.log(
+        `%c[ROI]%c , maximum 5 roi shapes allowed `,
+        "color:blue; font-weight:bold;",
+        "color:black;"
+      );
+      return;
     }
+    this.genrateRect(options, props);
+    addROIDefaultName(props.roiDefaultNames);
   }
 
   genrateRect = (options, props) => {
@@ -67,24 +59,10 @@ class Rectangle extends FabricCanvasTool {
       id: new Date().getTime(),
       hasBorders: false,
       cornerSize: 6,
-      // selectable: false,
-      // evented: false,
-      // strokeUniform: true,
-      // noScaleCache : false,
       angle: 0,
     });
-    this.rect.setControlsVisibility({
-      ml: false,
-      mb: false,
-      mr: false,
-      mt: false,
-      mtr: false,
-      bl: true,
-      tl: true,
-      br: true,
-      tr: true,
-    });
     canvas.add(this.rect);
+    this.containInsideBoundary(options);
     this.isDragging = true;
     this.rect.edit = true;
   };
@@ -93,15 +71,15 @@ class Rectangle extends FabricCanvasTool {
     if (!this.isDown) return;
     let canvas = this._canvas;
     if (this.isDragging) {
+      let pointer = canvas.getPointer(o.e);
       if (
-        this.rect.height > this.rect.canvas.height ||
-        this.rect.width > this.rect.canvas.width
+        pointer.x < 0 ||
+        pointer.x > canvas.getWidth() ||
+        pointer.y < 0 ||
+        pointer.y > canvas.getHeight()
       ) {
         return;
       }
-      var canvasTL = new fabric.Point(0, 0);
-      var canvasBR = new fabric.Point(canvas.getWidth(), canvas.getHeight());
-      let pointer = canvas.getPointer(o.e);
       if (this.startX > pointer.x) {
         this.rect.set({ left: Math.abs(pointer.x) });
       }
@@ -111,38 +89,49 @@ class Rectangle extends FabricCanvasTool {
       this.rect.set({ width: Math.abs(this.startX - pointer.x) });
       this.rect.set({ height: Math.abs(this.startY - pointer.y) });
       this.rect.setCoords();
-      if (!this.rect.isContainedWithinRect(canvasTL, canvasBR)) {
-        var objBounds = this.rect.getBoundingRect();
-        this.rect.setCoords();
-        var objTL = this.rect.getPointByOrigin("left", "top");
-        var left = objTL.x;
-        var top = objTL.y;
-
-        if (objBounds.left < canvasTL.x) left = 0;
-        if (objBounds.top < canvasTL.y) top = 0;
-        if (objBounds.top + objBounds.height > canvasBR.y)
-          top = canvasBR.y - objBounds.height;
-        if (objBounds.left + objBounds.width > canvasBR.x)
-          left = canvasBR.x - objBounds.width;
-
-        this.rect.setPositionByOrigin(
-          new fabric.Point(left, top),
-          "left",
-          "top"
-        );
-        this.rect.setCoords();
-        canvas.renderAll();
-      }
+      this.containInsideBoundary(o);
       canvas.renderAll();
     }
   }
 
   doMouseUp(o, props) {
+    this.containInsideBoundary(o);
     this.isDown = true;
     this.isDragging = false;
     const { onShapeAdded } = props;
     onShapeAdded();
   }
+
+  containInsideBoundary = (o) => {
+    let canvas = this._canvas;
+    var canvasTL = new fabric.Point(0, 0);
+    var canvasBR = new fabric.Point(canvas.getWidth(), canvas.getHeight());
+    let pointer = canvas.getPointer(o.e);
+    if (this.startX > pointer.x) {
+      this.rect.set({ left: Math.abs(pointer.x) });
+    }
+    if (this.startY > pointer.y) {
+      this.rect.set({ top: Math.abs(pointer.y) });
+    }
+    if (!this.rect.isContainedWithinRect(canvasTL, canvasBR)) {
+      var objBounds = this.rect.getBoundingRect();
+      this.rect.setCoords();
+      var objTL = this.rect.getPointByOrigin("left", "top");
+      var left = objTL.x;
+      var top = objTL.y;
+
+      if (objBounds.left < canvasTL.x) left = 0;
+      if (objBounds.top < canvasTL.y) top = 0;
+      if (objBounds.top + objBounds.height > canvasBR.y)
+        top = canvasBR.y - objBounds.height;
+      if (objBounds.left + objBounds.width > canvasBR.x)
+        left = canvasBR.x - objBounds.width;
+
+      this.rect.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+      this.rect.setCoords();
+      canvas.renderAll();
+    }
+  };
 }
 
 export default Rectangle;

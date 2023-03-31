@@ -16,7 +16,6 @@ class Polygon extends FabricCanvasTool {
   configureCanvas(props) {
     let canvas = this._canvas;
     canvas.isDrawingMode = canvas.selection = false;
-    // canvas.forEachObject((o) => o.selectable = o.evented = false);
     this._width = props.lineWidth;
     this._color = props.lineColor;
     this._fill = props.fillColor;
@@ -30,17 +29,16 @@ class Polygon extends FabricCanvasTool {
 
   doMouseDown(options, props) {
     if (this.drawMode) {
-      let canvas = this._canvas;
+      const { notificationShow, addROIDefaultName } = props;
       let roiTypes = ["rect", "ellipse", "polygon"];
-      let objects = canvas.getObjects();
+      let objects = this._canvas.getObjects();
       objects = objects.filter(
         (object) => object.id !== undefined && roiTypes.includes(object.type)
       );
       if (objects.length >= 5) {
-        const { notificationShow } = props;
         notificationShow();
         console.log(
-          `%c[ROI]%c Maximum 5 roi shapes allowed `,
+          `%c[ROI]%c , maximum 5 roi shapes allowed `,
           "color:blue; font-weight:bold;",
           "color:black;"
         );
@@ -51,9 +49,7 @@ class Polygon extends FabricCanvasTool {
         this.pointArray[0] &&
         options.target.id === this.pointArray[0].id
       ) {
-        // when click on the first point
         this.generatePolygon(this.pointArray, props);
-        const { addROIDefaultName } = props;
         addROIDefaultName(props.roiDefaultNames);
       } else {
         this.addPoint(options);
@@ -73,7 +69,7 @@ class Polygon extends FabricCanvasTool {
     let canvas = this._canvas;
     const pointOption = {
       id: new Date().getTime(),
-      radius: 5,
+      radius: 2,
       fill: "#ffffff",
       stroke: "#333333",
       strokeWidth: 0.5,
@@ -91,7 +87,7 @@ class Polygon extends FabricCanvasTool {
     if (this.pointArray.length === 0) {
       // fill first point with red color
       point.set({
-        fill: "red",
+        fill: "blue",
       });
     }
 
@@ -171,10 +167,25 @@ class Polygon extends FabricCanvasTool {
   doMouseMove(options) {
     if (!this.isDown) return;
     let canvas = this._canvas;
+    let pointer = canvas.getPointer(o.e);
+    if (
+      pointer.x < 0 ||
+      pointer.x > canvas.getWidth() ||
+      pointer.y < 0 ||
+      pointer.y > canvas.getHeight()
+    ) {
+      return;
+    }
     if (this.isDragging) {
+      let pointer = canvas.getPointer(o.e);
       var e = options.e;
       let obj = e.target;
-      if (obj.height > obj.canvas.height || obj.width > obj.canvas.width) {
+      if (
+        pointer.x < 0 ||
+        pointer.x > canvas.getWidth() ||
+        pointer.y < 0 ||
+        pointer.y > canvas.getHeight()
+      ) {
         return;
       }
       this.viewportTransform[4] += e.clientX - this.lastPosX;
@@ -239,33 +250,24 @@ class Polygon extends FabricCanvasTool {
       canvas.remove(line);
     }
 
-    // // remove selected Shape and Line
+    // remove selected Shape and Line
     canvas.remove(this.activeShape).remove(this.activeLine);
 
     // create polygon from collected points
     const polygon = new fabric.Polygon(points, {
       id: new Date().getTime(),
       fill: this._fill,
-      // objectCaching: false,
-      // moveable: false,
       strokeWidth: this._width,
       stroke: this._color,
       transparentCorners: false,
-      // cornerColor: 'blue',
-      // centeredRotation: false,
-      // centeredScaling: false,
-      // perPixelTargetFind: true,
       name: name,
       defaultName: defaultName,
       selectable: false,
       evented: false,
     });
-    // if(this.count === 1){
     canvas.add(polygon);
     this.toggleDrawPolygon();
     this.editPolygon(polygon);
-    // }
-    // this.count = 2;
   };
 
   toggleDrawPolygon = () => {
