@@ -87,7 +87,7 @@ class Polygon extends FabricCanvasTool {
     if (this.pointArray.length === 0) {
       // fill first point with red color
       point.set({
-        fill: "blue",
+        fill: "red",
       });
     }
 
@@ -177,17 +177,8 @@ class Polygon extends FabricCanvasTool {
       return;
     }
     if (this.isDragging) {
-      let pointer = canvas.getPointer(o.e);
       var e = options.e;
       let obj = e.target;
-      if (
-        pointer.x < 0 ||
-        pointer.x > canvas.getWidth() ||
-        pointer.y < 0 ||
-        pointer.y > canvas.getHeight()
-      ) {
-        return;
-      }
       this.viewportTransform[4] += e.clientX - this.lastPosX;
       this.viewportTransform[5] += e.clientY - this.lastPosY;
       canvas.requestRenderAll();
@@ -366,6 +357,7 @@ class Polygon extends FabricCanvasTool {
   };
 
   actionHandler = (eventData, transform, x, y) => {
+    let canvas = this._canvas;
     var polygon = transform.target,
       currentControl = polygon.controls[polygon.__corner],
       mouseLocalPosition = polygon.toLocalPoint(
@@ -383,6 +375,9 @@ class Polygon extends FabricCanvasTool {
           (mouseLocalPosition.y * polygonBaseSize.y) / size.y +
           polygon.pathOffset.y,
       };
+      if(finalPointPosition.x > canvas.getWidth() || finalPointPosition.y > canvas.getHeight() || finalPointPosition.x < 0 || finalPointPosition.y < 0){
+        return; 
+       }
     polygon.points[currentControl.pointIndex] = finalPointPosition;
     return true;
   };

@@ -19,21 +19,14 @@ import Polygon from './polygon'
 
 let fabric = require('fabric').fabric;
 let controlsVisible = {
-  ml: false,
-  mb: false,
-  mr: false,
-  mt: false,
   mtr: false,
-  bl: true,
-  tl: true,
-  br: true,
-  tr: true,
 };
 fabric.Object.prototype.setControlsVisibility(controlsVisible);
 fabric.Object.prototype.set({
   cornerSize: 6,
-  cornerColor : 'blue',
-  cornerStyle : 'circle'
+  cornerColor : 'red',
+  cornerStyle : 'circle',
+  strokeUniform: true,
 });
 
 /**
