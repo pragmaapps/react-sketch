@@ -20,6 +20,7 @@ class Polygon extends FabricCanvasTool {
     this._color = props.lineColor;
     this._fill = props.fillColor;
     this.count = 1;
+    this.objectAdd = false;
   }
 
   Point(x, y) {
@@ -42,6 +43,7 @@ class Polygon extends FabricCanvasTool {
           "color:blue; font-weight:bold;",
           "color:black;"
         );
+        this.objectAdd = false;
         return;
       }
       if (
@@ -49,6 +51,7 @@ class Polygon extends FabricCanvasTool {
         this.pointArray[0] &&
         options.target.id === this.pointArray[0].id
       ) {
+        this.objectAdd = true;
         this.generatePolygon(this.pointArray, props);
         addROIDefaultName(props.roiDefaultNames);
       } else {
@@ -213,7 +216,8 @@ class Polygon extends FabricCanvasTool {
     this.selection = true;
     this.drawMode = true;
     const { onShapeAdded } = props;
-    onShapeAdded();
+    if(this.objectAdd)
+      onShapeAdded();
   }
 
   generatePolygon = (pointArray, props) => {

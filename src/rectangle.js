@@ -14,6 +14,7 @@ class Rectangle extends FabricCanvasTool {
     this._fill = props.fillColor;
     this.isDown = true;
     this.isDragging = false;
+    this.objectAdd = false;
   }
 
   doMouseDown(options, props) {
@@ -26,8 +27,10 @@ class Rectangle extends FabricCanvasTool {
         "color:blue; font-weight:bold;",
         "color:black;"
       );
+      this.objectAdd = false;
       return;
     }
+    this.objectAdd = true;
     this.genrateRect(options, props);
     addROIDefaultName(props.roiDefaultNames);
   }
@@ -99,7 +102,8 @@ class Rectangle extends FabricCanvasTool {
     this.isDown = true;
     this.isDragging = false;
     const { onShapeAdded } = props;
-    onShapeAdded();
+    if(this.objectAdd)
+      onShapeAdded();
   }
 
   containInsideBoundary = (o) => {

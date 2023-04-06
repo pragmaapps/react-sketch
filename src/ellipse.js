@@ -15,6 +15,7 @@ class Ellipse extends FabricCanvasTool {
     this._fill = props.fillColor;
     this.isDown = true;
     this.isDragging = false;
+    this.objectAdd = false;
   }
 
   doMouseDown(options, props) {
@@ -27,8 +28,10 @@ class Ellipse extends FabricCanvasTool {
         "color:blue; font-weight:bold;",
         "color:black;"
       );
+      this.objectAdd = false;
       return;
     }
+    this.objectAdd = true;
     this.genrateEllipse(options, props);
     addROIDefaultName(props.roiDefaultNames);
   }
@@ -95,7 +98,8 @@ class Ellipse extends FabricCanvasTool {
   doMouseUp(o, props) {
     this.isDown = true;
     this.isDragging = false;
-    props.onShapeAdded();
+    if(this.objectAdd)
+      props.onShapeAdded();
   }
 
   containInsideBoundary = (o) => {
