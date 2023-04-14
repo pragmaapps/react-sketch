@@ -312,11 +312,12 @@ class SketchField extends PureComponent {
 
   _onObjectModified = e => {
     let obj = e.target;
-    if(obj.height > this._fc.height || obj.width > this._fc.width){
+    if(obj.height > this._fc.getObjects()[0].height || obj.width > this._fc.getObjects()[0].width){
       return;
   }      
-    var canvasTL = new fabric.Point(0, 0);
-    var canvasBR = new fabric.Point(this._fc.getWidth(), this._fc.getHeight());
+  let boundaryObj = this._fc.getObjects()[0];
+    var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
+    var canvasBR = new fabric.Point(boundaryObj.left + boundaryObj.width, boundaryObj.height + boundaryObj.top);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
       var objBounds = obj.getBoundingRect();
       obj.setCoords();
@@ -324,8 +325,8 @@ class SketchField extends PureComponent {
       var left = objTL.x;
       var top = objTL.y;
 
-      if (objBounds.left < canvasTL.x) left = 0;
-      if (objBounds.top < canvasTL.y) top = 0;
+      if (objBounds.left < canvasTL.x) left = boundaryObj.left;
+      if (objBounds.top < canvasTL.y) top = boundaryObj.top;
       if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
       if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
 
