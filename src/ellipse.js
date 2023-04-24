@@ -20,11 +20,11 @@ class Ellipse extends FabricCanvasTool {
 
   doMouseDown(options, props) {
     if (!this.isDown) return;
-    const { notificationShow, addROIDefaultName } = props;
+    const { notificationShow, addROIDefaultName,removeColorInDefaultShapeColors } = props;
     if (this._canvas.getObjects().length >= 5) {
       notificationShow();
       console.log(
-        `%c[ROI]%c , maximum 5 roi shapes allowed `,
+        `Maximum five shapes allowed `,
         "color:blue; font-weight:bold;",
         "color:black;"
       );
@@ -33,6 +33,7 @@ class Ellipse extends FabricCanvasTool {
     }
     this.objectAdd = true;
     this.genrateEllipse(options, props);
+    removeColorInDefaultShapeColors(props.defaultShapeColors);
     addROIDefaultName(props.roiDefaultNames);
   }
 
@@ -52,7 +53,7 @@ class Ellipse extends FabricCanvasTool {
       rx: 20,
       ry: 20,
       strokeWidth: this._width,
-      stroke: this._color,
+      stroke: props.defaultShapeColors[0],
       fill: this._fill,
       name: name,
       defaultName: defaultName,
@@ -60,6 +61,9 @@ class Ellipse extends FabricCanvasTool {
       evented: false,
       transparentCorners: false,
       id: new Date().getTime(),
+      active: true,
+      enable: true,
+      description: "",
     });
     canvas.add(this.ellipse);
     this.containInsideBoundary(options);

@@ -19,11 +19,11 @@ class Rectangle extends FabricCanvasTool {
 
   doMouseDown(options, props) {
     if (!this.isDown) return;
-    const { notificationShow, addROIDefaultName } = props;
+    const { notificationShow, addROIDefaultName, removeColorInDefaultShapeColors } = props;
     if (this._canvas.getObjects().length >= 5) {
       notificationShow();
       console.log(
-        `%c[ROI]%c , maximum 5 roi shapes allowed `,
+        `Maximum five shapes allowed `,
         "color:blue; font-weight:bold;",
         "color:black;"
       );
@@ -32,6 +32,7 @@ class Rectangle extends FabricCanvasTool {
     }
     this.objectAdd = true;
     this.genrateRect(options, props);
+    removeColorInDefaultShapeColors(props.defaultShapeColors);
     addROIDefaultName(props.roiDefaultNames);
   }
 
@@ -51,7 +52,7 @@ class Rectangle extends FabricCanvasTool {
       originY: "top",
       width: 20,
       height: 20,
-      stroke: this._color,
+      stroke: props.defaultShapeColors[0],
       strokeWidth: this._width,
       fill: this._fill,
       transparentCorners: false,
@@ -63,6 +64,9 @@ class Rectangle extends FabricCanvasTool {
       hasBorders: false,
       cornerSize: 6,
       angle: 0,
+      active:true,
+      enable: true,
+      description: "",
     });
     canvas.add(this.rect);
     this.containInsideBoundary(options);

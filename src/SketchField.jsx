@@ -606,7 +606,7 @@ class SketchField extends PureComponent {
     // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
     var overlayHeight = Math.round(800 / (1280 / overlayWidth));
     var overlayContrain = overlayWidth / overlayHeight;
-    console.log('[MIRA] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
+    console.log('Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
     this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
 
 
@@ -649,7 +649,7 @@ class SketchField extends PureComponent {
         obj.scaleY = obj.scaleY * scaleMultiplier;
       }
 
-      console.log("[MIRA] Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
+      console.log("Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
       canvas.discardActiveObject();
       canvas.setWidth(canvas.getWidth() * scaleMultiplier);
       canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
