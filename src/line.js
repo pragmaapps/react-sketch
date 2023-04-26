@@ -12,22 +12,27 @@ class Line extends FabricCanvasTool {
     canvas.forEachObject((o) => o.selectable = o.evented = false);
     this._width = props.lineWidth;
     this._color = props.lineColor;
+    this.objectAdd = false;
   }
 
   doMouseDown(o) {
     this.isDown = true;
     let canvas = this._canvas;
     var pointer = canvas.getPointer(o.e);
-    var points = [pointer.x, pointer.y, pointer.x, pointer.y];
+    var points = [pointer.x, pointer.y, pointer.x, pointer.y ];
     this.line = new fabric.Line(points, {
-      strokeWidth: this._width,
+      strokeWidth: 10,
       fill: this._color,
-      stroke: this._color,
-      originX: 'center',
-      originY: 'center',
+      stroke: "#fcdc00",
+      originX: "center",
+      originY: "center",
       selectable: false,
-      evented: false
+      evented: false,
+      id: new Date().getTime(),
+      enable: true,
+      description: "",
     });
+    this.objectAdd = true;
     canvas.add(this.line);
   }
 
@@ -40,8 +45,11 @@ class Line extends FabricCanvasTool {
     canvas.renderAll();
   }
 
-  doMouseUp(o) {
+  doMouseUp(o,props) {
     this.isDown = false;
+    const { onLineAdded } = props;
+    if(this.objectAdd)
+      onLineAdded();
   }
 
   doMouseOut(o) {

@@ -19,8 +19,8 @@ class Rectangle extends FabricCanvasTool {
 
   doMouseDown(options, props) {
     if (!this.isDown) return;
-    const { notificationShow, addROIDefaultName, removeColorInDefaultShapeColors } = props;
-    if (this._canvas.getObjects().length >= 5) {
+    const { notificationShow, addROIDefaultName, removeColorInDefaultShapeColors, roiDefaultNames } = props;
+    if (this._canvas.getObjects().length >= 5 && roiDefaultNames.length === 0 ) {
       notificationShow();
       console.log(
         `Maximum five shapes allowed `,
