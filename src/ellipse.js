@@ -61,7 +61,6 @@ class Ellipse extends FabricCanvasTool {
       evented: false,
       transparentCorners: false,
       id: new Date().getTime(),
-      active: true,
       enable: true,
       description: "",
     });

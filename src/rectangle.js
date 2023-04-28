@@ -64,7 +64,6 @@ class Rectangle extends FabricCanvasTool {
       hasBorders: false,
       cornerSize: 6,
       angle: 0,
-      active:true,
       enable: true,
       description: "",
     });

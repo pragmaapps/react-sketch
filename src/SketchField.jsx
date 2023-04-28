@@ -16,6 +16,7 @@ import ReactResizeDetector from 'react-resize-detector'
 import NvistaRoiSettings from './NvistaRoiSettingsPanel'
 import Ellipse from './ellipse'
 import Polygon from './polygon'
+import FreeDrawLine from './freedrawline'
 
 let fabric = require('fabric').fabric;
 let controlsVisible = {
@@ -164,6 +165,7 @@ class SketchField extends PureComponent {
     this._tools[Tool.DefaultTool] = new DefaultTool(fabricCanvas)
     this._tools[Tool.Ellipse] = new Ellipse(fabricCanvas)
     this._tools[Tool.Polygon] = new Polygon(fabricCanvas)
+    this._tools[Tool.FreeDrawLine] = new FreeDrawLine(fabricCanvas)
   }
 
   /**
@@ -1406,6 +1408,31 @@ class SketchField extends PureComponent {
       canvas.hoverCursor = canvas.defaultCursor = 'default';
       canvas.renderAll();
     }
+  }
+
+  createRect = (obj, fov) =>{
+    console.log("create rect->", obj ,"fov", fov);
+    let canvas = this._fc;
+    let updatedheight = obj.height * canvas.getHeight() - 1 / fov.height;
+    let updatedWidth = obj.width  * canvas.getWidth() - 1 / fov.width;
+    let updatedTop = obj.y * canvas.getHeight() / fov.height;
+    let updatedLeft = obj.x * canvas.getWidth() / fov.width;
+    let rect = new fabric.Rect({
+      left: updatedLeft,
+      top: updatedTop,
+      width: updatedWidth,
+      height: updatedheight,
+      id: "trackingArea",
+      fill: "transparent",
+      stroke: "red",
+      selectable: false,
+      evented: false,
+      hasBorders: false,
+      cornerSize: 6,
+      enable: true,
+      description: "",
+    });
+    canvas.add(rect);
   }
 
   render = () => {

@@ -260,7 +260,6 @@ class Polygon extends FabricCanvasTool {
       defaultName: defaultName,
       selectable: false,
       evented: false,
-      active: true,
       enable: true,
       description: "",
     });

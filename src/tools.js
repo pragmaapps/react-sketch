@@ -9,5 +9,6 @@ export default {
   Pan: 'pan',
   DefaultTool: 'default-tool',
   Ellipse: 'ellipse',
-  Polygon: 'polygon'
+  Polygon: 'polygon',
+  FreeDrawLine: 'freedrawline'
 }
