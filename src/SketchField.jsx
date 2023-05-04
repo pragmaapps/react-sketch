@@ -655,6 +655,8 @@ class SketchField extends PureComponent {
       canvas.discardActiveObject();
       canvas.setWidth(canvas.getWidth() * scaleMultiplier);
       canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
+      this.props.trackingCanvasHeight(canvas.getHeight() * scaleHeightMultiplier);
+      this.props.trackingCanvasWidth(canvas.getWidth() * scaleMultiplier);
       canvas.renderAll();
       canvas.calcOffset();
 
@@ -1417,6 +1419,7 @@ class SketchField extends PureComponent {
     let updatedWidth = obj.width  * canvas.getWidth() - 1 / fov.width;
     let updatedTop = obj.y * canvas.getHeight() / fov.height;
     let updatedLeft = obj.x * canvas.getWidth() / fov.width;
+    console.log("Updated height-->", updatedheight, "width", updatedWidth, "top",  updatedTop, "updatedLeft", updatedLeft );
     let rect = new fabric.Rect({
       left: updatedLeft,
       top: updatedTop,
