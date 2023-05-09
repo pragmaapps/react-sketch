@@ -40,6 +40,10 @@ class Rectangle extends FabricCanvasTool {
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
+      return false;
+    }
     let objects = canvas.getObjects();
     let name = props.roiDefaultNames[0];
     let defaultName = props.roiDefaultNames[0];
@@ -68,7 +72,7 @@ class Rectangle extends FabricCanvasTool {
       description: "",
     });
     canvas.add(this.rect);
-    this.containInsideBoundary(options);
+    // this.containInsideBoundary(options);
     this.isDragging = true;
     this.rect.edit = true;
   };
@@ -78,13 +82,9 @@ class Rectangle extends FabricCanvasTool {
     let canvas = this._canvas;
     if (this.isDragging) {
       let pointer = canvas.getPointer(o.e);
-      if (
-        pointer.x < 0 ||
-        pointer.x > canvas.getWidth() ||
-        pointer.y < 0 ||
-        pointer.y > canvas.getHeight()
-      ) {
-        return;
+      let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+      if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
+        return false;
       }
       if (this.startX > pointer.x) {
         this.rect.set({ left: Math.abs(pointer.x) });
@@ -95,18 +95,28 @@ class Rectangle extends FabricCanvasTool {
       this.rect.set({ width: Math.abs(this.startX - pointer.x) });
       this.rect.set({ height: Math.abs(this.startY - pointer.y) });
       this.rect.setCoords();
-      this.containInsideBoundary(o);
+      // this.containInsideBoundary(o);
       canvas.renderAll();
     }
   }
 
   doMouseUp(o, props) {
-    this.containInsideBoundary(o);
+    // this.containInsideBoundary(o);
     this.isDown = true;
     this.isDragging = false;
     const { onShapeAdded } = props;
     if(this.objectAdd)
       onShapeAdded();
+  }
+
+  checkWithinBoundary = (o) => {
+    let canvas = this._canvas;
+    let pointer = canvas.getPointer(o.e);
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
+      return false;
+    }
+    return true
   }
 
   containInsideBoundary = (o) => {

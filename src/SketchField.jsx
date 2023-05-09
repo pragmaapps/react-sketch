@@ -284,12 +284,14 @@ class SketchField extends PureComponent {
     var brNew = obj.getBoundingRect();
     
     if (((brNew.width+brNew.left)>=obj.canvas.width) || ((brNew.height+brNew.top)>=obj.canvas.height) || ((brNew.left<0) || (brNew.top<0))) {
-    obj.left = this.left1;
-    obj.top=this.top1;
-    obj.scaleX=this.scale1x;
-    obj.scaleY=this.scale1y;
-    obj.width=this.width1;
-    obj.height=this.height1;
+    obj.left = this.left1 >= 0 ? obj.left : this.left1;
+    obj.top=this.top1 >= 0 ? obj.top : this.top1;
+    obj.scaleX=this.scale1x >= 0 ? obj.scaleX : this.scale1x;
+    obj.scaleY=this.scale1y >= 0 ? obj.scaleY : this.scale1y;
+    obj.width=this.width1 >= 0 ? obj.width : this.width1;
+    obj.height=this.height1 >= 0 ? obj.height : this.height1;
+    obj.setCoords();
+    this._fc.renderAll();
   }
     else{    
       this.left1 =obj.left;
@@ -314,9 +316,14 @@ class SketchField extends PureComponent {
 
   _onObjectModified = e => {
     let obj = e.target;
+    if(obj.id === "trackingArea"){
+      this.trackingAreaModified(obj);
+      return;
+    }
     if(obj.height > this._fc.getObjects()[0].height || obj.width > this._fc.getObjects()[0].width){
       return;
   }      
+  // this.checkWithInBoundary();
   let boundaryObj = this._fc.getObjects()[0];
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
     var canvasBR = new fabric.Point(boundaryObj.left + boundaryObj.width, boundaryObj.height + boundaryObj.top);
@@ -343,6 +350,46 @@ class SketchField extends PureComponent {
     obj.__originalState = objState
     let currState = JSON.stringify(objState)
     // this._history.keep([obj, prevState, currState]);
+  }
+
+  trackingAreaModified = (obj) =>{
+    if(obj.height > this._fc.getHeight() || obj.width > this._fc.getWidth() ){
+      return;
+  }      
+  let canvas = this._fc;
+    var canvasTL = new fabric.Point(0, 0);
+    var canvasBR = new fabric.Point(canvas.getWidth(), canvas.getHeight());
+    if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
+      var objBounds = obj.getBoundingRect();
+      obj.setCoords();
+      var objTL = obj.getPointByOrigin("left", "top");
+      var left = objTL.x;
+      var top = objTL.y;
+
+      if (objBounds.left < canvasTL.x) left = 0;
+      if (objBounds.top < canvasTL.y) top = 0;
+      if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
+      if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
+      obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+      obj.setCoords();
+      this._fc.renderAll();
+      this.props.onShapeAdded();
+    }else{
+      this.props.onShapeAdded();
+    }
+  }
+
+  checkWithInBoundary = () =>{
+    let canvas = this._fc; 
+    canvas.getObjects().forEach((shape) => {
+      let boundaryObj = canvas.getObjects().find(ob => ob.id === "trackingArea");
+      var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
+      var canvasBR = new fabric.Point(boundaryObj.left + boundaryObj.width, boundaryObj.height + boundaryObj.top);
+      if (!shape.isContainedWithinRect(canvasTL, canvasBR) && shape !== boundaryObj) {
+        canvas.remove(shape);
+      }
+    });   
+    this.props.onShapeAdded();
   }
 
   /**
@@ -1412,30 +1459,38 @@ class SketchField extends PureComponent {
     }
   }
 
-  createRect = (obj, fov) =>{
-    console.log("create rect->", obj ,"fov", fov);
+  createRect = (obj) =>{
     let canvas = this._fc;
-    let updatedheight = obj.height * canvas.getHeight() - 1 / fov.height;
-    let updatedWidth = obj.width  * canvas.getWidth() - 1 / fov.width;
-    let updatedTop = obj.y * canvas.getHeight() / fov.height;
-    let updatedLeft = obj.x * canvas.getWidth() / fov.width;
-    console.log("Updated height-->", updatedheight, "width", updatedWidth, "top",  updatedTop, "updatedLeft", updatedLeft );
+    let updatedheight =  canvas.getHeight() - 1;
+    let updatedWidth = canvas.getWidth() - 1;
+    // let updatedTop = obj.y * canvas.getHeight() / fov.height;
+    // let updatedLeft = obj.x * canvas.getWidth() / fov.width;
+    // console.log(updatedTop,"updatedTop");
+    // console.log(updatedLeft,"updatedLeft");
     let rect = new fabric.Rect({
-      left: updatedLeft,
-      top: updatedTop,
+      left: 0,
+      top: 0,
+      originX: "left",
+      originY: "top",
+      strokeWidth: 1,
+      transparentCorners: false,
+      name: "trackingArea",
+      defaultName: "trackingArea",
       width: updatedWidth,
       height: updatedheight,
       id: "trackingArea",
       fill: "transparent",
       stroke: "red",
-      selectable: false,
-      evented: false,
+      selectable: true,
+      evented: true,
       hasBorders: false,
       cornerSize: 6,
       enable: true,
       description: "",
+      angle: 0
     });
     canvas.add(rect);
+    this.props.onShapeAdded();
   }
 
   render = () => {

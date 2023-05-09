@@ -71,6 +71,8 @@ class Polygon extends FabricCanvasTool {
 
   addPoint = (options) => {
     let canvas = this._canvas;
+    let boundaryObject = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    
     const pointOption = {
       id: new Date().getTime(),
       radius: 2,
@@ -87,6 +89,9 @@ class Polygon extends FabricCanvasTool {
       objectCaching: false,
     };
     const point = new fabric.Circle(pointOption);
+    if(boundaryObject && (point.left > boundaryObject.width + boundaryObject.left || point.top > boundaryObject.height + boundaryObject.top || point.left < boundaryObject.left || point.top < boundaryObject.top)){
+      return;
+    }
 
     if (this.pointArray.length === 0) {
       // fill first point with red color
@@ -172,14 +177,11 @@ class Polygon extends FabricCanvasTool {
     if (!this.isDown) return;
     let canvas = this._canvas;
     let pointer = canvas.getPointer(o.e);
-    if (
-      pointer.x < 0 ||
-      pointer.x > canvas.getWidth() ||
-      pointer.y < 0 ||
-      pointer.y > canvas.getHeight()
-    ) {
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    if(boundary && (pointer.y > boundary.height + boundary.top  || pointer.x > boundary.width + boundary.left  || pointer.x < boundary.left || pointer.y < boundary.top)){
+        
       return;
-    }
+    }   
     if (this.isDragging) {
       var e = options.e;
       let obj = e.target;
@@ -365,6 +367,7 @@ class Polygon extends FabricCanvasTool {
 
   actionHandler = (eventData, transform, x, y) => {
     let canvas = this._canvas;
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
     var polygon = transform.target,
       currentControl = polygon.controls[polygon.__corner],
       mouseLocalPosition = polygon.toLocalPoint(
@@ -382,12 +385,23 @@ class Polygon extends FabricCanvasTool {
           (mouseLocalPosition.y * polygonBaseSize.y) / size.y +
           polygon.pathOffset.y,
       };
-      if(finalPointPosition.x > canvas.getWidth() || finalPointPosition.y > canvas.getHeight() || finalPointPosition.x < 0 || finalPointPosition.y < 0){
-        return; 
-       }
+      if(boundary && (finalPointPosition.y > boundary.height + boundary.top  || finalPointPosition.x > boundary.width + boundary.left  || finalPointPosition.x < boundary.left || finalPointPosition.y < boundary.top)){
+        
+        return;
+      }   
     polygon.points[currentControl.pointIndex] = finalPointPosition;
     return true;
   };
+
+  checkWithinBoundary = (finalPointPosition) => {
+    let canvas = this._canvas;
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    if (boundary && (finalPointPosition.y > boundary.height + boundary.top || finalPointPosition.x > boundary.width + boundary.left || finalPointPosition.x < boundary.left || finalPointPosition.y < boundary.top)) {
+      return false;
+    }
+    return true
+  }
+
   getObjectSizeWithStroke = (object) => {
     var stroke = new fabric.Point(
       object.strokeUniform ? 1 / object.scaleX : 1,

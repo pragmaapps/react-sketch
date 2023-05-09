@@ -45,6 +45,10 @@ class Ellipse extends FabricCanvasTool {
     let name = props.roiDefaultNames[0];
     let defaultName = props.roiDefaultNames[0];
     [this.startX, this.startY] = [pointer.x, pointer.y];
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
+      return false;
+    }
     this.ellipse = new fabric.Ellipse({
       left: this.startX,
       top: this.startY,
@@ -65,7 +69,7 @@ class Ellipse extends FabricCanvasTool {
       description: "",
     });
     canvas.add(this.ellipse);
-    this.containInsideBoundary(options);
+    // this.containInsideBoundary(options);
     this.isDragging = true;
     this.ellipse.edit = true;
   };
@@ -73,15 +77,11 @@ class Ellipse extends FabricCanvasTool {
   doMouseMove(o) {
     if (!this.isDown) return;
     let canvas = this._canvas;
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    let pointer = canvas.getPointer(o.e);
     var obj = o.target;
     if (this.isDragging) {
-      let pointer = canvas.getPointer(o.e);
-      if (
-        pointer.x < 0 ||
-        pointer.x > canvas.getWidth() ||
-        pointer.y < 0 ||
-        pointer.y > canvas.getHeight()
-      ) {
+      if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
         return;
       }
       var rx = Math.abs(this.startX - pointer.x) / 2;
@@ -93,7 +93,7 @@ class Ellipse extends FabricCanvasTool {
         ry -= this.ellipse.strokeWidth / 2;
       }
       this.ellipse.set({ rx: rx, ry: ry });
-      this.containInsideBoundary(o);
+      // this.containInsideBoundary(o);
       canvas.renderAll();
     }
   }
@@ -103,6 +103,16 @@ class Ellipse extends FabricCanvasTool {
     this.isDragging = false;
     if(this.objectAdd)
       props.onShapeAdded();
+  }
+
+  checkWithinBoundary = (o) => {
+    let canvas = this._canvas;
+    let pointer = canvas.getPointer(o.e);
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
+      return false;
+    }
+    return true
   }
 
   containInsideBoundary = (o) => {
