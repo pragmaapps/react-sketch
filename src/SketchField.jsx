@@ -1459,7 +1459,7 @@ class SketchField extends PureComponent {
     }
   }
 
-  createRect = (obj) =>{
+  createRect = () =>{
     let canvas = this._fc;
     let updatedheight =  canvas.getHeight() - 1;
     let updatedWidth = canvas.getWidth() - 1;
