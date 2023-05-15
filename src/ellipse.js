@@ -46,7 +46,7 @@ class Ellipse extends FabricCanvasTool {
     let defaultName = props.roiDefaultNames[0];
     [this.startX, this.startY] = [pointer.x, pointer.y];
     let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
-    if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
+    if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
       return false;
     }
     this.ellipse = new fabric.Ellipse({
@@ -81,8 +81,8 @@ class Ellipse extends FabricCanvasTool {
     let pointer = canvas.getPointer(o.e);
     var obj = o.target;
     if (this.isDragging) {
-      if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
-        return;
+      if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
+        return false;
       }
       var rx = Math.abs(this.startX - pointer.x) / 2;
       var ry = Math.abs(this.startY - pointer.y) / 2;

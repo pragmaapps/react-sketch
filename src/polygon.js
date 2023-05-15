@@ -89,7 +89,7 @@ class Polygon extends FabricCanvasTool {
       objectCaching: false,
     };
     const point = new fabric.Circle(pointOption);
-    if(boundaryObject && (point.left > boundaryObject.width + boundaryObject.left || point.top > boundaryObject.height + boundaryObject.top || point.left < boundaryObject.left || point.top < boundaryObject.top)){
+    if(boundaryObject && (point.left > (boundaryObject.width * boundaryObject.scaleX) + boundaryObject.left || point.top > (boundaryObject.height * boundaryObject.scaleY) + boundaryObject.top || point.left < boundaryObject.left || point.top < boundaryObject.top)){
       return;
     }
 
@@ -178,7 +178,7 @@ class Polygon extends FabricCanvasTool {
     let canvas = this._canvas;
     let pointer = canvas.getPointer(o.e);
     let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
-    if(boundary && (pointer.y > boundary.height + boundary.top  || pointer.x > boundary.width + boundary.left  || pointer.x < boundary.left || pointer.y < boundary.top)){
+    if(boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top  || pointer.x > (boundary.width * boundary.scaleX) + boundary.left  || pointer.x < boundary.left || pointer.y < boundary.top)){
         
       return;
     }   
@@ -385,7 +385,7 @@ class Polygon extends FabricCanvasTool {
           (mouseLocalPosition.y * polygonBaseSize.y) / size.y +
           polygon.pathOffset.y,
       };
-      if(boundary && (finalPointPosition.y > boundary.height + boundary.top  || finalPointPosition.x > boundary.width + boundary.left  || finalPointPosition.x < boundary.left || finalPointPosition.y < boundary.top)){
+      if(boundary && (finalPointPosition.y > (boundary.height * boundary.scaleY) + boundary.top  || finalPointPosition.x > (boundary.width * boundary.scaleX) + boundary.left  || finalPointPosition.x < boundary.left || finalPointPosition.y < boundary.top)){
         
         return;
       }   

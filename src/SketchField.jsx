@@ -282,16 +282,39 @@ class SketchField extends PureComponent {
     var obj = e.target;
     obj.setCoords();
     var brNew = obj.getBoundingRect();
+    let canvas = this._fc;
+    if(obj.id !== "trackingArea"){
+      let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+      let pointer = canvas.getPointer(e.e)
+      if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top  || pointer.x > (boundary.width * boundary.scaleX) + boundary.left  || pointer.x < boundary.left || pointer.y < boundary.top)) {
+        obj.left = this.left1;
+        obj.top=this.top1;
+        obj.scaleX=this.scale1y;
+        obj.scaleY=this.scale1y;
+        obj.width=this.width1;
+        obj.height=this.height1;
+      }
+        else{    
+          this.left1 =obj.left;
+          this.top1 =obj.top;
+          this.scale1x = obj.scaleX;
+          this.scale1y=obj.scaleY;
+          this.width1=obj.width;
+          this.height1=obj.height;
+          this.props.onShapeAdded();
+        }
+      return;
+    }
+
     
-    if (((brNew.width+brNew.left)>=obj.canvas.width) || ((brNew.height+brNew.top)>=obj.canvas.height) || ((brNew.left<0) || (brNew.top<0))) {
-    obj.left = this.left1 >= 0 ? obj.left : this.left1;
-    obj.top=this.top1 >= 0 ? obj.top : this.top1;
-    obj.scaleX=this.scale1x >= 0 ? obj.scaleX : this.scale1x;
-    obj.scaleY=this.scale1y >= 0 ? obj.scaleY : this.scale1y;
-    obj.width=this.width1 >= 0 ? obj.width : this.width1;
-    obj.height=this.height1 >= 0 ? obj.height : this.height1;
-    obj.setCoords();
-    this._fc.renderAll();
+    if (((brNew.width+brNew.left)>=canvas.width) || ((brNew.height+brNew.top)>=canvas.height) || ((brNew.left<0) || (brNew.top<0))) {
+    obj.left = this.left1;
+    obj.top=this.top1;
+    obj.scaleX=this.scale1x === 0 ? obj.scaleX : this.scale1y;
+    obj.scaleY=this.scale1y === 0 ? obj.scaleY : this.scale1y;
+    obj.width=this.width1 === 0 ? obj.width : this.width1;
+    obj.height=this.height1 === 0 ? obj.height : this.height1;
+    
   }
     else{    
       this.left1 =obj.left;
@@ -300,6 +323,7 @@ class SketchField extends PureComponent {
       this.scale1y=obj.scaleY;
       this.width1=obj.width;
       this.height1=obj.height;
+      this.props.onShapeAdded();
     }
 
     onObjectScaling(e)
@@ -326,7 +350,7 @@ class SketchField extends PureComponent {
   // this.checkWithInBoundary();
   let boundaryObj = this._fc.getObjects()[0];
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
-    var canvasBR = new fabric.Point(boundaryObj.left + boundaryObj.width, boundaryObj.height + boundaryObj.top);
+    var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
       var objBounds = obj.getBoundingRect();
       obj.setCoords();
@@ -374,8 +398,10 @@ class SketchField extends PureComponent {
       obj.setCoords();
       this._fc.renderAll();
       this.props.onShapeAdded();
+      // this.checkWithInBoundary();
     }else{
       this.props.onShapeAdded();
+      // this.checkWithInBoundary();
     }
   }
 
@@ -1461,8 +1487,8 @@ class SketchField extends PureComponent {
 
   createRect = () =>{
     let canvas = this._fc;
-    let updatedheight =  canvas.getHeight() - 1;
-    let updatedWidth = canvas.getWidth() - 1;
+    let updatedheight =  canvas.getHeight();
+    let updatedWidth = canvas.getWidth();
     // let updatedTop = obj.y * canvas.getHeight() / fov.height;
     // let updatedLeft = obj.x * canvas.getWidth() / fov.width;
     // console.log(updatedTop,"updatedTop");

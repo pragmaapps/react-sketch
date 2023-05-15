@@ -41,7 +41,7 @@ class Rectangle extends FabricCanvasTool {
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
     let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
-    if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
+    if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
       return false;
     }
     let objects = canvas.getObjects();
@@ -83,7 +83,7 @@ class Rectangle extends FabricCanvasTool {
     if (this.isDragging) {
       let pointer = canvas.getPointer(o.e);
       let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
-      if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
+      if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
         return false;
       }
       if (this.startX > pointer.x) {
@@ -148,6 +148,40 @@ class Rectangle extends FabricCanvasTool {
       this.rect.setCoords();
       canvas.renderAll();
     }
+  };
+
+  genrateTrackingArea = () => {
+    let canvas = this._canvas;
+    this.isDown = true;
+    let width = canvas.getWidth() -1;
+    let height = canvas.getHeight() -1;
+    let name = "trackingArea";
+    let defaultName = "trackingArea";
+    this.rect = new fabric.Rect({
+      left: 0,
+      top: 0,
+      originX: "left",
+      originY: "top",
+      width: width,
+      height: height,
+      stroke: "red",
+      strokeWidth: 1,
+      fill: this._fill,
+      transparentCorners: false,
+      name: name,
+      defaultName: defaultName,
+      selectable: true,
+      evented: true,
+      id: "trackingArea",
+      hasBorders: false,
+      cornerSize: 6,
+      angle: 0,
+      enable: true,
+      description: "",
+    });
+    canvas.add(this.rect).setActiveObject(this.rect);
+    // this.containInsideBoundary(options);
+    this.rect.edit = true;
   };
 }
 
