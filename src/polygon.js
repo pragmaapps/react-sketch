@@ -219,8 +219,8 @@ class Polygon extends FabricCanvasTool {
     this.selection = true;
     this.drawMode = true;
     const { onShapeAdded } = props;
-    if(this.objectAdd)
-      onShapeAdded();
+    // if(this.objectAdd)
+    //   onShapeAdded();
   }
 
   generatePolygon = (pointArray, props) => {
@@ -268,6 +268,7 @@ class Polygon extends FabricCanvasTool {
     canvas.add(polygon);
     this.toggleDrawPolygon();
     this.editPolygon(polygon);
+    props.onShapeAdded();
   };
 
   toggleDrawPolygon = () => {
