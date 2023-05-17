@@ -344,11 +344,10 @@ class SketchField extends PureComponent {
       this.trackingAreaModified(obj);
       return;
     }
-    if(obj.height > this._fc.getObjects()[0].height || obj.width > this._fc.getObjects()[0].width){
+    let boundaryObj = this._fc.getObjects().find(ob => ob.id === "trackingArea");
+    if(boundaryObj && obj.height > (boundaryObj.height * boundaryObj.scaleY) || obj.width > (boundaryObj.width * boundaryObj.scaleX) ){
       return;
-  }      
-  // this.checkWithInBoundary();
-  let boundaryObj = this._fc.getObjects()[0];
+    }      
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
     var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
