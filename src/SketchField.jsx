@@ -301,7 +301,7 @@ class SketchField extends PureComponent {
           this.scale1y=obj.scaleY;
           this.width1=obj.width;
           this.height1=obj.height;
-          this.props.onShapeAdded();
+          // this.props.onShapeAdded();
         }
       return;
     }
@@ -323,7 +323,7 @@ class SketchField extends PureComponent {
       this.scale1y=obj.scaleY;
       this.width1=obj.width;
       this.height1=obj.height;
-      this.props.onShapeAdded();
+      // this.props.onShapeAdded();
     }
 
     onObjectScaling(e)
