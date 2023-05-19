@@ -344,6 +344,11 @@ class SketchField extends PureComponent {
       this.trackingAreaModified(obj);
       return;
     }
+    if(obj.type === "polygon" && this.checkForMinDistance(obj)){
+      this.props.notificationShow("Zone size should be bigger then 100px");
+      this.props.onShapeAdded();
+      return;
+    }
     let boundaryObj = this._fc.getObjects().find(ob => ob.id === "trackingArea");
     if(boundaryObj && obj.height > (boundaryObj.height * boundaryObj.scaleY) || obj.width > (boundaryObj.width * boundaryObj.scaleX) ){
       return;
@@ -415,6 +420,23 @@ class SketchField extends PureComponent {
       }
     });   
     this.props.onShapeAdded();
+  }
+
+  checkForMinDistance = (polygon) =>{
+    const points = polygon.points;
+    const minDistance = 10;
+    let distance;
+    for (let i = 0; i < points.length - 1; i++) {
+      distance = Math.sqrt(
+        Math.pow(points[i + 1].x - points[i].x, 2) +
+        Math.pow(points[i + 1].y - points[i].y, 2)
+      );
+      if (distance < minDistance) {
+          this.props.setSelected(polygon, true);
+          return true;
+      }
+    }
+    return false;
   }
 
   /**

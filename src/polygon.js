@@ -267,7 +267,7 @@ class Polygon extends FabricCanvasTool {
     });
     canvas.add(polygon);
     this.toggleDrawPolygon();
-    this.editPolygon(polygon);
+    this.editPolygon(polygon, props);
     props.onShapeAdded();
   };
 
@@ -288,7 +288,7 @@ class Polygon extends FabricCanvasTool {
     }
   };
 
-  editPolygon = (polygon) => {
+  editPolygon = (polygon, props) => {
     let canvas = this._canvas;
     let activeObject = canvas.getActiveObject();
     if (!activeObject) {
@@ -328,6 +328,11 @@ class Polygon extends FabricCanvasTool {
     activeObject.hasBorders = false;
 
     canvas.requestRenderAll();
+    if(this.checkForMinDistance(polygon, props)){ 
+      props.notificationShow("Zone size should be bigger then 100px");
+      props.onShapeAdded();
+      return;
+    }
   };
 
   polygonPositionHandler = (dim, finalMatrix, fabricObject) => {
@@ -410,6 +415,24 @@ class Polygon extends FabricCanvasTool {
     ).multiply(object.strokeWidth);
     return new fabric.Point(object.width + stroke.x, object.height + stroke.y);
   };
+
+  checkForMinDistance = (polygon, props) =>{
+    const points = polygon.points;
+    let canvas = this._canvas;
+    const minDistance = 10;
+    let distance;
+    for (let i = 0; i < points.length - 1; i++) {
+      distance = Math.sqrt(
+        Math.pow(points[i + 1].x - points[i].x, 2) +
+        Math.pow(points[i + 1].y - points[i].y, 2)
+      );
+      if (distance < minDistance) {
+          props.setSelected(polygon, true);
+          return true;
+      }
+    }
+    return false;
+  }
 }
 
 export default Polygon;
