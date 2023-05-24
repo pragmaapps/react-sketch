@@ -344,11 +344,11 @@ class SketchField extends PureComponent {
       this.trackingAreaModified(obj);
       return;
     }
-    if(obj.type === "polygon" && this.checkForMinDistance(obj)){
-      this.props.notificationShow("Zone size should be bigger then 100px");
-      this.props.onShapeAdded();
-      return;
-    }
+    // if(obj.type === "polygon" && this.checkForMinDistance(obj)){
+    //   this.props.notificationShow("Zone size should be bigger then 100px");
+    //   this.props.onShapeAdded();
+    //   return;
+    // }
     let boundaryObj = this._fc.getObjects().find(ob => ob.id === "trackingArea");
     if(boundaryObj && obj.height > (boundaryObj.height * boundaryObj.scaleY) || obj.width > (boundaryObj.width * boundaryObj.scaleX) ){
       return;
@@ -370,7 +370,9 @@ class SketchField extends PureComponent {
       obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
       obj.setCoords();
       this._fc.renderAll();
+      this.props.checkForOverlap(obj);
     }
+    this.props.checkForOverlap(obj);
     obj.__version += 1
     let prevState = JSON.stringify(obj.__originalState)
     let objState = obj.toJSON()
@@ -381,12 +383,12 @@ class SketchField extends PureComponent {
   }
 
   trackingAreaModified = (obj) =>{
-    if(obj.height > this._fc.getHeight() || obj.width > this._fc.getWidth() ){
+    if(obj.height > this._fc.getHeight() -1 || obj.width > this._fc.getWidth() -1 ){
       return;
   }      
   let canvas = this._fc;
     var canvasTL = new fabric.Point(0, 0);
-    var canvasBR = new fabric.Point(canvas.getWidth(), canvas.getHeight());
+    var canvasBR = new fabric.Point(canvas.getWidth() -1, canvas.getHeight() -1);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
       var objBounds = obj.getBoundingRect();
       obj.setCoords();
@@ -414,11 +416,14 @@ class SketchField extends PureComponent {
     canvas.getObjects().forEach((shape) => {
       let boundaryObj = canvas.getObjects().find(ob => ob.id === "trackingArea");
       var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
-      var canvasBR = new fabric.Point(boundaryObj.left + boundaryObj.width, boundaryObj.height + boundaryObj.top);
+      var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX), (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
       if (!shape.isContainedWithinRect(canvasTL, canvasBR) && shape !== boundaryObj) {
+        this.props.addColorInDefaultShapeColors(shape.stroke);
+        this.props.deleteROIDefaultName(shape.defaultName);
         canvas.remove(shape);
       }
     });   
+    canvas.renderAll();
     this.props.onShapeAdded();
   }
 

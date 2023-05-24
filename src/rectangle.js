@@ -20,7 +20,8 @@ class Rectangle extends FabricCanvasTool {
   doMouseDown(options, props) {
     if (!this.isDown) return;
     const { notificationShow, addROIDefaultName, removeColorInDefaultShapeColors, roiDefaultNames } = props;
-    if (this._canvas.getObjects().length >= 5 && roiDefaultNames.length === 0 ) {
+    let objects = this._canvas.getObjects().filter(obj => obj.id !== "trackingArea");
+    if (objects.length >= 5 && roiDefaultNames.length === 0 ) {
       notificationShow();
       console.log(
         `Maximum five shapes allowed `,
@@ -104,9 +105,12 @@ class Rectangle extends FabricCanvasTool {
     // this.containInsideBoundary(o);
     this.isDown = true;
     this.isDragging = false;
-    const { onShapeAdded } = props;
-    if(this.objectAdd)
+    const { onShapeAdded, checkForOverlap } = props;
+    if(this.objectAdd){
+      // checkForOverlap();
       onShapeAdded();
+      this.objectAdd = false;
+    }
   }
 
   checkWithinBoundary = (o) => {

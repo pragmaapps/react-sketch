@@ -48,9 +48,11 @@ class FreeDrawLine extends FabricCanvasTool {
             originY: "center",
             selectable: false,
             evented: false,
-            id: new Date().getTime(),
+            id: "calibratedLine",
             enable: true,
-            description: ""
+            description: "",
+            name: "calibratedLine",
+            defaultName: "calibratedLine",
         }
         );
         this.objectAdd = true;

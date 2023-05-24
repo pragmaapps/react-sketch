@@ -21,7 +21,8 @@ class Ellipse extends FabricCanvasTool {
   doMouseDown(options, props) {
     if (!this.isDown) return;
     const { notificationShow, addROIDefaultName,removeColorInDefaultShapeColors, roiDefaultNames } = props;
-    if (this._canvas.getObjects().length >= 5 && roiDefaultNames.length === 0) {
+    let objects = this._canvas.getObjects().filter(obj => obj.id !== "trackingArea");
+    if (objects.length >= 5 && roiDefaultNames.length === 0) {
       notificationShow();
       console.log(
         `Maximum five shapes allowed `,
@@ -101,8 +102,11 @@ class Ellipse extends FabricCanvasTool {
   doMouseUp(o, props) {
     this.isDown = true;
     this.isDragging = false;
-    if(this.objectAdd)
+    if(this.objectAdd){
+      // props.checkForOverlap();
       props.onShapeAdded();
+      this.objectAdd = false;
+    }
   }
 
   checkWithinBoundary = (o) => {

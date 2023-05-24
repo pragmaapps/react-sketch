@@ -34,7 +34,7 @@ class Polygon extends FabricCanvasTool {
       let roiTypes = ["rect", "ellipse", "polygon"];
       let objects = this._canvas.getObjects();
       objects = objects.filter(
-        (object) => object.id !== undefined && roiTypes.includes(object.type)
+        (object) => object.id !== undefined && roiTypes.includes(object.type) && object.id !== "trackingArea"
       );
       if (objects.length >= 5) {
         notificationShow();
@@ -267,7 +267,14 @@ class Polygon extends FabricCanvasTool {
     });
     canvas.add(polygon);
     this.toggleDrawPolygon();
-    this.editPolygon(polygon, props);
+    this.editPolygon(polygon);
+    if(!this.checkForMinDistance(polygon, props)){ 
+      props.notificationShow("Zone size should be bigger then 100px");
+      // props.checkForOverlap();
+      props.onShapeAdded();
+      return;
+    }
+    // props.checkForOverlap();
     props.onShapeAdded();
   };
 
@@ -288,7 +295,7 @@ class Polygon extends FabricCanvasTool {
     }
   };
 
-  editPolygon = (polygon, props) => {
+  editPolygon = (polygon) => {
     let canvas = this._canvas;
     let activeObject = canvas.getActiveObject();
     if (!activeObject) {
@@ -328,11 +335,6 @@ class Polygon extends FabricCanvasTool {
     activeObject.hasBorders = false;
 
     canvas.requestRenderAll();
-    if(this.checkForMinDistance(polygon, props)){ 
-      props.notificationShow("Zone size should be bigger then 100px");
-      props.onShapeAdded();
-      return;
-    }
   };
 
   polygonPositionHandler = (dim, finalMatrix, fabricObject) => {
@@ -394,7 +396,13 @@ class Polygon extends FabricCanvasTool {
       if(boundary && (finalPointPosition.y > (boundary.height * boundary.scaleY) + boundary.top  || finalPointPosition.x > (boundary.width * boundary.scaleX) + boundary.left  || finalPointPosition.x < boundary.left || finalPointPosition.y < boundary.top)){
         
         return;
-      }   
+      }
+    let tempPolygon =  JSON.parse(JSON.stringify(polygon));
+    tempPolygon.points[currentControl.pointIndex] = finalPointPosition;
+    if(!this.checkForMinDistance(tempPolygon)){
+      polygon.points[currentControl.pointIndex]  = polygon.points[currentControl.pointIndex];
+      return true;
+    } 
     polygon.points[currentControl.pointIndex] = finalPointPosition;
     return true;
   };
@@ -427,11 +435,12 @@ class Polygon extends FabricCanvasTool {
         Math.pow(points[i + 1].y - points[i].y, 2)
       );
       if (distance < minDistance) {
+          if(props)
           props.setSelected(polygon, true);
-          return true;
+          return false;
       }
     }
-    return false;
+    return true;
   }
 }
 
