@@ -107,6 +107,12 @@ class Ellipse extends FabricCanvasTool {
       props.onShapeAdded();
       this.objectAdd = false;
     }
+    let ellipseSmall = !props.checkForMinTotalArea();
+    if(ellipseSmall){ 
+      console.log("%c[Animal Tracking]%c [Skecth Field][Ellipse][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
+        "color: black;");
+      props.notificationShow("Zone size should be bigger then 100px.");
+    }
   }
 
   checkWithinBoundary = (o) => {

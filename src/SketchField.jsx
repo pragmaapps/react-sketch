@@ -293,8 +293,16 @@ class SketchField extends PureComponent {
         obj.scaleY=this.scale1y;
         obj.width=this.width1;
         obj.height=this.height1;
-      }
-        else{    
+      }else if((obj.type === "rect" || obj.type === "ellipse") && !this.props.checkForMinTotalArea(obj, "edit")){
+        console.log("%c[Animal Tracking]%c [Skecth Field] [On Object Scaling] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
+        "color: black;");
+        obj.left = this.left1;
+        obj.top=this.top1;
+        obj.scaleX=this.scale1y;
+        obj.scaleY=this.scale1y;
+        obj.width=this.width1;
+        obj.height=this.height1;
+      }else{   
           this.left1 =obj.left;
           this.top1 =obj.top;
           this.scale1x = obj.scaleX;

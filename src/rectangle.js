@@ -111,6 +111,12 @@ class Rectangle extends FabricCanvasTool {
       onShapeAdded();
       this.objectAdd = false;
     }
+    let rectSmall = !props.checkForMinTotalArea();
+    if(rectSmall){ 
+      console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
+        "color: black;");
+      props.notificationShow("Zone size should be bigger than 100px.");
+    }
   }
 
   checkWithinBoundary = (o) => {
