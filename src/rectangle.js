@@ -107,7 +107,7 @@ class Rectangle extends FabricCanvasTool {
     this.isDragging = false;
     const { onShapeAdded, checkForOverlap } = props;
     if(this.objectAdd){
-      // checkForOverlap();
+      checkForOverlap();
       onShapeAdded();
       this.objectAdd = false;
     }

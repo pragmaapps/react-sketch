@@ -70,6 +70,7 @@ class Ellipse extends FabricCanvasTool {
       description: "",
     });
     canvas.add(this.ellipse);
+    this.ellipse.setCoords();
     // this.containInsideBoundary(options);
     this.isDragging = true;
     this.ellipse.edit = true;
@@ -95,6 +96,7 @@ class Ellipse extends FabricCanvasTool {
       }
       this.ellipse.set({ rx: rx, ry: ry });
       // this.containInsideBoundary(o);
+      this.ellipse.setCoords();
       canvas.renderAll();
     }
   }
@@ -103,7 +105,7 @@ class Ellipse extends FabricCanvasTool {
     this.isDown = true;
     this.isDragging = false;
     if(this.objectAdd){
-      // props.checkForOverlap();
+      props.checkForOverlap();
       props.onShapeAdded();
       this.objectAdd = false;
     }
