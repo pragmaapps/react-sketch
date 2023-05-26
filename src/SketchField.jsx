@@ -289,16 +289,16 @@ class SketchField extends PureComponent {
       if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top  || pointer.x > (boundary.width * boundary.scaleX) + boundary.left  || pointer.x < boundary.left || pointer.y < boundary.top)) {
         obj.left = this.left1;
         obj.top=this.top1;
-        obj.scaleX=this.scale1y;
+        obj.scaleX=this.scale1x;
         obj.scaleY=this.scale1y;
         obj.width=this.width1;
         obj.height=this.height1;
-      }else if((obj.type === "rect" || obj.type === "ellipse") && !this.props.checkForMinTotalArea(obj, "edit")){
+      }else if(!this.props.checkForMinTotalArea(obj, "edit")){
         console.log("%c[Animal Tracking]%c [Skecth Field] [On Object Scaling] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
         "color: black;");
         obj.left = this.left1;
         obj.top=this.top1;
-        obj.scaleX=this.scale1y;
+        obj.scaleX=this.scale1x;
         obj.scaleY=this.scale1y;
         obj.width=this.width1;
         obj.height=this.height1;
@@ -315,14 +315,15 @@ class SketchField extends PureComponent {
     }
 
     
-    if (((brNew.width+brNew.left)>=canvas.width) || ((brNew.height+brNew.top)>=canvas.height) || ((brNew.left<0) || (brNew.top<0))) {
+    brNew = obj;
+    if ((((brNew.width * brNew.scaleX) + brNew.left) > canvas.getWidth() -1 ) || (((brNew.height * brNew.scaleY) + brNew.top) > canvas.getHeight() - 1) || ((brNew.left<0) || (brNew.top<0))) {
     obj.left = this.left1;
     obj.top=this.top1;
-    obj.scaleX=this.scale1x === 0 ? obj.scaleX : this.scale1y;
+    obj.scaleX=this.scale1x === 0 ? obj.scaleX : this.scale1x;
     obj.scaleY=this.scale1y === 0 ? obj.scaleY : this.scale1y;
     obj.width=this.width1 === 0 ? obj.width : this.width1;
     obj.height=this.height1 === 0 ? obj.height : this.height1;
-    
+    obj.setCoords();
   }
     else{    
       this.left1 =obj.left;
@@ -422,6 +423,7 @@ class SketchField extends PureComponent {
   checkWithInBoundary = () =>{
     let canvas = this._fc; 
     canvas.getObjects().forEach((shape) => {
+      if(shape.id === "calibratedLine") return;
       let boundaryObj = canvas.getObjects().find(ob => ob.id === "trackingArea");
       var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
       var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX), (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);

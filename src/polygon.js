@@ -270,8 +270,6 @@ class Polygon extends FabricCanvasTool {
     this.editPolygon(polygon);
     if(!this.checkForMinDistance(polygon, props)){ 
       props.notificationShow("Zone size should be bigger then 100px");
-      props.checkForOverlap();
-      props.onShapeAdded();
       return;
     }
     props.checkForOverlap();
