@@ -381,7 +381,9 @@ class SketchField extends PureComponent {
       this._fc.renderAll();
       this.props.checkForOverlap(obj);
     }
+    obj.setCoords();
     this.props.checkForOverlap(obj);
+    this.props.onShapeAdded();
     obj.__version += 1
     let prevState = JSON.stringify(obj.__originalState)
     let objState = obj.toJSON()
@@ -399,6 +401,8 @@ class SketchField extends PureComponent {
     var canvasTL = new fabric.Point(0, 0);
     var canvasBR = new fabric.Point(canvas.getWidth() -1, canvas.getHeight() -1);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
+      console.log("%c[Animal Tracking]%c [Traking Area] Modified outside the canvas","color:blue; font-weight: bold;",
+      "color: black;",obj);
       var objBounds = obj.getBoundingRect();
       obj.setCoords();
       var objTL = obj.getPointByOrigin("left", "top");
@@ -415,6 +419,8 @@ class SketchField extends PureComponent {
       this.props.onShapeAdded();
       // this.checkWithInBoundary();
     }else{
+      console.log("%c[Animal Tracking]%c [Traking Area] Modified with in canvas","color:blue; font-weight: bold;",
+      "color: black;",obj);
       this.props.onShapeAdded();
       // this.checkWithInBoundary();
     }
@@ -435,6 +441,16 @@ class SketchField extends PureComponent {
     });   
     canvas.renderAll();
     this.props.onShapeAdded();
+  }
+
+  removeUnCompletedShapes = () =>{
+    let canvas = this._fc; 
+    let roiTypes = ["rect", "ellipse", "polygon"];
+    canvas.getObjects().forEach((shape) => {
+      if(shape.id !== "calibratedLine" && !roiTypes.includes(shape.type)) 
+        canvas.remove(shape);
+    });   
+    canvas.renderAll();
   }
 
   checkForMinDistance = (polygon) =>{

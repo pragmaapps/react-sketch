@@ -267,7 +267,8 @@ class Polygon extends FabricCanvasTool {
     });
     canvas.add(polygon);
     this.toggleDrawPolygon();
-    this.editPolygon(polygon);
+    this.editPolygon(polygon, props);
+    polygon.setCoords();
     if(!this.checkForMinDistance(polygon, props)){ 
       props.notificationShow("Zone size should be bigger then 100px");
       return;
@@ -293,7 +294,7 @@ class Polygon extends FabricCanvasTool {
     }
   };
 
-  editPolygon = (polygon) => {
+  editPolygon = (polygon, props) => {
     let canvas = this._canvas;
     let activeObject = canvas.getActiveObject();
     if (!activeObject) {
@@ -326,12 +327,14 @@ class Polygon extends FabricCanvasTool {
           this.actionHandler
         ),
         actionName: "modifyPolygon",
+        checkForOverlap: props !== undefined ?  props.checkForOverlap(activeObject) : undefined
       });
+      if(acc["p" + index].checkForOverlap === undefined) delete acc["p" + index].checkForOverlap;
       return acc;
     }, {});
 
-    activeObject.hasBorders = false;
-
+    activeObject.hasBorders = true;
+    activeObject.setCoords();
     canvas.requestRenderAll();
   };
 
