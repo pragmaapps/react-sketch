@@ -56,7 +56,7 @@ class Polygon extends FabricCanvasTool {
         removeColorInDefaultShapeColors(props.defaultShapeColors);
         addROIDefaultName(props.roiDefaultNames);
       } else {
-        this.addPoint(options);
+        this.addPoint(options, props);
       }
     }
 
@@ -69,9 +69,9 @@ class Polygon extends FabricCanvasTool {
     }
   }
 
-  addPoint = (options) => {
+  addPoint = (options, props) => {
     let canvas = this._canvas;
-    let boundaryObject = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    let boundaryObject = props.getboudaryCoords();
     
     const pointOption = {
       id: new Date().getTime(),
@@ -173,11 +173,11 @@ class Polygon extends FabricCanvasTool {
     canvas.add(point);
   };
 
-  doMouseMove(options) {
+  doMouseMove(options, props) {
     if (!this.isDown) return;
     let canvas = this._canvas;
     let pointer = canvas.getPointer(o.e);
-    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    let boundary = props.getboudaryCoords();
     if(boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top  || pointer.x > (boundary.width * boundary.scaleX) + boundary.left  || pointer.x < boundary.left || pointer.y < boundary.top)){
         
       return;
@@ -327,9 +327,7 @@ class Polygon extends FabricCanvasTool {
           this.actionHandler
         ),
         actionName: "modifyPolygon",
-        checkForOverlap: props !== undefined ?  props.checkForOverlap(activeObject) : undefined
       });
-      if(acc["p" + index].checkForOverlap === undefined) delete acc["p" + index].checkForOverlap;
       return acc;
     }, {});
 
@@ -376,7 +374,7 @@ class Polygon extends FabricCanvasTool {
 
   actionHandler = (eventData, transform, x, y) => {
     let canvas = this._canvas;
-    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    let boundary = this.getboudaryCoords();
     var polygon = transform.target,
       currentControl = polygon.controls[polygon.__corner],
       mouseLocalPosition = polygon.toLocalPoint(
@@ -443,6 +441,30 @@ class Polygon extends FabricCanvasTool {
     }
     return true;
   }
+
+  getboudaryCoords = () =>{
+    let canvas = this._canvas;
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    let cords = {};
+    if(!boundary){
+      cords["width"] = canvas.getWidth();
+      cords["height"] = canvas.getHeight();
+      cords["left"] = 0;
+      cords["top"] = 0;
+      cords["scaleX"] = 1;
+      cords["scaleY"] = 1;
+    }else{
+      cords["width"] = boundary.width * boundary.scaleX;
+      cords["height"] = boundary.height * boundary.scaleY;
+      cords["left"] = boundary.left;
+      cords["top"] = boundary.top;
+      cords["scaleX"] = boundary.scaleX;
+      cords["scaleY"] = boundary.scaleY;
+    }
+    return cords;
+  }
+
+
 }
 
 export default Polygon;

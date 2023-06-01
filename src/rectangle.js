@@ -41,7 +41,7 @@ class Rectangle extends FabricCanvasTool {
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
-    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    let boundary = props.getboudaryCoords();
     if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
       return false;
     }
@@ -79,12 +79,12 @@ class Rectangle extends FabricCanvasTool {
     this.rect.edit = true;
   };
 
-  doMouseMove(o) {
+  doMouseMove(o, props) {
     if (!this.isDown) return;
     let canvas = this._canvas;
     if (this.isDragging) {
       let pointer = canvas.getPointer(o.e);
-      let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+      let boundary = props.getboudaryCoords();
       if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
         return false;
       }

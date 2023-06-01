@@ -46,7 +46,7 @@ class Ellipse extends FabricCanvasTool {
     let name = props.roiDefaultNames[0];
     let defaultName = props.roiDefaultNames[0];
     [this.startX, this.startY] = [pointer.x, pointer.y];
-    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    let boundary = props.getboudaryCoords();
     if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
       return false;
     }
@@ -76,10 +76,10 @@ class Ellipse extends FabricCanvasTool {
     this.ellipse.edit = true;
   };
 
-  doMouseMove(o) {
+  doMouseMove(o, props) {
     if (!this.isDown) return;
     let canvas = this._canvas;
-    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    let boundary = props.getboudaryCoords();
     let pointer = canvas.getPointer(o.e);
     var obj = o.target;
     if (this.isDragging) {

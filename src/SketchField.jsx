@@ -284,7 +284,7 @@ class SketchField extends PureComponent {
     var brNew = obj.getBoundingRect();
     let canvas = this._fc;
     if(obj.id !== "trackingArea"){
-      let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+      let boundary = this.props.getboudaryCoords();
       let pointer = canvas.getPointer(e.e)
       if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top  || pointer.x > (boundary.width * boundary.scaleX) + boundary.left  || pointer.x < boundary.left || pointer.y < boundary.top)) {
         obj.left = this.left1;
@@ -358,7 +358,7 @@ class SketchField extends PureComponent {
     //   this.props.onShapeAdded();
     //   return;
     // }
-    let boundaryObj = this._fc.getObjects().find(ob => ob.id === "trackingArea");
+    let boundaryObj = this.props.getboudaryCoords();
     if(boundaryObj && obj.height > (boundaryObj.height * boundaryObj.scaleY) || obj.width > (boundaryObj.width * boundaryObj.scaleX) ){
       return;
     }      
@@ -379,7 +379,7 @@ class SketchField extends PureComponent {
       obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
       obj.setCoords();
       this._fc.renderAll();
-      this.props.checkForOverlap(obj);
+      // this.props.checkForOverlap(obj);
     }
     obj.setCoords();
     this.props.checkForOverlap(obj);
@@ -417,12 +417,12 @@ class SketchField extends PureComponent {
       obj.setCoords();
       this._fc.renderAll();
       this.props.onShapeAdded();
-      // this.checkWithInBoundary();
+      this.checkWithInBoundary();
     }else{
       console.log("%c[Animal Tracking]%c [Traking Area] Modified with in canvas","color:blue; font-weight: bold;",
       "color: black;",obj);
       this.props.onShapeAdded();
-      // this.checkWithInBoundary();
+      this.checkWithInBoundary();
     }
   }
 
@@ -498,7 +498,7 @@ class SketchField extends PureComponent {
   */
   _onMouseMove = e => {
     const { onMouseMove } = this.props
-    this._selectedTool.doMouseMove(e)
+    this._selectedTool.doMouseMove(e, this.props)
     onMouseMove(e)
   }
 
