@@ -431,6 +431,7 @@ class SketchField extends PureComponent {
     canvas.getObjects().forEach((shape) => {
       if(shape.id === "calibratedLine") return;
       let boundaryObj = canvas.getObjects().find(ob => ob.id === "trackingArea");
+      if(!boundaryObj) return;
       var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
       var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX), (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
       if (!shape.isContainedWithinRect(canvasTL, canvasBR) && shape !== boundaryObj) {

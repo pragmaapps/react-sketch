@@ -4,6 +4,7 @@ import FabricCanvasTool from "./fabrictool";
 import { linearDistance } from "./utils";
 
 const fabric = require("fabric").fabric;
+const geometric = require("geometric");
 
 class Polygon extends FabricCanvasTool {
   activeLine;
@@ -424,20 +425,12 @@ class Polygon extends FabricCanvasTool {
   };
 
   checkForMinDistance = (polygon, props) =>{
-    const points = polygon.points;
-    let canvas = this._canvas;
-    const minDistance = 10;
-    let distance;
-    for (let i = 0; i < points.length - 1; i++) {
-      distance = Math.sqrt(
-        Math.pow(points[i + 1].x - points[i].x, 2) +
-        Math.pow(points[i + 1].y - points[i].y, 2)
-      );
-      if (distance < minDistance) {
-          if(props)
-          props.setSelected(polygon, true);
-          return false;
-      }
+    const minArea = 100;
+    let totalArea = geometric.polygonArea(this.getPolygonCoords(polygon))
+    if (totalArea < minArea) {
+        if(props)
+        props.setSelected(polygon, true);
+        return false;
     }
     return true;
   }
@@ -464,6 +457,16 @@ class Polygon extends FabricCanvasTool {
     return cords;
   }
 
+  getPolygonCoords =(obj) => {
+    const coords = [];
+    for (let i = 0; i < obj.points.length; i++) {
+      const point = obj.points[i];
+      const x = point.x;
+      const y = point.y;
+      coords.push([x, y]);
+    }
+    return coords;
+  }
 
 }
 
