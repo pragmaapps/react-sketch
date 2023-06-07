@@ -20,7 +20,7 @@ class Ellipse extends FabricCanvasTool {
 
   doMouseDown(options, props) {
     if (!this.isDown) return;
-    const { notificationShow, addROIDefaultName,removeColorInDefaultShapeColors, roiDefaultNames } = props;
+    const { notificationShow, roiDefaultNames } = props;
     let objects = this._canvas.getObjects().filter(obj => obj.id !== "trackingArea" && obj.id !== "calibratedLine");
     if (objects.length >= 5 && roiDefaultNames.length === 0) {
       notificationShow();
@@ -34,11 +34,10 @@ class Ellipse extends FabricCanvasTool {
     }
     this.objectAdd = true;
     this.genrateEllipse(options, props);
-    removeColorInDefaultShapeColors(props.defaultShapeColors);
-    addROIDefaultName(props.roiDefaultNames);
   }
 
   genrateEllipse = (options, props) => {
+    const { addROIDefaultName, removeColorInDefaultShapeColors } = props;
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
@@ -74,20 +73,27 @@ class Ellipse extends FabricCanvasTool {
     // this.containInsideBoundary(options);
     this.isDragging = true;
     this.ellipse.edit = true;
+    removeColorInDefaultShapeColors(props.defaultShapeColors);
+    addROIDefaultName(props.roiDefaultNames);
   };
 
   doMouseMove(o, props) {
     if (!this.isDown) return;
     let canvas = this._canvas;
-    let boundary = props.getboudaryCoords();
-    let pointer = canvas.getPointer(o.e);
-    var obj = o.target;
     if (this.isDragging) {
+      let pointer = canvas.getPointer(o.e);
+      let boundary = props.getboudaryCoords();
       if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
         return false;
       }
       var rx = Math.abs(this.startX - pointer.x) / 2;
       var ry = Math.abs(this.startY - pointer.y) / 2;
+      if (this.startX > pointer.x) {
+        this.ellipse.set({ left: Math.abs(pointer.x) });
+      }
+      if (this.startY > pointer.y) {
+        this.ellipse.set({ top: Math.abs(pointer.y) });
+      }
       if (rx > this.ellipse.strokeWidth) {
         rx -= this.ellipse.strokeWidth / 2;
       }

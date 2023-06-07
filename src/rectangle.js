@@ -19,7 +19,7 @@ class Rectangle extends FabricCanvasTool {
 
   doMouseDown(options, props) {
     if (!this.isDown) return;
-    const { notificationShow, addROIDefaultName, removeColorInDefaultShapeColors, roiDefaultNames } = props;
+    const { notificationShow, roiDefaultNames } = props;
     let objects = this._canvas.getObjects().filter(obj => obj.id !== "trackingArea" && obj.id !== "calibratedLine");
     if (objects.length >= 5 && roiDefaultNames.length === 0 ) {
       notificationShow();
@@ -33,11 +33,10 @@ class Rectangle extends FabricCanvasTool {
     }
     this.objectAdd = true;
     this.genrateRect(options, props);
-    removeColorInDefaultShapeColors(props.defaultShapeColors);
-    addROIDefaultName(props.roiDefaultNames);
   }
 
   genrateRect = (options, props) => {
+    const { addROIDefaultName, removeColorInDefaultShapeColors } = props;
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
@@ -77,6 +76,8 @@ class Rectangle extends FabricCanvasTool {
     // this.containInsideBoundary(options);
     this.isDragging = true;
     this.rect.edit = true;
+    removeColorInDefaultShapeColors(props.defaultShapeColors);
+    addROIDefaultName(props.roiDefaultNames);
   };
 
   doMouseMove(o, props) {

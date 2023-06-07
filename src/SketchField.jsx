@@ -324,6 +324,15 @@ class SketchField extends PureComponent {
     obj.width=this.width1 === 0 ? obj.width : this.width1;
     obj.height=this.height1 === 0 ? obj.height : this.height1;
     obj.setCoords();
+  }else if(!this.props.checkForMinTotalArea(obj, "edit", true)){
+    console.log("%c[Animal Tracking]%c [Skecth Field] [On Object Scaling] The tracking area should not be less than 200px width and height respectively.","color:blue; font-weight: bold;",
+    "color: black;");
+    obj.left = this.left1;
+    obj.top=this.top1;
+    obj.scaleX=this.scale1x;
+    obj.scaleY=this.scale1y;
+    obj.width=this.width1;
+    obj.height=this.height1;
   }
     else{    
       this.left1 =obj.left;
