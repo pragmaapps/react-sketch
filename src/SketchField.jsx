@@ -22,6 +22,7 @@ let fabric = require('fabric').fabric;
 let controlsVisible = {
   mtr: false,
 };
+fabric.Object.prototype.noScaleCache = false;
 fabric.Object.prototype.setControlsVisibility(controlsVisible);
 fabric.Object.prototype.set({
   cornerSize: 6,

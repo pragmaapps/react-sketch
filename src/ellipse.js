@@ -67,6 +67,7 @@ class Ellipse extends FabricCanvasTool {
       id: new Date().getTime(),
       enable: true,
       description: "",
+      strokeUniform: true,
     });
     canvas.add(this.ellipse);
     this.ellipse.setCoords();
