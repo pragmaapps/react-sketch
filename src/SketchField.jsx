@@ -318,8 +318,8 @@ class SketchField extends PureComponent {
     
     brNew = obj;
     if ((((brNew.width * brNew.scaleX) + brNew.left) > canvas.getWidth() -1 ) || (((brNew.height * brNew.scaleY) + brNew.top) > canvas.getHeight() - 1) || ((brNew.left<0) || (brNew.top<0))) {
-    obj.left = this.left1;
-    obj.top=this.top1;
+    obj.left = this.left1 <= 0 ? obj.left : this.left1;
+    obj.top=this.top1 <= 0 ? obj.top : this.top1;
     obj.scaleX=this.scale1x === 0 ? obj.scaleX : this.scale1x;
     obj.scaleY=this.scale1y === 0 ? obj.scaleY : this.scale1y;
     obj.width=this.width1 === 0 ? obj.width : this.width1;
@@ -374,7 +374,7 @@ class SketchField extends PureComponent {
     }      
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
     var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
-    if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
+    if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
       var objBounds = obj.getBoundingRect();
       obj.setCoords();
       var objTL = obj.getPointByOrigin("left", "top");
@@ -410,7 +410,7 @@ class SketchField extends PureComponent {
   let canvas = this._fc;
     var canvasTL = new fabric.Point(0, 0);
     var canvasBR = new fabric.Point(canvas.getWidth() -1, canvas.getHeight() -1);
-    if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
+    if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
       console.log("%c[Animal Tracking]%c [Traking Area] Modified outside the canvas","color:blue; font-weight: bold;",
       "color: black;",obj);
       var objBounds = obj.getBoundingRect();
@@ -423,6 +423,8 @@ class SketchField extends PureComponent {
       if (objBounds.top < canvasTL.y) top = 0;
       if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
       if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
+      if(top < 0) top = 0;
+      if(left < 0) left = 0;
       obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
       obj.setCoords();
       this._fc.renderAll();
@@ -440,15 +442,23 @@ class SketchField extends PureComponent {
     let canvas = this._fc; 
     canvas.getObjects().forEach((shape) => {
       if(shape.id === "calibratedLine") return;
-      let boundaryObj = canvas.getObjects().find(ob => ob.id === "trackingArea");
+      let boundaryObj = this.props.getboudaryCoords();
       if(!boundaryObj) return;
       var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
       var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX), (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
-      if (!shape.isContainedWithinRect(canvasTL, canvasBR) && shape !== boundaryObj) {
-        this.props.addColorInDefaultShapeColors(shape.stroke);
-        this.props.deleteROIDefaultName(shape.defaultName);
-        canvas.remove(shape);
-      }
+      // if (!shape.isContainedWithinRect(canvasTL, canvasBR, true, true) && shape.id !== "trackingArea") {
+      //   this.props.addColorInDefaultShapeColors(shape.stroke);
+      //   this.props.deleteROIDefaultName(shape.defaultName);
+      //   canvas.remove(shape);
+      // }
+      if((shape.left < boundaryObj.left ||
+        shape.top < boundaryObj.top ||
+        shape.left + shape.width > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
+        shape.top + shape.height > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
+          this.props.addColorInDefaultShapeColors(shape.stroke);
+          this.props.deleteROIDefaultName(shape.defaultName);
+          canvas.remove(shape);
+        }
     });   
     canvas.renderAll();
     this.props.onShapeAdded();

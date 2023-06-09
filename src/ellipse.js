@@ -19,6 +19,15 @@ class Ellipse extends FabricCanvasTool {
   }
 
   doMouseDown(options, props) {
+    if(this.objectAdd) {
+      // console.log("[Animal Tracking][Ellipse] Object has not added/removed and do not called mouse up function");
+      this._canvas.off("mouse:up");
+      this._canvas.on("mouse:up", function () {});
+      return;
+    }
+    // console.log("[Animal Tracking][Ellipse] Object has added and called mouse up function.");
+    this._canvas.off("mouse:up");
+    this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props));
     if (!this.isDown) return;
     const { notificationShow, roiDefaultNames } = props;
     let objects = this._canvas.getObjects().filter(obj => obj.id !== "trackingArea" && obj.id !== "calibratedLine");
@@ -108,19 +117,25 @@ class Ellipse extends FabricCanvasTool {
     }
   }
 
-  doMouseUp(o, props) {
+  async doMouseUp(o, props) {
     this.isDown = true;
     this.isDragging = false;
+    const { onShapeAdded, checkForOverlap } = props;
+    let isOverlap = false;
     if(this.objectAdd){
-      props.checkForOverlap();
-      props.onShapeAdded();
-      this.objectAdd = false;
-    }
-    let ellipseSmall = !props.checkForMinTotalArea();
-    if(ellipseSmall){ 
-      console.log("%c[Animal Tracking]%c [Skecth Field][Ellipse][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
-        "color: black;");
-      props.notificationShow("Zone size should be bigger then 100px.");
+      let ellipseSmall = await props.checkForMinTotalArea();
+      if(!ellipseSmall){ 
+        console.log("%c[Animal Tracking]%c [Skecth Field][Ellipse][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
+          "color: black;");
+        props.notificationShow("Zone size should be bigger then 100px.");
+      }
+      else{
+        isOverlap = await checkForOverlap();
+      }
+      await onShapeAdded();
+      setTimeout(() => {
+        this.objectAdd = false;
+      }, isOverlap ? 500 : 0); 
     }
   }
 

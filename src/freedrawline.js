@@ -30,6 +30,9 @@ class FreeDrawLine extends FabricCanvasTool {
         canvas.add(this.startPoint);
     } else {
         // Create new circle for ending point
+        if(this.startPoint.left === pointer.x && this.startPoint.top ===pointer.y){
+          return;
+        }
         var endPoint = new fabric.Circle({
             radius: 5,
             fill: 'red',
