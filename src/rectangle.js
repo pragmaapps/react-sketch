@@ -108,11 +108,32 @@ class Rectangle extends FabricCanvasTool {
       this.rect.set({ width: Math.abs(this.startX - pointer.x) });
       this.rect.set({ height: Math.abs(this.startY - pointer.y) });
       this.rect.setCoords();
-      // this.containInsideBoundary(o);
+      this.checkWithInTrackingArea(this.rect, boundary);
       canvas.renderAll();
     }
   }
 
+  checkWithInTrackingArea = (obj, boundaryObj) =>{     
+    var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
+    var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
+    if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
+      var objBounds = obj.getBoundingRect();
+      obj.setCoords();
+      var objTL = obj.getPointByOrigin("left", "top");
+      var left = objTL.x;
+      var top = objTL.y;
+
+      if (objBounds.left < canvasTL.x) left = boundaryObj.left;
+      if (objBounds.top < canvasTL.y) top = boundaryObj.top;
+      if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
+      if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
+
+      obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+      obj.setCoords();
+      this._canvas.renderAll();
+      // this.props.checkForOverlap(obj);
+    }
+  }
   async doMouseUp(o, props) {
     // this.containInsideBoundary(o);
     this.isDown = true;

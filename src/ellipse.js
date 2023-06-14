@@ -111,9 +111,31 @@ class Ellipse extends FabricCanvasTool {
         ry -= this.ellipse.strokeWidth / 2;
       }
       this.ellipse.set({ rx: rx, ry: ry });
-      // this.containInsideBoundary(o);
+      this.checkWithInTrackingArea(this.ellipse, boundary);
       this.ellipse.setCoords();
       canvas.renderAll();
+    }
+  }
+
+  checkWithInTrackingArea = (obj, boundaryObj) =>{   
+    var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
+    var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
+    if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
+      var objBounds = obj.getBoundingRect();
+      obj.setCoords();
+      var objTL = obj.getPointByOrigin("left", "top");
+      var left = objTL.x;
+      var top = objTL.y;
+
+      if (objBounds.left < canvasTL.x) left = boundaryObj.left;
+      if (objBounds.top < canvasTL.y) top = boundaryObj.top;
+      if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
+      if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
+
+      obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+      obj.setCoords();
+      this._fc.renderAll();
+      // this.props.checkForOverlap(obj);
     }
   }
 
