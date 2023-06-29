@@ -403,11 +403,8 @@ class SketchField extends PureComponent {
     // this._history.keep([obj, prevState, currState]);
   }
 
-  trackingAreaModified = (obj) =>{
-    if(obj.height > this._fc.getHeight() -1 || obj.width > this._fc.getWidth() -1 ){
-      return;
-  }      
-  let canvas = this._fc;
+  trackingAreaModified = (obj) =>{    
+    let canvas = this._fc;
     var canvasTL = new fabric.Point(0, 0);
     var canvasBR = new fabric.Point(canvas.getWidth() -1, canvas.getHeight() -1);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
