@@ -394,7 +394,7 @@ class Polygon extends FabricCanvasTool {
           (mouseLocalPosition.y * polygonBaseSize.y) / size.y +
           polygon.pathOffset.y,
       };
-      if(boundary && (finalPointPosition.y > (boundary.height * boundary.scaleY) + boundary.top  || finalPointPosition.x > (boundary.width * boundary.scaleX) + boundary.left  || finalPointPosition.x < boundary.left || finalPointPosition.y < boundary.top)){
+      if(boundary && (y > (boundary.height * boundary.scaleY) + boundary.top  || x > (boundary.width * boundary.scaleX) + boundary.left  || x < boundary.left || y < boundary.top)){
         
         return;
       }
