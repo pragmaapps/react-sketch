@@ -287,7 +287,7 @@ class SketchField extends PureComponent {
     if(obj.id !== "trackingArea"){
       let boundary = this.props.getboudaryCoords();
       let pointer = canvas.getPointer(e.e)
-      if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top  || pointer.x > (boundary.width * boundary.scaleX) + boundary.left  || pointer.x < boundary.left || pointer.y < boundary.top)) {
+      if (boundary && ((brNew.height +brNew.top) > (boundary.height * boundary.scaleY) + boundary.top  || (brNew.width +brNew.left) > (boundary.width * boundary.scaleX) + boundary.left  || brNew.left < boundary.left || brNew.top < boundary.top)) {
         obj.left = this.left1;
         obj.top=this.top1;
         obj.scaleX=this.scale1x;
