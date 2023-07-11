@@ -376,7 +376,8 @@ class Polygon extends FabricCanvasTool {
 
   actionHandler = (eventData, transform, x, y) => {
     let canvas = this._canvas;
-    let boundary = this.getboudaryCoords();
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    if(!boundary) boundary = this.getboudaryCoords();
     var polygon = transform.target,
       currentControl = polygon.controls[polygon.__corner],
       mouseLocalPosition = polygon.toLocalPoint(
@@ -396,7 +397,7 @@ class Polygon extends FabricCanvasTool {
       };
       if(boundary && (y > (boundary.height * boundary.scaleY) + boundary.top  || x > (boundary.width * boundary.scaleX) + boundary.left  || x < boundary.left || y < boundary.top)){
         
-        return;
+        return false;
       }
     let tempPolygon =  JSON.parse(JSON.stringify(polygon));
     tempPolygon.points[currentControl.pointIndex] = finalPointPosition;
@@ -441,8 +442,8 @@ class Polygon extends FabricCanvasTool {
     let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
     let cords = {};
     if(!boundary){
-      cords["width"] = canvas.getWidth();
-      cords["height"] = canvas.getHeight();
+      cords["width"] = canvas.getWidth() - 1;
+      cords["height"] = canvas.getHeight() - 1;
       cords["left"] = 0;
       cords["top"] = 0;
       cords["scaleX"] = 1;
