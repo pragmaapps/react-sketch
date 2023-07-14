@@ -18,7 +18,7 @@ class Ellipse extends FabricCanvasTool {
     this.objectAdd = false;
   }
 
-  doMouseDown(options, props) {
+  doMouseDown(options, props, sketch) {
     if(this.objectAdd) {
       // console.log("[Animal Tracking][Ellipse] Object has not added/removed and do not called mouse up function");
       this._canvas.off("mouse:up");
@@ -27,7 +27,7 @@ class Ellipse extends FabricCanvasTool {
     }
     // console.log("[Animal Tracking][Ellipse] Object has added and called mouse up function.");
     this._canvas.off("mouse:up");
-    this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props));
+    this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props, sketch));
     if (!this.isDown) return;
     const { notificationShow, roiDefaultNames } = props;
     let objects = this._canvas.getObjects().filter(obj => obj.id !== "trackingArea" && obj.id !== "calibratedLine");
@@ -139,7 +139,7 @@ class Ellipse extends FabricCanvasTool {
     }
   }
 
-  async doMouseUp(o, props) {
+  async doMouseUp(o, props, sketch) {
     this.isDown = true;
     this.isDragging = false;
     const { onShapeAdded, checkForOverlap } = props;
@@ -155,6 +155,7 @@ class Ellipse extends FabricCanvasTool {
         isOverlap = await checkForOverlap();
       }
       await onShapeAdded();
+      await sketch.checkWithInBoundary();
       setTimeout(() => {
         this.objectAdd = false;
       }, isOverlap ? 500 : 0); 

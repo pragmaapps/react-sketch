@@ -435,7 +435,7 @@ class SketchField extends PureComponent {
     }
   }
 
-  checkWithInBoundary = () =>{
+  checkWithInBoundary = async() =>{
     let canvas = this._fc; 
     canvas.getObjects().forEach((shape) => {
       if(shape.id === "calibratedLine") return;
@@ -507,7 +507,7 @@ class SketchField extends PureComponent {
   */
   _onMouseDown = e => {
     const { onMouseDown } = this.props
-    this._selectedTool.doMouseDown(e, this.props)
+    this._selectedTool.doMouseDown(e, this.props, this)
     onMouseDown(e)
   }
 
@@ -537,7 +537,7 @@ class SketchField extends PureComponent {
 
   _onMouseUp = e => {
     const { onMouseUp } = this.props
-    this._selectedTool.doMouseUp(e, this.props)
+    this._selectedTool.doMouseUp(e, this.props, this)
     // Update the final state to new-generated object
     // Ignore Path object since it would be created after mouseUp
     // Assumed the last object in canvas.getObjects() in the newest object

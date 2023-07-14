@@ -17,7 +17,7 @@ class Rectangle extends FabricCanvasTool {
     this.objectAdd = false;
   }
 
-  doMouseDown(options, props) {
+  doMouseDown(options, props, sketch) {
     if(this.objectAdd) {
       // console.log("[Animal Tracking][Rectangle] Object has not removed and do not called mouse up function.");
       this._canvas.off("mouse:up");
@@ -26,7 +26,7 @@ class Rectangle extends FabricCanvasTool {
     }
     // console.log("[Animal Tracking][Rectangle] Object has added and called mouse up function.");
     this._canvas.off("mouse:up");
-    this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props));
+    this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props, sketch));
     if (!this.isDown) return;
     const { notificationShow, roiDefaultNames } = props;
     let objects = this._canvas.getObjects().filter(obj => obj.id !== "trackingArea" && obj.id !== "calibratedLine");
@@ -134,7 +134,7 @@ class Rectangle extends FabricCanvasTool {
       // this.props.checkForOverlap(obj);
     }
   }
-  async doMouseUp(o, props) {
+  async doMouseUp(o, props, sketch) {
     // this.containInsideBoundary(o);
     this.isDown = true;
     this.isDragging = false;
@@ -150,6 +150,7 @@ class Rectangle extends FabricCanvasTool {
         isOverlap = await checkForOverlap();
       }
       await onShapeAdded();
+      await sketch.checkWithInBoundary();
       setTimeout(() => {
         this.objectAdd = false;
       }, isOverlap ? 500 : 0); 
