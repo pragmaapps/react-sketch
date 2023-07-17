@@ -72,7 +72,8 @@ class Polygon extends FabricCanvasTool {
 
   addPoint = (options, props) => {
     let canvas = this._canvas;
-    let boundaryObject = props.getboudaryCoords();
+    let boundaryObject = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    if(!boundaryObject) boundaryObject = this.getboudaryCoords();
     
     const pointOption = {
       id: new Date().getTime(),
@@ -288,7 +289,7 @@ class Polygon extends FabricCanvasTool {
       this.lineArray = [];
       this.pointArray = [];
       this.canvas.selection = true;
-      this.drawMode = false;
+      // this.drawMode = false;
     } else {
       // start draw mode
       canvas.selection = false;

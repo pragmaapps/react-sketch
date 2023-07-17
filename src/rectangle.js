@@ -142,7 +142,13 @@ class Rectangle extends FabricCanvasTool {
     let isOverlap = false;
     if(this.objectAdd){
       let rectSmall = await props.checkForMinTotalArea();
-      if(!rectSmall){ 
+      let outsideZone = await this.checkWithInBoundary(props);
+      if(outsideZone){
+        console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] Rectangle is created outside the tracking area.","color:blue; font-weight: bold;",
+        "color: black;");
+        props.notificationShow("Zone should not be created outside tracking area.");
+      }
+      else if(!rectSmall){ 
         console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
           "color: black;");
         props.notificationShow("Zone size should be bigger than 100px.");
@@ -150,21 +156,30 @@ class Rectangle extends FabricCanvasTool {
         isOverlap = await checkForOverlap();
       }
       await onShapeAdded();
-      await sketch.checkWithInBoundary();
       setTimeout(() => {
         this.objectAdd = false;
       }, isOverlap ? 500 : 0); 
     }
   }
 
-  checkWithinBoundary = (o) => {
-    let canvas = this._canvas;
-    let pointer = canvas.getPointer(o.e);
-    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
-    if (boundary && (pointer.y > boundary.height + boundary.top || pointer.x > boundary.width + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
-      return false;
-    }
-    return true
+  checkWithInBoundary = async (props) => {
+    let canvas = this._canvas; 
+    let isObjectOutSideBoundary = false;
+    canvas.getObjects().forEach((shape) => {
+      if(shape.id === "calibratedLine") return;
+      let boundaryObj = props.getboudaryCoords();
+      if(!boundaryObj) return;
+      if((shape.left < boundaryObj.left ||
+        shape.top < boundaryObj.top ||
+        shape.left + shape.width > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
+        shape.top + shape.height > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
+          props.addColorInDefaultShapeColors(shape.stroke);
+          props.deleteROIDefaultName(shape.defaultName);
+          canvas.remove(shape);
+          isObjectOutSideBoundary = true;
+        }
+    });
+    return isObjectOutSideBoundary;
   }
 
   containInsideBoundary = (o) => {
