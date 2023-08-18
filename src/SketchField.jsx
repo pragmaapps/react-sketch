@@ -256,12 +256,20 @@ class SketchField extends PureComponent {
       this.setState({ action: true })
       return
     }
-    let obj = e.target
-    obj.__version = 1
-    // record current object state as json and save as originalState
-    let objState = obj.toJSON()
-    obj.__originalState = objState
-    let state = JSON.stringify(objState)
+    let obj = e.target;
+    if(obj.id === "trackingArea"){
+      this.left1 =obj.left;
+      this.top1 =obj.top;
+      this.scale1x = obj.scaleX;
+      this.scale1y=obj.scaleY;
+      this.width1=obj.width;
+      this.height1=obj.height;
+    }
+    // obj.__version = 1
+    // // record current object state as json and save as originalState
+    // let objState = obj.toJSON()
+    // obj.__originalState = objState
+    // let state = JSON.stringify(objState)
     // object, previous state, current state
     // this._history.keep([obj, state, state])
     onObjectAdded(e)
