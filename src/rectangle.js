@@ -216,8 +216,8 @@ class Rectangle extends FabricCanvasTool {
   genrateTrackingArea = () => {
     let canvas = this._canvas;
     this.isDown = true;
-    let width = canvas.getWidth() -1;
-    let height = canvas.getHeight() -1;
+    let width = Math.ceil(canvas.getWidth() -1);
+    let height = Math.ceil(canvas.getHeight() -1);
     let name = "trackingArea";
     let defaultName = "trackingArea";
     this.rect = new fabric.Rect({

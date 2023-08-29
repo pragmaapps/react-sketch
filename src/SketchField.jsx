@@ -750,16 +750,21 @@ class SketchField extends PureComponent {
     let canvas = this._fc;
 
     if (canvas && canvas.upperCanvasEl) {
-      var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+      var overlayWidth = Math.ceil(document.getElementById("onep-twop-container-2").offsetWidth);
     }
     else {
       var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
     }
     // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
     // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
-    var overlayHeight = Math.round(800 / (1280 / overlayWidth));
-    var overlayContrain = overlayWidth / overlayHeight;
-    console.log('Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
+    let resolutionRatio = this.props.resolutionWidth / this.props.resolutionHeight;
+    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+      var overlayHeight = Math.ceil(this.props.resolutionHeight / (this.props.resolutionWidth / overlayWidth));
+    }else{
+      var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
+      var overlayWidth = overlayHeight * resolutionRatio;
+    }
+    console.log('Color Overlay Width:', overlayWidth, overlayHeight);
     this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
 
 
@@ -788,10 +793,10 @@ class SketchField extends PureComponent {
         }
         // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
         // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-        objects[i].left = objects[i].left * scaleMultiplier;
-        objects[i].top = objects[i].top * scaleMultiplier;
-        objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
-        objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
+        objects[i].left = Math.ceil(objects[i].left * scaleMultiplier);
+        objects[i].top = Math.ceil(objects[i].top * scaleMultiplier);
+        objects[i].cnWidth = Math.ceil(canvas.getWidth() * scaleMultiplier);
+        objects[i].cnHeight = Math.ceil(canvas.getHeight() * scaleHeightMultiplier);
         objects[i].setCoords();
       }
 
@@ -804,10 +809,10 @@ class SketchField extends PureComponent {
 
       console.log("Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
       canvas.discardActiveObject();
-      canvas.setWidth(canvas.getWidth() * scaleMultiplier);
-      canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
-      this.props.trackingCanvasHeight(canvas.getHeight() * scaleHeightMultiplier);
-      this.props.trackingCanvasWidth(canvas.getWidth() * scaleMultiplier);
+      canvas.setWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));
+      canvas.setHeight(Math.ceil(canvas.getHeight() * scaleHeightMultiplier));
+      this.props.trackingCanvasHeight(Math.ceil(canvas.getHeight() * scaleHeightMultiplier));
+      this.props.trackingCanvasWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));
       canvas.renderAll();
       canvas.calcOffset();
 
