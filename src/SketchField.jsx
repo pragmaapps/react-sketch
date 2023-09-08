@@ -22,6 +22,7 @@ let fabric = require('fabric').fabric;
 let controlsVisible = {
   mtr: false,
 };
+let executeCanvasResize = false;
 fabric.Object.prototype.noScaleCache = false;
 fabric.Object.prototype.setControlsVisibility(controlsVisible);
 fabric.Object.prototype.set({
@@ -139,6 +140,7 @@ class SketchField extends PureComponent {
     resetAllLandmarks: false,
     frontEnd: [],
     canvasHeight:512,
+    canvasWidth:800,
     updateLandmarksForOtherWindow: false,
     lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
 
@@ -748,9 +750,10 @@ class SketchField extends PureComponent {
 
   _resize = (e, canvasWidth = null, canvasHeight = null) => {
     let canvas = this._fc;
-
+    let trackingArea = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    //if(trackingArea)return;
     if (canvas && canvas.upperCanvasEl) {
-      var overlayWidth = Math.ceil(document.getElementById("onep-twop-container-2").offsetWidth);
+      var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
     }
     else {
       var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
@@ -766,38 +769,64 @@ class SketchField extends PureComponent {
     }
     console.log('Color Overlay Width:', overlayWidth, overlayHeight);
     this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
-
-
   };
 
-  getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
+  resizeOverlayAndCanvasOnCompoentMount = (e, canvasWidth = null, canvasHeight = null) => {
+    let canvas = this._fc;
+    if (canvas && canvas.upperCanvasEl) {
+      var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+    }
+    else {
+      var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
+    }
+    // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+    // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
+    let resolutionRatio = this.props.resolutionWidth / this.props.resolutionHeight;
+    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+      var overlayHeight = Math.ceil(this.props.resolutionHeight / (this.props.resolutionWidth / overlayWidth));
+    }else{
+      var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
+      var overlayWidth = overlayHeight * resolutionRatio;
+    }
+    this.getCanvasAtComponentMount(overlayWidth, overlayHeight, false);
+  };
+
+  /*getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
     let canvas = this._fc;
     // let { offsetWidth, clientHeight } = this._container;
-
-    if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
+    let cWidth =  canvas.getWidth() - 1;
+    let cHeight = canvas.getHeight() - 1;
+    //let cWidth =  canvas.getWidth();
+    //let cHeight = canvas.getHeight();
+    console.log("[getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
+    console.log("[getCanvasAtResoution]: Canvas width and height after removing 1 px", cWidth, cHeight );
+    if (canvas && cWidth !== newWidth  && canvas.upperCanvasEl) {
+    //if (canvas && canvas.upperCanvasEl) {
       let isMira = this.props.from === undefined ? true : false;  
-      var scaleMultiplier = newWidth / canvas.width;
-      var scaleHeightMultiplier = newHeight / canvas.height;
+      var scaleMultiplier = newWidth / cWidth;
+      var scaleHeightMultiplier = newHeight / cHeight;
       var objects = canvas.getObjects();
 
       for (var i in objects) {
         let isObjectTypeImage = isMira ? objects[i].type === "image" : objects[i].type !== "image";
         if (isObjectTypeImage || scaleLandmarks) {
-          // objects[i].width = objects[i].width * scaleMultiplier;
-          // objects[i].height = objects[i].height * scaleHeightMultiplier;
-          objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-          objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+          objects[i].width = objects[i].width * scaleMultiplier;
+          objects[i].height = objects[i].height * scaleHeightMultiplier;
+          console.log("object before scaling>>>", objects[i]);
+          //objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+          //objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
           objects[i].setCoords();
           var scaleFactor = this.state.scaleFactor * scaleMultiplier;
           this.setState({ scaleFactor });
         }
         // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
         // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-        objects[i].left = Math.ceil(objects[i].left * scaleMultiplier);
-        objects[i].top = Math.ceil(objects[i].top * scaleMultiplier);
-        objects[i].cnWidth = Math.ceil(canvas.getWidth() * scaleMultiplier);
-        objects[i].cnHeight = Math.ceil(canvas.getHeight() * scaleHeightMultiplier);
+        objects[i].left = objects[i].left * scaleMultiplier;
+        objects[i].top = objects[i].top * scaleMultiplier;
+        objects[i].cnWidth = cWidth * scaleMultiplier;
+        objects[i].cnHeight = cHeight * scaleHeightMultiplier;
         objects[i].setCoords();
+        console.log("object after scaling>>>>>>>>", objects[i]);
       }
 
 
@@ -807,12 +836,20 @@ class SketchField extends PureComponent {
         obj.scaleY = obj.scaleY * scaleMultiplier;
       }
 
-      console.log("Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
+      //console.log("Resize Canvas Dimensions: ", canvas.getHeight() * scaleMultiplier, canvas.getWidth() * scaleHeightMultiplier);
+      console.log("Resize Canvas Dimensions: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
       canvas.discardActiveObject();
-      canvas.setWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));
+      //let refactorCanvasHeight = Math.ceil(cHeight * scaleHeightMultiplier) + 1;
+      //let refactorCanvasWidth = Math.ceil(cWidth * scaleMultiplier) + 1;
+      canvas.setWidth(cWidth * scaleMultiplier);
+      canvas.setHeight(cHeight * scaleHeightMultiplier);
+      this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
+      this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
+      /*canvas.setWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));
       canvas.setHeight(Math.ceil(canvas.getHeight() * scaleHeightMultiplier));
       this.props.trackingCanvasHeight(Math.ceil(canvas.getHeight() * scaleHeightMultiplier));
-      this.props.trackingCanvasWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));
+      this.props.trackingCanvasWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));*/
+      /*
       canvas.renderAll();
       canvas.calcOffset();
 
@@ -823,12 +860,105 @@ class SketchField extends PureComponent {
       if (boss) {
         this.bindLandmarks();
       }
-      this.setState({canvasHeight:canvas.height},()=>{
+      this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width},()=>{
         if(!isMira){
           this.props.onShapeAdded();
         }
       });
     }
+  } */
+
+  getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
+    let canvas = this._fc;
+    let cWidth =  canvas.getWidth() - 1;
+    let cHeight = canvas.getHeight() - 1;
+    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+      //cHeight = canvas.getHeight() - 1;
+    }
+    console.log("[getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
+    console.log("[getCanvasAtResoution]: Canvas width and height after removing 1 px", cWidth, cHeight );
+    if (canvas && cWidth !== newWidth  && canvas.upperCanvasEl) {
+    //if (canvas && canvas.upperCanvasEl) {
+      var scaleMultiplier = newWidth / cWidth;
+      var scaleHeightMultiplier = newHeight / cHeight;
+      var objects = canvas.getObjects();
+      for (var i in objects) {
+        objects[i].width = objects[i].width * scaleMultiplier;
+        objects[i].height = objects[i].height * scaleHeightMultiplier;
+        objects[i].left = objects[i].left * scaleMultiplier;
+        objects[i].top = objects[i].top * scaleMultiplier;
+        objects[i].setCoords();
+        var scaleFactor = this.state.scaleFactor * scaleMultiplier;
+        this.setState({ scaleFactor });
+        console.log("[getCanvasAtResoution]:object dimensions after scaling", objects[i]);
+      }
+      console.log("Resize Canvas Dimensions: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
+      canvas.discardActiveObject();
+      canvas.setWidth(cWidth * scaleMultiplier);
+      canvas.setHeight(cHeight * scaleHeightMultiplier);
+      this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
+      this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
+      canvas.renderAll();
+      canvas.calcOffset();
+      this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width},()=>{
+      });
+    }
+  }
+
+
+
+  getCanvasAtComponentMount = (newWidth, newHeight, scaleLandmarks = false) => {
+    let canvas = this._fc;
+    let cWidth =  canvas.getWidth();
+    let cHeight = canvas.getHeight();
+    var scaleMultiplier = newWidth / cWidth;
+    var scaleHeightMultiplier = newHeight / cHeight;
+    console.log("Resize Canvas Dimensions on component mount to: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
+    canvas.setWidth(cWidth * scaleMultiplier);
+    canvas.setHeight(cHeight * scaleHeightMultiplier);
+    this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
+    this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
+    canvas.renderAll();
+    canvas.calcOffset();
+    this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width},()=>{
+    });
+    this.resizeCanvas(true);
+  }
+
+  resizeCanvas = (addDimension = false) => {
+    let currCanvas = this._fc;
+    console.log("objects in the canvs befor resizeingg>>", currCanvas.getObjects());
+    //var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+    //var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
+   
+    var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+    let resolutionRatio = this.props.resolutionWidth / this.props.resolutionHeight;
+    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+      var overlayHeight = Math.ceil(this.props.resolutionHeight / (this.props.resolutionWidth / overlayWidth));
+    }else{
+      var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
+      overlayWidth = overlayHeight * resolutionRatio;
+    }
+    
+    console.log("[resizeCanvas][Current width and height of container] :", overlayWidth,overlayHeight);
+    console.log("[resizeCanvas][Current width and height of canvas] :", currCanvas.getWidth(),currCanvas.getHeight());
+    let newCanvasWidth = overlayWidth;
+    let newCanvasHeight = overlayHeight;
+    if(addDimension){
+      newCanvasWidth = overlayWidth + 1;
+      //if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+        newCanvasHeight = overlayHeight + 1;
+      //}
+      
+    }
+    //if( overlayWidth !== currCanvas.getWidth() ){
+      currCanvas.setHeight(newCanvasHeight);
+      currCanvas.setWidth(newCanvasWidth);
+      currCanvas.requestRenderAll();
+      this.props.trackingCanvasHeight(currCanvas.getHeight());
+      this.props.trackingCanvasWidth(currCanvas.getWidth());
+      console.log("[resizeCanvas][Width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
+    //}
   }
 
   bindLandmarks = (updateLandmarks = false, canvasData) => {
@@ -1269,7 +1399,7 @@ class SketchField extends PureComponent {
 
     // Control resize
 
-    window.addEventListener('resize', this._resize, false)
+    //window.addEventListener('resize', this._resize, false)
 
     // Initialize History, with maximum number of undo steps
     // this._history = new History(undoSteps);
@@ -1294,7 +1424,8 @@ class SketchField extends PureComponent {
     this.disableTouchScroll()
 
     // setTimeout(() => {
-    this._resize()
+    //this._resize()
+    this.resizeOverlayAndCanvasOnCompoentMount();
       // }, 3000);
 
       // if (image !== null) {
@@ -1305,8 +1436,11 @@ class SketchField extends PureComponent {
 
   }
 
-  componentWillUnmount = () =>
+  componentWillUnmount = () => {
     window.removeEventListener('resize', this._resize)
+    executeCanvasResize = false;
+  }
+    
 
   componentDidUpdate = (prevProps, prevState) => {
     // console.log(this.props, "props");
@@ -1316,7 +1450,7 @@ class SketchField extends PureComponent {
       this.props.width !== prevProps.width ||
       this.props.height !== prevProps.height
     ) {
-      this._resize()
+      //this._resize()
     }
 
     if (this.props.tool !== prevProps.tool) {
@@ -1424,7 +1558,8 @@ class SketchField extends PureComponent {
     // // }
     // }
 
-    this._resize()
+    this._resize();
+    this.resizeCanvas(true);
   }
 
   updateLandmarksPosition = () => {
@@ -1611,6 +1746,7 @@ class SketchField extends PureComponent {
       {},
       style ? style : {},
       width ? { width: '100%' } : { width: '100%' },
+      //width ? { width: this.state.canvasWidth } : { width: this.state.canvasWidth },
       height ? { height: this.state.canvasHeight } : { height: this.state.canvasHeight }
     )
 
@@ -1621,10 +1757,11 @@ class SketchField extends PureComponent {
         style={canvasDivStyle}
         id="onep-twop-container-2"
       >
-        <ReactResizeDetector onResize={this.onChangeSize.bind(this)} />
+        <ReactResizeDetector handleWidth handleHeight skipOnMount ={true} onResize={this.onChangeSize.bind(this)} />
         <div style={{ position: 'absolute' }}>
           <canvas
-            id={uuid4()}
+            //id={uuid4()}
+            id="tracking-canvas"
             // style={{
             // margin: "0 auto",
             // position: "absolute",
@@ -1640,9 +1777,8 @@ class SketchField extends PureComponent {
             // }}
             ref={c => (this._canvas = c)}
           >
-            Sorry, Canvas HTML5 element is not supported by your browser :(
- </canvas>
-        </div>
+          </canvas>
+          </div>
         {/* </ReactResizeDetector> */}
         {this._fc !== null && this._fc.item(0) && this.props.from === undefined &&
           <NvistaRoiSettings

@@ -213,11 +213,20 @@ class Rectangle extends FabricCanvasTool {
     }
   };
 
-  genrateTrackingArea = () => {
+  genrateTrackingArea = (fullWidth = true) => {
     let canvas = this._canvas;
     this.isDown = true;
-    let width = Math.ceil(canvas.getWidth() -1);
-    let height = Math.ceil(canvas.getHeight() -1);
+    //let width = Math.ceil(canvas.getWidth());
+    //let height = Math.ceil(canvas.getHeight());
+    let width = canvas.getWidth()-1;
+    let height;
+    if(fullWidth){
+      height = canvas.getHeight() - 1;
+    }else{
+      height = canvas.getHeight() - 2 ;
+    }
+    //let height = canvas.getHeight();
+    console.log("width and height of canvas while adding traking area object>>>>", width, height);
     let name = "trackingArea";
     let defaultName = "trackingArea";
     this.rect = new fabric.Rect({
