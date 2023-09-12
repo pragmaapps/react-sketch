@@ -141,6 +141,7 @@ class SketchField extends PureComponent {
     frontEnd: [],
     canvasHeight:512,
     canvasWidth:800,
+    strokeWidth:2,
     updateLandmarksForOtherWindow: false,
     lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
 
@@ -575,191 +576,14 @@ class SketchField extends PureComponent {
   * @private
   */
 
-  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
-  // if (e) e.preventDefault();
-  // let { widthCorrection, heightCorrection } = this.props;
-  // let canvas = this._fc;
-  // let { offsetWidth, clientHeight } = this._container;
-  // console.log(this._fc.height, "height");
-  // console.log(offsetWidth, "container width");
-
-  // // let containerHeight = Math.round(800 / (1280 / overlayWidth));
-  // let prevWidth = canvasWidth || canvas.getWidth();
-  // let prevHeight = canvasHeight || canvas.getHeight();
-  // let wfactor = ((offsetWidth - widthCorrection) / prevWidth).toFixed(2);
-  // let hfactor = ((clientHeight - heightCorrection) / prevHeight).toFixed(2);
-  // canvas.setWidth(offsetWidth - widthCorrection);
-  // canvas.setHeight(clientHeight - heightCorrection);
-  // if (canvas.backgroundImage) {
-  // // Need to scale background images as well
-  // let bi = canvas.backgroundImage;
-  // bi.width = bi.width * wfactor;
-  // bi.height = bi.height * hfactor
-  // }
-  // let objects = canvas.getObjects();
-  // for (let i in objects) {
-  // let obj = objects[i];
-  // let scaleX = obj.scaleX;
-  // let scaleY = obj.scaleY;
-  // let left = obj.left;
-  // let top = obj.top;
-  // let tempScaleX = scaleX * wfactor;
-  // let tempScaleY = scaleY * hfactor;
-  // let tempLeft = left * wfactor;
-  // let tempTop = top * hfactor;
-  // obj.scaleX = tempScaleX;
-  // obj.scaleY = tempScaleY;
-  // obj.left = tempLeft;
-  // obj.top = tempTop;
-  // obj.setCoords()
-  // }
-
-  // this.setState({
-  // parentWidth: offsetWidth
-  // });
-  // canvas.renderAll();
-  // canvas.calcOffset();
-  // };
-
-  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
-  // if (e) e.preventDefault();
-  // let canvas = this._fc;
-
-  // let { offsetWidth, clientHeight } = this._container;
-  // var overlayWidth = offsetWidth;
-
-  // var overlayHeight = Math.round(800 / (1280 / overlayWidth));
-  // var overlayContrain = overlayWidth / overlayHeight;
-  // console.log('[ONEPTWOP] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
-
-  // console.log(canvas.width, "canvas width");
-  // console.log(canvas.height, "canvas.height");
-  // var scaleMultiplier = overlayWidth / canvas.width;
-  // var scaleHeightMultiplier = overlayHeight / canvas.height;
-  // console.log(scaleMultiplier, "width scaler");
-  // console.log(scaleHeightMultiplier, "height scaler");
-  // var objects = canvas.getObjects();
-  // for (var i in objects) {
-  // if (objects[i].type == "image" || scaleLandmarks) {
-  // //objects[i].width = objects[i].width * scaleMultiplier;
-  // //objects[i].height = objects[i].height * scaleHeightMultiplier;
-  // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-  // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-  // this.scaleFactor = this.scaleFactor * scaleMultiplier;
-  // }
-  // objects[i].left = objects[i].left * scaleMultiplier;
-  // objects[i].top = objects[i].top * scaleMultiplier;
-  // objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
-  // objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
-  // objects[i].setCoords();
-  // }
-  // var obj = canvas.backgroundImage;
-  // if (obj) {
-  // obj.scaleX = obj.scaleX * scaleMultiplier;
-  // obj.scaleY = obj.scaleY * scaleMultiplier;
-  // }
-  // console.log(canvas.getWidth(), "canvas width");
-  // console.log(canvas.getHeight(), "canvas height");
-  // console.log("[ONEPTWOP] resize canvas dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
-  // canvas.discardActiveObject();
-  // canvas.setWidth(canvas.getWidth() * scaleMultiplier);
-  // canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
-  // canvas.renderAll();
-  // canvas.calcOffset();
-
-  // this.setState({
-  // parentWidth: offsetWidth
-  // });
-  // canvas.renderAll();
-  // canvas.calcOffset();
-  // };
-
-  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
-  // let canvas = this._fc
-
-  // if (canvas && canvas.upperCanvasEl) {
-  // var overlayWidth = document.getElementById('onep-twop-container-2')
-  // .offsetWidth
-  // } else {
-  // var overlayWidth = document.getElementById('oneptwop-container')
-  // .offsetWidth
-  // }
-  // // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-  // // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
-  // var overlayHeight = Math.round(800 / (1280 / overlayWidth))
-  // var overlayContrain = overlayWidth / overlayHeight
-  // console.log(
-  // '[ONEPTWOP] Color Overlay Width:',
-  // overlayWidth,
-  // overlayHeight,
-  // overlayContrain
-  // )
-  // this.getCanvasAtResoution(overlayWidth, overlayHeight, false)
-  // }
-
-  // getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
-  // let canvas = this._fc
-  // // let { offsetWidth, clientHeight } = this._container;
-
-  // if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
-  // var scaleMultiplier = newWidth / canvas.width
-  // var scaleHeightMultiplier = newHeight / canvas.height
-  // var objects = canvas.getObjects()
-
-  // for (var i in objects) {
-  // if (objects[i].type == 'image' || scaleLandmarks) {
-  // // objects[i].width = objects[i].width * scaleMultiplier;
-  // // objects[i].height = objects[i].height * scaleHeightMultiplier;
-  // objects[i].scaleX = objects[i].scaleX * scaleMultiplier
-  // objects[i].scaleY = objects[i].scaleY * scaleMultiplier
-  // objects[i].setCoords()
-  // let scaleFactor = this.state.scaleFactor * scaleMultiplier
-  // this.setState({ scaleFactor })
-  // }
-  // objects[i].left = objects[i].left * scaleMultiplier
-  // objects[i].top = objects[i].top * scaleMultiplier
-  // objects[i].cnWidth = canvas.getWidth() * scaleMultiplier
-  // objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier
-  // objects[i].setCoords()
-  // }
-  // var obj = canvas.backgroundImage
-  // if (obj) {
-  // obj.scaleX = obj.scaleX * scaleMultiplier
-  // obj.scaleY = obj.scaleY * scaleMultiplier
-  // }
-  // console.log(
-  // '[ONEPTWOP] Resize Canvas Dimensions: ',
-  // canvas.getWidth() * scaleMultiplier,
-  // canvas.getHeight() * scaleHeightMultiplier
-  // )
-  // canvas.discardActiveObject()
-  // canvas.setWidth(canvas.getWidth() * scaleMultiplier)
-  // canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier)
-  // canvas.renderAll()
-  // canvas.calcOffset()
-  // // this.setState({
-  // // parentWidth: offsetWidth
-  // // });
-  // // var boss = window.canvas.getObjects().filter(o => o.type == "image")[0];
-  // // if (boss) {
-  // // this.bindLandmarks();
-  // // }
-  // }
-  // }
-
-
-  _resize = (e, canvasWidth = null, canvasHeight = null) => {
+  getOverlayDimensions  = () => {
     let canvas = this._fc;
-    let trackingArea = canvas.getObjects().find(ob => ob.id === "trackingArea");
-    //if(trackingArea)return;
     if (canvas && canvas.upperCanvasEl) {
       var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
     }
     else {
       var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
     }
-    // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-    // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
     let resolutionRatio = this.props.resolutionWidth / this.props.resolutionHeight;
     if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
       var overlayHeight = Math.ceil(this.props.resolutionHeight / (this.props.resolutionWidth / overlayWidth));
@@ -767,27 +591,17 @@ class SketchField extends PureComponent {
       var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
       var overlayWidth = overlayHeight * resolutionRatio;
     }
-    console.log('Color Overlay Width:', overlayWidth, overlayHeight);
+    console.log('[Tracking Setting][Tracking Area] Canvas Overlay Width:', overlayWidth, overlayHeight);
+    return { overlayWidth: overlayWidth,overlayHeight: overlayHeight }
+  }
+
+  _resize = (e, canvasWidth = null, canvasHeight = null) => {
+    let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
     this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
   };
 
   resizeOverlayAndCanvasOnCompoentMount = (e, canvasWidth = null, canvasHeight = null) => {
-    let canvas = this._fc;
-    if (canvas && canvas.upperCanvasEl) {
-      var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-    }
-    else {
-      var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
-    }
-    // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-    // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
-    let resolutionRatio = this.props.resolutionWidth / this.props.resolutionHeight;
-    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
-      var overlayHeight = Math.ceil(this.props.resolutionHeight / (this.props.resolutionWidth / overlayWidth));
-    }else{
-      var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
-      var overlayWidth = overlayHeight * resolutionRatio;
-    }
+    let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
     this.getCanvasAtComponentMount(overlayWidth, overlayHeight, false);
   };
 
@@ -870,13 +684,13 @@ class SketchField extends PureComponent {
 
   getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
     let canvas = this._fc;
-    let cWidth =  canvas.getWidth() - 1;
-    let cHeight = canvas.getHeight() - 1;
+    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    let cHeight = canvas.getHeight() - this.state.strokeWidth;
     if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
       //cHeight = canvas.getHeight() - 1;
     }
-    console.log("[getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
-    console.log("[getCanvasAtResoution]: Canvas width and height after removing 1 px", cWidth, cHeight );
+    console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
+    console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas width and height after removing 1 px", cWidth, cHeight );
     if (canvas && cWidth !== newWidth  && canvas.upperCanvasEl) {
     //if (canvas && canvas.upperCanvasEl) {
       var scaleMultiplier = newWidth / cWidth;
@@ -890,9 +704,9 @@ class SketchField extends PureComponent {
         objects[i].setCoords();
         var scaleFactor = this.state.scaleFactor * scaleMultiplier;
         this.setState({ scaleFactor });
-        console.log("[getCanvasAtResoution]:object dimensions after scaling", objects[i]);
+        console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: object details after resizing", objects[i]);
       }
-      console.log("Resize Canvas Dimensions: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
+      console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
       canvas.discardActiveObject();
       canvas.setWidth(cWidth * scaleMultiplier);
       canvas.setHeight(cHeight * scaleHeightMultiplier);
@@ -905,15 +719,13 @@ class SketchField extends PureComponent {
     }
   }
 
-
-
   getCanvasAtComponentMount = (newWidth, newHeight, scaleLandmarks = false) => {
     let canvas = this._fc;
     let cWidth =  canvas.getWidth();
     let cHeight = canvas.getHeight();
     var scaleMultiplier = newWidth / cWidth;
     var scaleHeightMultiplier = newHeight / cHeight;
-    console.log("Resize Canvas Dimensions on component mount to: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
+    console.log("[Tracking Settings][Sketch Field][getCanvasAtComponentMount][component mount] Resize Canvas Dimensions to: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
     canvas.setWidth(cWidth * scaleMultiplier);
     canvas.setHeight(cHeight * scaleHeightMultiplier);
     this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
@@ -927,38 +739,21 @@ class SketchField extends PureComponent {
 
   resizeCanvas = (addDimension = false) => {
     let currCanvas = this._fc;
-    console.log("objects in the canvs befor resizeingg>>", currCanvas.getObjects());
-    //var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-    //var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
-   
-    var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-    let resolutionRatio = this.props.resolutionWidth / this.props.resolutionHeight;
-    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
-      var overlayHeight = Math.ceil(this.props.resolutionHeight / (this.props.resolutionWidth / overlayWidth));
-    }else{
-      var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
-      overlayWidth = overlayHeight * resolutionRatio;
-    }
-    
-    console.log("[resizeCanvas][Current width and height of container] :", overlayWidth,overlayHeight);
-    console.log("[resizeCanvas][Current width and height of canvas] :", currCanvas.getWidth(),currCanvas.getHeight());
+    let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
+    console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of overlay container] :", overlayWidth, overlayHeight);
+    console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of canvas] :", currCanvas.getWidth(),currCanvas.getHeight());
     let newCanvasWidth = overlayWidth;
     let newCanvasHeight = overlayHeight;
     if(addDimension){
-      newCanvasWidth = overlayWidth + 1;
-      //if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
-        newCanvasHeight = overlayHeight + 1;
-      //}
-      
+      newCanvasWidth = this.getActualCanvasDimensions(overlayWidth, overlayHeight, true).width;
+      newCanvasHeight = this.getActualCanvasDimensions(overlayWidth,overlayHeight,true).height;
     }
-    //if( overlayWidth !== currCanvas.getWidth() ){
-      currCanvas.setHeight(newCanvasHeight);
-      currCanvas.setWidth(newCanvasWidth);
-      currCanvas.requestRenderAll();
-      this.props.trackingCanvasHeight(currCanvas.getHeight());
-      this.props.trackingCanvasWidth(currCanvas.getWidth());
-      console.log("[resizeCanvas][Width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
-    //}
+    currCanvas.setHeight(newCanvasHeight);
+    currCanvas.setWidth(newCanvasWidth);
+    currCanvas.requestRenderAll();
+    this.props.trackingCanvasHeight(currCanvas.getHeight());
+    this.props.trackingCanvasWidth(currCanvas.getWidth());
+    console.log("[Tracking Settings][Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
   }
 
   bindLandmarks = (updateLandmarks = false, canvasData) => {
@@ -982,6 +777,14 @@ class SketchField extends PureComponent {
       this.updateOnepTwop('_landmarks');
       console.log("[MIRA] Updated list of landmarks objects: ", JSON.stringify(landMarks));
     }
+  }
+
+  getActualCanvasDimensions = (width, height, fullWidth=true) => {
+    let canvas = this._fc;
+    let obj = { width:width, height:height };
+    obj.width = width + this.state.strokeWidth;
+    obj.height = height + ( fullWidth ? this.state.strokeWidth : (this.state.strokeWidth +1) );
+    return obj;
   }
 
   /**
@@ -1716,7 +1519,7 @@ class SketchField extends PureComponent {
       top: 0,
       originX: "left",
       originY: "top",
-      strokeWidth: 1,
+      strokeWidth: this.state.strokeWidth,
       transparentCorners: false,
       name: "trackingArea",
       defaultName: "trackingArea",

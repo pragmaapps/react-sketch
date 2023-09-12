@@ -15,6 +15,7 @@ class Rectangle extends FabricCanvasTool {
     this.isDown = true;
     this.isDragging = false;
     this.objectAdd = false;
+    this.strokeWidth = 2;
   }
 
   doMouseDown(options, props, sketch) {
@@ -218,15 +219,15 @@ class Rectangle extends FabricCanvasTool {
     this.isDown = true;
     //let width = Math.ceil(canvas.getWidth());
     //let height = Math.ceil(canvas.getHeight());
-    let width = canvas.getWidth()-1;
+    let width = canvas.getWidth()- this.strokeWidth;
     let height;
     if(fullWidth){
-      height = canvas.getHeight() - 1;
+      height = canvas.getHeight() - this.strokeWidth;
     }else{
-      height = canvas.getHeight() - 2 ;
+      height = canvas.getHeight() - (this.strokeWidth + 1) ;
     }
     //let height = canvas.getHeight();
-    console.log("width and height of canvas while adding traking area object>>>>", width, height);
+    console.log("[Tracking Settings][Sketch Field][Rectangle][genrateTrackingArea]: Width and Height of canvas after removing stroke width", width, height);
     let name = "trackingArea";
     let defaultName = "trackingArea";
     this.rect = new fabric.Rect({
@@ -237,7 +238,7 @@ class Rectangle extends FabricCanvasTool {
       width: width,
       height: height,
       stroke: "red",
-      strokeWidth: 1,
+      strokeWidth: this.strokeWidth,
       fill: this._fill,
       transparentCorners: false,
       name: name,
