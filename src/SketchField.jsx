@@ -411,7 +411,10 @@ class SketchField extends PureComponent {
     // record current object state as json and update to originalState
     obj.__originalState = objState
     let currState = JSON.stringify(objState)
-    this.props.updateIsTrackingSettingsChanged(true);
+    this.props.updateIsTrackingSettingsChanged({
+      isTrackingSettingChanged: true,
+      defineArenaZoneEdited: true
+    });
     // this._history.keep([obj, prevState, currState]);
   }
 
@@ -445,7 +448,10 @@ class SketchField extends PureComponent {
       this.props.onShapeAdded();
       this.checkWithInBoundary();
     }
-    this.props.updateIsTrackingSettingsChanged(true);
+    this.props.updateIsTrackingSettingsChanged({
+      isTrackingSettingChanged: true,
+      trackingAreaEdited: true
+    });
   }
 
   checkWithInBoundary = async() =>{
