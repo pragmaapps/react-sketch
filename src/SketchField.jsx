@@ -596,8 +596,10 @@ class SketchField extends PureComponent {
     if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
       var overlayHeight = Math.ceil(this.props.resolutionHeight / (this.props.resolutionWidth / overlayWidth));
     }else{
-      var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
-      var overlayWidth = overlayHeight * resolutionRatio;
+      //var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
+      //var overlayWidth = overlayHeight * resolutionRatio;
+      var overlayHeight = document.getElementById("video-container-3").offsetHeight;
+      var overlayWidth = Math.ceil(this.props.resolutionWidth / (this.props.resolutionHeight / overlayHeight));
     }
     console.log('[Tracking Setting][Tracking Area] Canvas Overlay Width:', overlayWidth, overlayHeight);
     return { overlayWidth: overlayWidth,overlayHeight: overlayHeight }
@@ -695,7 +697,7 @@ class SketchField extends PureComponent {
     let cWidth =  canvas.getWidth() - this.state.strokeWidth;
     let cHeight = canvas.getHeight() - this.state.strokeWidth;
     if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
-      //cHeight = canvas.getHeight() - 1;
+      //cHeight = canvas.getHeight() - this.state.strokeWidth;
     }
     console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
     console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas width and height after removing 1 px", cWidth, cHeight );
@@ -705,10 +707,12 @@ class SketchField extends PureComponent {
       var scaleHeightMultiplier = newHeight / cHeight;
       var objects = canvas.getObjects();
       for (var i in objects) {
-        objects[i].width = objects[i].width * scaleMultiplier;
-        objects[i].height = objects[i].height * scaleHeightMultiplier;
+        //objects[i].width = objects[i].width * scaleMultiplier;
+        //objects[i].height = objects[i].height * scaleHeightMultiplier;
         objects[i].left = objects[i].left * scaleMultiplier;
         objects[i].top = objects[i].top * scaleMultiplier;
+        objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+        objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
         objects[i].setCoords();
         var scaleFactor = this.state.scaleFactor * scaleMultiplier;
         this.setState({ scaleFactor });

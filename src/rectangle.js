@@ -224,7 +224,7 @@ class Rectangle extends FabricCanvasTool {
     if(fullWidth){
       height = canvas.getHeight() - this.strokeWidth;
     }else{
-      height = canvas.getHeight() - (this.strokeWidth + 1) ;
+      height = canvas.getHeight() - (this.strokeWidth + 2) ;
     }
     //let height = canvas.getHeight();
     console.log("[Tracking Settings][Sketch Field][Rectangle][genrateTrackingArea]: Width and Height of canvas after removing stroke width", width, height);
@@ -247,10 +247,11 @@ class Rectangle extends FabricCanvasTool {
       evented: true,
       id: "trackingArea",
       hasBorders: false,
-      cornerSize: 6,
+      cornerSize: 10,
       angle: 0,
       enable: true,
       description: "",
+      objectCaching: false
     });
     canvas.add(this.rect).setActiveObject(this.rect);
     // this.containInsideBoundary(options);
