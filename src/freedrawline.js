@@ -57,6 +57,10 @@ class FreeDrawLine extends FabricCanvasTool {
         this.startPoint = null;
         this.objectAdd = true;
         props.onLineAdded();
+        props.updateIsTrackingSettingsChanged({
+          isTrackingSettingChanged: true,
+          calibratedArenaEdited: true
+        });
 
         // Reset starting point
         this.startPoint = null;
