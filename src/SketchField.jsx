@@ -612,9 +612,8 @@ class SketchField extends PureComponent {
     this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
   };
 
-  resizeZones = () => {
-    let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
-    let newWidth = overlayWidth, newHeight = overlayHeight;
+  resizeZones = (newWidth, newHeight) => {
+    console.log(newWidth,"newWidth", newHeight,"newHeight");
     let { scaleHeightMultiplier, scaleMultiplier } = this.state;
     let canvas = this._fc;
     let cWidth =  canvas.getWidth() - this.state.strokeWidth;
@@ -627,10 +626,10 @@ class SketchField extends PureComponent {
     console.log("[[Tracking Settings][Sketch Field][resizeZones]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
     if (canvas && canvas.upperCanvasEl) {
     //if (canvas && canvas.upperCanvasEl) {
-      if(!scaleMultiplier)
-        scaleMultiplier = newWidth / cWidth;
-      if(!scaleHeightMultiplier)
-        scaleHeightMultiplier = newHeight / cHeight;
+      // if(!scaleMultiplier)
+        scaleMultiplier = cWidth / newWidth;
+      // if(!scaleHeightMultiplier)
+        scaleHeightMultiplier =  cHeight / newHeight;
       var objects = canvas.getObjects();
       for (var i in objects) {
         //objects[i].width = objects[i].width * scaleMultiplier;
@@ -642,9 +641,9 @@ class SketchField extends PureComponent {
         objects[i].setCoords();
         var scaleFactor = this.state.scaleFactor * scaleMultiplier;
         this.setState({ scaleFactor });
-        console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: object details after resizing", objects[i]);
+        console.log("[Tracking Settings][Sketch Field][resizeZones]: object details after resizing", objects[i]);
       }
-      console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
+      console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
       canvas.discardActiveObject();
       canvas.setWidth(cWidth * scaleMultiplier);
       canvas.setHeight(cHeight * scaleHeightMultiplier);
