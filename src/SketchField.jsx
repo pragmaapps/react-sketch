@@ -1590,7 +1590,7 @@ class SketchField extends PureComponent {
       height: updatedheight,
       id: "trackingArea",
       fill: "transparent",
-      stroke: "red",
+      stroke: '#ff0000',
       selectable: true,
       evented: true,
       hasBorders: false,
