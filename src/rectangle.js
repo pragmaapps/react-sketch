@@ -166,14 +166,14 @@ class Rectangle extends FabricCanvasTool {
   checkWithInBoundary = async (props) => {
     let canvas = this._canvas; 
     let isObjectOutSideBoundary = false;
-    canvas.getObjects().forEach((shape) => {
+        canvas.getObjects().forEach((shape) => {
       if(shape.id === "calibratedLine") return;
       let boundaryObj = props.getboudaryCoords();
       if(!boundaryObj) return;
       if((shape.left < boundaryObj.left ||
         shape.top < boundaryObj.top ||
-        shape.left + shape.width > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
-        shape.top + shape.height > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
+        shape.left + (shape.width * shape.scaleX) > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
+        shape.top + (shape.height * shape.scaleY) > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
           props.addColorInDefaultShapeColors(shape.stroke);
           props.deleteROIDefaultName(shape.defaultName);
           canvas.remove(shape);

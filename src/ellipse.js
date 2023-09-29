@@ -176,8 +176,8 @@ class Ellipse extends FabricCanvasTool {
       if(!boundaryObj) return;
       if((shape.left < boundaryObj.left ||
         shape.top < boundaryObj.top ||
-        shape.left + shape.width > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
-        shape.top + shape.height > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
+        shape.left + (shape.width * shape.scaleX) > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
+        shape.top + (shape.height * shape.scaleY) > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
           props.addColorInDefaultShapeColors(shape.stroke);
           props.deleteROIDefaultName(shape.defaultName);
           canvas.remove(shape);

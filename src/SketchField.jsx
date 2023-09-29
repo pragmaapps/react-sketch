@@ -613,7 +613,7 @@ class SketchField extends PureComponent {
   };
 
   resizeZones = (newWidth, newHeight) => {
-    console.log(newWidth,"newWidth", newHeight,"newHeight");
+    console.log("[Tracking Settings][Sketch Field][resizeZones] New width",newWidth,"NewHeight", newHeight);
     let { scaleHeightMultiplier, scaleMultiplier } = this.state;
     let canvas = this._fc;
     let cWidth =  canvas.getWidth() - this.state.strokeWidth;
@@ -630,6 +630,9 @@ class SketchField extends PureComponent {
         scaleMultiplier = cWidth / newWidth;
       // if(!scaleHeightMultiplier)
         scaleHeightMultiplier =  cHeight / newHeight;
+        let cnwidthMultiplier = newWidth / cWidth;
+        let cnHeightMultiplier = newHeight / cHeight;
+        console.log("[[Tracking Settings][Sketch Field][resizeZones]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
       var objects = canvas.getObjects();
       for (var i in objects) {
         //objects[i].width = objects[i].width * scaleMultiplier;
@@ -640,19 +643,20 @@ class SketchField extends PureComponent {
         objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
         objects[i].setCoords();
         var scaleFactor = this.state.scaleFactor * scaleMultiplier;
-        this.setState({ scaleFactor });
+        // this.setState({ scaleFactor });
         console.log("[Tracking Settings][Sketch Field][resizeZones]: object details after resizing", objects[i]);
       }
-      console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
+      console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas Dimensions after resize", cHeight * cnwidthMultiplier, cWidth * cnHeightMultiplier);
       canvas.discardActiveObject();
-      canvas.setWidth(cWidth * scaleMultiplier);
-      canvas.setHeight(cHeight * scaleHeightMultiplier);
-      this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
-      this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
+      // canvas.setWidth(cWidth * cnwidthMultiplier);
+      // canvas.setHeight(cHeight * cnHeightMultiplier);
+      // this.props.trackingCanvasHeight(cHeight * cnHeightMultiplier);
+      // this.props.trackingCanvasWidth( cWidth * cnwidthMultiplier);
       canvas.renderAll();
-      canvas.calcOffset();
-      this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
-      });
+      // canvas.calcOffset();
+      // this.props.onShapeAdded();
+      // this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
+      // });
     }
   }
 
@@ -759,7 +763,7 @@ class SketchField extends PureComponent {
         objects[i].top = objects[i].top * scaleMultiplier;
         objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
         objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-        objects[i].setCoords();
+                objects[i].setCoords();
         var scaleFactor = this.state.scaleFactor * scaleMultiplier;
         this.setState({ scaleFactor });
         console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: object details after resizing", objects[i]);
@@ -773,7 +777,7 @@ class SketchField extends PureComponent {
       canvas.renderAll();
       canvas.calcOffset();
       this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
-      });
+              });
     }
   }
 
@@ -791,7 +795,7 @@ class SketchField extends PureComponent {
     canvas.renderAll();
     canvas.calcOffset();
     this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width},()=>{
-    });
+          });
     this.resizeCanvas(true);
   }
 
@@ -811,7 +815,7 @@ class SketchField extends PureComponent {
     currCanvas.requestRenderAll();
     this.props.trackingCanvasHeight(currCanvas.getHeight());
     this.props.trackingCanvasWidth(currCanvas.getWidth());
-    console.log("[Tracking Settings][Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
+        console.log("[Tracking Settings][Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
   }
 
   bindLandmarks = (updateLandmarks = false, canvasData) => {
@@ -1311,7 +1315,8 @@ class SketchField extends PureComponent {
       this.props.width !== prevProps.width ||
       this.props.height !== prevProps.height
     ) {
-      //this._resize()
+      this._resize();
+    this.resizeCanvas(true);
     }
 
     if (this.props.tool !== prevProps.tool) {
@@ -1347,7 +1352,7 @@ class SketchField extends PureComponent {
 
     // if (this.props.callResize !== this.state.callResize) {
     // this._resize();
-    // this.setState({ callResize: this.props.callResize });
+        // this.setState({ callResize: this.props.callResize });
     // }
 
     if (this.props.oneptwop) {
