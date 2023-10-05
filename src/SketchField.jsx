@@ -781,12 +781,31 @@ class SketchField extends PureComponent {
     }
   }
 
+  /*scaleObject = (object, scaleMultiplier) =>{
+    object.left = object.left * scaleMultiplier;
+    object.top = object.top * scaleMultiplier;
+    object.scaleX = object.scaleX * scaleMultiplier;
+    object.scaleY = object.scaleY * scaleMultiplier;
+    return object
+  }*/
+
   getCanvasAtComponentMount = (newWidth, newHeight, scaleLandmarks = false) => {
     let canvas = this._fc;
     let cWidth =  canvas.getWidth();
     let cHeight = canvas.getHeight();
     var scaleMultiplier = newWidth / cWidth;
     var scaleHeightMultiplier = newHeight / cHeight;
+    /*let scaleMultiplierForObjects = newWidth / this.props.oldCanvasWidth;
+    let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects);
+    this.props.saveDimesions(trackingArea);
+    let lineShape = this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape)), scaleMultiplierForObjects);
+    this.props.updateLineShape(lineShape);
+    let zones = [];
+    this.props.zones.map(zone => {
+      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects)));
+      zones.push(scaledObject);
+    })
+    this.props.updateArenaZoneShapesList(zones);*/
     console.log("[Tracking Settings][Sketch Field][getCanvasAtComponentMount][component mount] Resize Canvas Dimensions to: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
     canvas.setWidth(cWidth * scaleMultiplier);
     canvas.setHeight(cHeight * scaleHeightMultiplier);
@@ -1315,8 +1334,8 @@ class SketchField extends PureComponent {
       this.props.width !== prevProps.width ||
       this.props.height !== prevProps.height
     ) {
-      this._resize();
-    this.resizeCanvas(true);
+    //   this._resize();
+    // this.resizeCanvas(true);
     }
 
     if (this.props.tool !== prevProps.tool) {
