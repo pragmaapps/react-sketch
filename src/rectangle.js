@@ -224,7 +224,7 @@ class Rectangle extends FabricCanvasTool {
     if(fullWidth){
       height = canvas.getHeight() - this.strokeWidth;
     }else{
-      height = canvas.getHeight() - (this.strokeWidth + 2) ;
+      height = canvas.getHeight() - (this.strokeWidth + 0) ;
     }
     //let height = canvas.getHeight();
     console.log("[Tracking Settings][Sketch Field][Rectangle][genrateTrackingArea]: Width and Height of canvas after removing stroke width", width, height);
