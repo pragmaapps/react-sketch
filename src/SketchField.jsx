@@ -31,6 +31,7 @@ fabric.Object.prototype.set({
   cornerStyle : 'circle',
   strokeUniform: true,
 });
+fabric.Object.NUM_FRACTION_DIGITS = 17;
 
 /**
  * Sketch Tool based on FabricJS for React Applications
@@ -616,8 +617,10 @@ class SketchField extends PureComponent {
     console.log("[Tracking Settings][Sketch Field][resizeZones] New width",newWidth,"NewHeight", newHeight);
     let { scaleHeightMultiplier, scaleMultiplier } = this.state;
     let canvas = this._fc;
-    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
-    let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    //let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    let cWidth =  canvas.getWidth();
+    let cHeight = canvas.getHeight();
     if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
       //cHeight = canvas.getHeight() - this.state.strokeWidth;
     }
@@ -768,6 +771,8 @@ class SketchField extends PureComponent {
         this.setState({ scaleFactor });
         console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: object details after resizing", objects[i]);
       }
+      this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier);
+      this.updateObjectsInRedux(scaleMultiplier);
       console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
       canvas.discardActiveObject();
       canvas.setWidth(cWidth * scaleMultiplier);
@@ -781,13 +786,49 @@ class SketchField extends PureComponent {
     }
   }
 
-  /*scaleObject = (object, scaleMultiplier) =>{
+  scaleObject = (object, scaleMultiplier) =>{
     object.left = object.left * scaleMultiplier;
     object.top = object.top * scaleMultiplier;
     object.scaleX = object.scaleX * scaleMultiplier;
     object.scaleY = object.scaleY * scaleMultiplier;
-    return object
-  }*/
+    return object;
+  }
+
+  updateObjectsInReduxAnimalTrackingKey = (scaleMultiplier) => {
+    let scaleMultiplierForObjects = scaleMultiplier;
+    let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects);
+    this.props.saveDimesions(trackingArea);
+    let lineShape = this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape)), scaleMultiplierForObjects);
+    this.props.updateLineShape(lineShape);
+    let zones = [];
+    this.props.zones.map(zone => {
+      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects)));
+      zones.push(scaledObject);
+    })
+    this.props.updateArenaZoneShapesList(zones);
+  }
+
+  updateObjectsInRedux = (scaleMultiplier) => {
+    const { selectedCameraForTracking } = this.props;
+    let nVisionSession = JSON.parse(JSON.stringify(this.props.nVisionSession));
+    let trackingInterface = nVisionSession.userInterface.trackingInterface;
+    let trackingArea = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].trackingArea));
+    console.log("[tracking settings][resizeZonesOnPanelChange][scaling objects][object details before scaling]: ", trackingArea);
+    let lineShape = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates));
+    let arenaZoneShapesList = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].arenaZone.zoneList));
+    trackingArea.geometry.coordinates = this.scaleObject(trackingArea.geometry.coordinates,scaleMultiplier );
+    lineShape = this.scaleObject(lineShape, scaleMultiplier);
+    let zones = [];
+    arenaZoneShapesList.map(zone => {
+      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplier)));
+      zones.push(scaledObject);
+    })
+    console.log("[Tracking Settings][VideoViewingControls][resizeZonesOnPanelChange]: Objects details after rescaling: ", arenaZoneShapesList );
+    nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].trackingArea = trackingArea;
+    nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates = lineShape;
+    nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].arenaZone.zoneList = zones;
+    this.props.updateNvisionSession(nVisionSession);
+  }
 
   getCanvasAtComponentMount = (newWidth, newHeight, scaleLandmarks = false) => {
     let canvas = this._fc;
