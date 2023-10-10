@@ -625,8 +625,8 @@ class SketchField extends PureComponent {
       //cHeight = canvas.getHeight() - this.state.strokeWidth;
     }
     console.log("[Tracking Settings][Sketch Field][resizeZones]: Overlay container new width and new height", newWidth, newHeight );
-    console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas width and height after removing 1 px", cWidth, cHeight );
-    console.log("[[Tracking Settings][Sketch Field][resizeZones]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
+    console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas width and height", cWidth, cHeight );
+    console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas scaleMultiplier", scaleMultiplier, "heightmultiplier", scaleHeightMultiplier);
     if (canvas && canvas.upperCanvasEl) {
     //if (canvas && canvas.upperCanvasEl) {
       // if(!scaleMultiplier)
@@ -635,7 +635,7 @@ class SketchField extends PureComponent {
         scaleHeightMultiplier =  cHeight / newHeight;
         let cnwidthMultiplier = newWidth / cWidth;
         let cnHeightMultiplier = newHeight / cHeight;
-        console.log("[[Tracking Settings][Sketch Field][resizeZones]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
+        console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
       var objects = canvas.getObjects();
       for (var i in objects) {
         //objects[i].width = objects[i].width * scaleMultiplier;
@@ -649,12 +649,15 @@ class SketchField extends PureComponent {
         // this.setState({ scaleFactor });
         console.log("[Tracking Settings][Sketch Field][resizeZones]: object details after resizing", objects[i]);
       }
+
+      this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier);
+      this.updateObjectsInRedux(scaleMultiplier);
       console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas Dimensions after resize", cHeight * cnwidthMultiplier, cWidth * cnHeightMultiplier);
       canvas.discardActiveObject();
       // canvas.setWidth(cWidth * cnwidthMultiplier);
       // canvas.setHeight(cHeight * cnHeightMultiplier);
-      // this.props.trackingCanvasHeight(cHeight * cnHeightMultiplier);
-      // this.props.trackingCanvasWidth( cWidth * cnwidthMultiplier);
+      this.props.trackingCanvasHeight(cHeight * cnHeightMultiplier);
+      this.props.trackingCanvasWidth( cWidth * cnwidthMultiplier);
       canvas.renderAll();
       // canvas.calcOffset();
       // this.props.onShapeAdded();
@@ -753,7 +756,7 @@ class SketchField extends PureComponent {
       //cHeight = canvas.getHeight() - this.state.strokeWidth;
     }
     console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
-    console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas width and height after removing 1 px", cWidth, cHeight );
+    console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas width and height after removing 2 px", cWidth, cHeight );
     if (canvas && cWidth !== newWidth  && canvas.upperCanvasEl) {
     //if (canvas && canvas.upperCanvasEl) {
       var scaleMultiplier = newWidth / cWidth;
@@ -847,7 +850,7 @@ class SketchField extends PureComponent {
       zones.push(scaledObject);
     })
     this.props.updateArenaZoneShapesList(zones);*/
-    console.log("[Tracking Settings][Sketch Field][getCanvasAtComponentMount][component mount] Resize Canvas Dimensions to: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
+    console.log("[Tracking Settings][Sketch Field][getCanvasAtComponentMount][component mount] Resize Canvas Dimensions to: ", cHeight * scaleHeightMultiplier, cWidth * scaleMultiplier);
     canvas.setWidth(cWidth * scaleMultiplier);
     canvas.setHeight(cHeight * scaleHeightMultiplier);
     this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
