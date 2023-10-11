@@ -666,6 +666,59 @@ class SketchField extends PureComponent {
     }
   }
 
+  resizeZonesOnImport = (newWidth, newHeight) => {
+    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport] New width",newWidth,"NewHeight", newHeight);
+    let { scaleHeightMultiplier, scaleMultiplier } = this.state;
+    let canvas = this._fc;
+    //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    //let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    let cWidth =  canvas.getWidth();
+    let cHeight = canvas.getHeight();
+    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+      //cHeight = canvas.getHeight() - this.state.strokeWidth;
+    }
+    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Overlay container new width and new height", newWidth, newHeight );
+    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas width and height", cWidth, cHeight );
+    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas scaleMultiplier", scaleMultiplier, "heightmultiplier", scaleHeightMultiplier);
+    if (canvas && canvas.upperCanvasEl) {
+    //if (canvas && canvas.upperCanvasEl) {
+      // if(!scaleMultiplier)
+        scaleMultiplier = cWidth / newWidth;
+      // if(!scaleHeightMultiplier)
+        scaleHeightMultiplier =  cHeight / newHeight;
+        let cnwidthMultiplier = newWidth / cWidth;
+        let cnHeightMultiplier = newHeight / cHeight;
+        console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
+      var objects = canvas.getObjects();
+      for (var i in objects) {
+        //objects[i].width = objects[i].width * scaleMultiplier;
+        //objects[i].height = objects[i].height * scaleHeightMultiplier;
+        objects[i].left = objects[i].left * scaleMultiplier;
+        objects[i].top = objects[i].top * scaleMultiplier;
+        objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+        objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+        objects[i].setCoords();
+        var scaleFactor = this.state.scaleFactor * scaleMultiplier;
+        // this.setState({ scaleFactor });
+        console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: object details after resizing", objects[i]);
+      }
+
+      // this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier);
+      // this.updateObjectsInRedux(scaleMultiplier);
+      console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas Dimensions after resize", cHeight * cnwidthMultiplier, cWidth * cnHeightMultiplier);
+      canvas.discardActiveObject();
+      // canvas.setWidth(cWidth * cnwidthMultiplier);
+      // canvas.setHeight(cHeight * cnHeightMultiplier);
+      // this.props.trackingCanvasHeight(cHeight);
+      // this.props.trackingCanvasWidth( cWidth);
+      canvas.renderAll();
+      // canvas.calcOffset();
+      // this.props.onShapeAdded();
+      // this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
+      // });
+    }
+  }
+
   resizeOverlayAndCanvasOnCompoentMount = (e, canvasWidth = null, canvasHeight = null) => {
     let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
     this.getCanvasAtComponentMount(overlayWidth, overlayHeight, false);
