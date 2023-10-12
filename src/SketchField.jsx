@@ -613,14 +613,16 @@ class SketchField extends PureComponent {
     this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
   };
 
-  resizeZones = (newWidth, newHeight) => {
-    console.log("[Tracking Settings][Sketch Field][resizeZones] New width",newWidth,"NewHeight", newHeight);
+  resizeZones = (oldWidth, oldHeight) => {
+    return;
     let { scaleHeightMultiplier, scaleMultiplier } = this.state;
     let canvas = this._fc;
     //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
     //let cHeight = canvas.getHeight() - this.state.strokeWidth;
-    let cWidth =  canvas.getWidth();
-    let cHeight = canvas.getHeight();
+    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    let newWidth = oldWidth - this.state.strokeWidth;
+    let newHeight = oldHeight - this.state.strokeWidth;
     if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
       //cHeight = canvas.getHeight() - this.state.strokeWidth;
     }
@@ -656,8 +658,8 @@ class SketchField extends PureComponent {
       canvas.discardActiveObject();
       // canvas.setWidth(cWidth * cnwidthMultiplier);
       // canvas.setHeight(cHeight * cnHeightMultiplier);
-      this.props.trackingCanvasHeight(cHeight * cnHeightMultiplier);
-      this.props.trackingCanvasWidth( cWidth * cnwidthMultiplier);
+      //this.props.trackingCanvasHeight(cHeight * cnHeightMultiplier);
+      //this.props.trackingCanvasWidth( cWidth * cnwidthMultiplier);
       canvas.renderAll();
       // canvas.calcOffset();
       // this.props.onShapeAdded();
@@ -822,13 +824,15 @@ class SketchField extends PureComponent {
         objects[i].top = objects[i].top * scaleMultiplier;
         objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
         objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-                objects[i].setCoords();
+        objects[i].cnWidth = Math.round(cWidth * scaleMultiplier);
+        objects[i].cnHeight = Math.round(cHeight * scaleHeightMultiplier);
+        objects[i].setCoords();
         var scaleFactor = this.state.scaleFactor * scaleMultiplier;
         this.setState({ scaleFactor });
         console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: object details after resizing", objects[i]);
       }
-      this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier);
-      this.updateObjectsInRedux(scaleMultiplier);
+      this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, cWidth, cHeight, true);
+      this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, cWidth, cHeight, true);
       console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
       canvas.discardActiveObject();
       canvas.setWidth(cWidth * scaleMultiplier);
@@ -842,44 +846,48 @@ class SketchField extends PureComponent {
     }
   }
 
-  scaleObject = (object, scaleMultiplier) =>{
+  scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
     object.left = object.left * scaleMultiplier;
     object.top = object.top * scaleMultiplier;
     object.scaleX = object.scaleX * scaleMultiplier;
     object.scaleY = object.scaleY * scaleMultiplier;
+    if(updateCanvasDimensions){
+      object.cnWidth = Math.round(cWidth * scaleMultiplier);
+      object.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
+    }
     return object;
   }
 
-  updateObjectsInReduxAnimalTrackingKey = (scaleMultiplier) => {
+  updateObjectsInReduxAnimalTrackingKey = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false ) => {
     let scaleMultiplierForObjects = scaleMultiplier;
-    let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects);
+    let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
     this.props.saveDimesions(trackingArea);
-    let lineShape = this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape)), scaleMultiplierForObjects);
+    let lineShape = this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape)), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
     this.props.updateLineShape(lineShape);
     let zones = [];
     this.props.zones.map(zone => {
-      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects)));
+      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
       zones.push(scaledObject);
     })
     this.props.updateArenaZoneShapesList(zones);
   }
 
-  updateObjectsInRedux = (scaleMultiplier) => {
+  updateObjectsInRedux = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) => {
     const { selectedCameraForTracking } = this.props;
     let nVisionSession = JSON.parse(JSON.stringify(this.props.nVisionSession));
     let trackingInterface = nVisionSession.userInterface.trackingInterface;
     let trackingArea = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].trackingArea));
-    console.log("[tracking settings][resizeZonesOnPanelChange][scaling objects][object details before scaling]: ", trackingArea);
+    console.log("[tracking settings][Sketch Field][updateObjectsInRedux][scaling objects][object details before scaling]: ", trackingArea);
     let lineShape = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates));
     let arenaZoneShapesList = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].arenaZone.zoneList));
-    trackingArea.geometry.coordinates = this.scaleObject(trackingArea.geometry.coordinates,scaleMultiplier );
-    lineShape = this.scaleObject(lineShape, scaleMultiplier);
+    trackingArea.geometry.coordinates = this.scaleObject(trackingArea.geometry.coordinates,scaleMultiplier,scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    lineShape = this.scaleObject(lineShape, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
     let zones = [];
     arenaZoneShapesList.map(zone => {
-      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplier)));
+      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplier,scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
       zones.push(scaledObject);
     })
-    console.log("[Tracking Settings][VideoViewingControls][resizeZonesOnPanelChange]: Objects details after rescaling: ", arenaZoneShapesList );
+    console.log("[Tracking Settings][Sketch Field][updateObjectsInRedux][scaling objects]: Objects details after rescaling: ", arenaZoneShapesList );
     nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].trackingArea = trackingArea;
     nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates = lineShape;
     nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].arenaZone.zoneList = zones;
@@ -961,8 +969,37 @@ class SketchField extends PureComponent {
     let canvas = this._fc;
     let obj = { width:width, height:height };
     obj.width = width + this.state.strokeWidth;
-    obj.height = height + ( fullWidth ? this.state.strokeWidth : (this.state.strokeWidth +1) );
+    obj.height = height + ( fullWidth ? this.state.strokeWidth : (this.state.strokeWidth +0) );
     return obj;
+  }
+
+  onMountUpdateObjectsInReduxAnimalTrackingKey = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false, trackingArea, arenaZoneShapesList, lineShape) => {
+    let scaleMultiplierForObjects = scaleMultiplier;
+    let trackingObject = this.scaleObject(JSON.parse(JSON.stringify(trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    this.props.saveDimesions(trackingObject);
+    let lineObject = this.scaleObject(JSON.parse(JSON.stringify(lineShape)), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    this.props.updateLineShape(lineObject);
+    let zones = [];
+    arenaZoneShapesList.map(zone => {
+      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
+      zones.push(scaledObject);
+    })
+    this.props.updateArenaZoneShapesList(zones);
+  }
+
+  resizeReduxAndSessionObjectsOnMount = (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) => {
+    let canvas = this._fc;
+    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsOnMount]: canvas Old width and old height:", oldWidth, oldHeight);
+    console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsOnMount]: Current Canvas width and height : ", cWidth, cHeight );
+    if (canvas && oldWidth !== cWidth && canvas.upperCanvasEl) {
+    //if (canvas && canvas.upperCanvasEl) {
+      var scaleMultiplier = cWidth/oldWidth;
+      var scaleHeightMultiplier = cHeight/oldHeight;
+      this.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape );
+      //this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true);
+    }
   }
 
   /**

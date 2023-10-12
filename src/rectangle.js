@@ -237,6 +237,8 @@ class Rectangle extends FabricCanvasTool {
       originY: "top",
       width: width,
       height: height,
+      cnWidth: width,
+      cnHeight:height,
       stroke: '#ff0000',
       strokeWidth: this.strokeWidth,
       fill: this._fill,
