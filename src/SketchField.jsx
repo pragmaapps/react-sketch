@@ -862,7 +862,8 @@ class SketchField extends PureComponent {
     let scaleMultiplierForObjects = scaleMultiplier;
     let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
     this.props.saveDimesions(trackingArea);
-    let lineShape = this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape)), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    let lineShape = [];
+    lineShape[0] = this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
     this.props.updateLineShape(lineShape);
     let zones = [];
     this.props.zones.map(zone => {
@@ -881,7 +882,7 @@ class SketchField extends PureComponent {
     let lineShape = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates));
     let arenaZoneShapesList = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].arenaZone.zoneList));
     trackingArea.geometry.coordinates = this.scaleObject(trackingArea.geometry.coordinates,scaleMultiplier,scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
-    lineShape = this.scaleObject(lineShape, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    lineShape[0] = this.scaleObject(lineShape[0], scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
     let zones = [];
     arenaZoneShapesList.map(zone => {
       let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplier,scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
