@@ -14,8 +14,24 @@ import RectangleLabel from './rectangle-label'
 import DefaultTool from './defaul-tool'
 import ReactResizeDetector from 'react-resize-detector'
 import NvistaRoiSettings from './NvistaRoiSettingsPanel'
+import Ellipse from './ellipse'
+import Polygon from './polygon'
+import FreeDrawLine from './freedrawline'
 
-const fabric = require('fabric').fabric
+let fabric = require('fabric').fabric;
+let controlsVisible = {
+  mtr: false,
+};
+let executeCanvasResize = false;
+fabric.Object.prototype.noScaleCache = false;
+fabric.Object.prototype.setControlsVisibility(controlsVisible);
+fabric.Object.prototype.set({
+  cornerSize: 6,
+  cornerColor : 'red',
+  cornerStyle : 'circle',
+  strokeUniform: true,
+});
+fabric.Object.NUM_FRACTION_DIGITS = 17;
 
 /**
  * Sketch Tool based on FabricJS for React Applications
@@ -125,13 +141,23 @@ class SketchField extends PureComponent {
     resetAllLandmarks: false,
     frontEnd: [],
     canvasHeight:512,
+    canvasWidth:800,
+    strokeWidth:2,
     updateLandmarksForOtherWindow: false,
+    scaleHeightMultiplier: 1,
+    scaleMultiplier: 1,
     lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
 
   }
 
   _fc = null
   childRef = React.createRef();
+  left1 = 0;
+  top1 = 0 ;
+  scale1x = 0 ;    
+  scale1y = 0 ;    
+  width1 = 0 ;    
+  height1 = 0 ;
 
   _initTools = fabricCanvas => {
     this._tools = {}
@@ -144,6 +170,9 @@ class SketchField extends PureComponent {
     this._tools[Tool.Circle] = new Circle(fabricCanvas)
     this._tools[Tool.Pan] = new Pan(fabricCanvas)
     this._tools[Tool.DefaultTool] = new DefaultTool(fabricCanvas)
+    this._tools[Tool.Ellipse] = new Ellipse(fabricCanvas)
+    this._tools[Tool.Polygon] = new Polygon(fabricCanvas)
+    this._tools[Tool.FreeDrawLine] = new FreeDrawLine(fabricCanvas)
   }
 
   /**
@@ -233,12 +262,20 @@ class SketchField extends PureComponent {
       this.setState({ action: true })
       return
     }
-    let obj = e.target
-    obj.__version = 1
-    // record current object state as json and save as originalState
-    let objState = obj.toJSON()
-    obj.__originalState = objState
-    let state = JSON.stringify(objState)
+    let obj = e.target;
+    if(obj.id === "trackingArea"){
+      this.left1 =obj.left;
+      this.top1 =obj.top;
+      this.scale1x = obj.scaleX;
+      this.scale1y=obj.scaleY;
+      this.width1=obj.width;
+      this.height1=obj.height;
+    }
+    // obj.__version = 1
+    // // record current object state as json and save as originalState
+    // let objState = obj.toJSON()
+    // obj.__originalState = objState
+    // let state = JSON.stringify(objState)
     // object, previous state, current state
     // this._history.keep([obj, state, state])
     onObjectAdded(e)
@@ -256,7 +293,71 @@ class SketchField extends PureComponent {
   * Action when an object is scaling inside the canvas
   */
   _onObjectScaling = e => {
-    const { onObjectScaling } = this.props
+    const { onObjectScaling } = this.props;
+    var obj = e.target;
+    obj.setCoords();
+    var brNew = obj.getBoundingRect();
+    let canvas = this._fc;
+    if(obj.id !== "trackingArea"){
+      let boundary = this.props.getboudaryCoords();
+      let pointer = canvas.getPointer(e.e)
+      if (boundary && ((brNew.height +brNew.top) > (boundary.height * boundary.scaleY) + boundary.top  || (brNew.width +brNew.left) > (boundary.width * boundary.scaleX) + boundary.left  || brNew.left < boundary.left || brNew.top < boundary.top)) {
+        obj.left = this.left1;
+        obj.top=this.top1;
+        obj.scaleX=this.scale1x;
+        obj.scaleY=this.scale1y;
+        obj.width=this.width1;
+        obj.height=this.height1;
+      }else if(!this.props.checkForMinTotalArea(obj, "edit")){
+        console.log("%c[Animal Tracking]%c [Skecth Field] [On Object Scaling] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
+        "color: black;");
+        obj.left = this.left1;
+        obj.top=this.top1;
+        obj.scaleX=this.scale1x;
+        obj.scaleY=this.scale1y;
+        obj.width=this.width1;
+        obj.height=this.height1;
+      }else{   
+          this.left1 =obj.left;
+          this.top1 =obj.top;
+          this.scale1x = obj.scaleX;
+          this.scale1y=obj.scaleY;
+          this.width1=obj.width;
+          this.height1=obj.height;
+          // this.props.onShapeAdded();
+        }
+      return;
+    }
+
+    
+    brNew = obj;
+    if ((((brNew.width * brNew.scaleX) + brNew.left) > canvas.getWidth() -1 ) || (((brNew.height * brNew.scaleY) + brNew.top) > canvas.getHeight() - 1) || ((brNew.left<0) || (brNew.top<0))) {
+    obj.left = this.left1 <= 0 ? obj.left : this.left1;
+    obj.top=this.top1 <= 0 ? obj.top : this.top1;
+    obj.scaleX=this.scale1x === 0 ? obj.scaleX : this.scale1x;
+    obj.scaleY=this.scale1y === 0 ? obj.scaleY : this.scale1y;
+    obj.width=this.width1 === 0 ? obj.width : this.width1;
+    obj.height=this.height1 === 0 ? obj.height : this.height1;
+    obj.setCoords();
+  }else if(!this.props.checkForMinTotalArea(obj, "edit", true)){
+    console.log("%c[Animal Tracking]%c [Skecth Field] [On Object Scaling] The tracking area should not be less than 200px width and height respectively.","color:blue; font-weight: bold;",
+    "color: black;");
+    obj.left = this.left1;
+    obj.top=this.top1;
+    obj.scaleX=this.scale1x;
+    obj.scaleY=this.scale1y;
+    obj.width=this.width1;
+    obj.height=this.height1;
+  }
+    else{    
+      this.left1 =obj.left;
+      this.top1 =obj.top;
+      this.scale1x = obj.scaleX;
+      this.scale1y=obj.scaleY;
+      this.width1=obj.width;
+      this.height1=obj.height;
+      // this.props.onShapeAdded();
+    }
 
     onObjectScaling(e)
   }
@@ -271,17 +372,142 @@ class SketchField extends PureComponent {
   }
 
   _onObjectModified = e => {
-    const { onObjectModified } = this.props
+    let obj = e.target;
+    if(obj.id === "trackingArea"){
+      this.trackingAreaModified(obj);
+      return;
+    }
+    // if(obj.type === "polygon" && this.checkForMinDistance(obj)){
+    //   this.props.notificationShow("Zone size should be bigger then 100px");
+    //   this.props.onShapeAdded();
+    //   return;
+    // }
+    let boundaryObj = this.props.getboudaryCoords();
+    if(boundaryObj && obj.height > (boundaryObj.height * boundaryObj.scaleY) || obj.width > (boundaryObj.width * boundaryObj.scaleX) ){
+      return;
+    }      
+    var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
+    var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
+    if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
+      var objBounds = obj.getBoundingRect();
+      obj.setCoords();
+      var objTL = obj.getPointByOrigin("left", "top");
+      var left = objTL.x;
+      var top = objTL.y;
 
-    let obj = e.target
+      if (objBounds.left < canvasTL.x) left = boundaryObj.left;
+      if (objBounds.top < canvasTL.y) top = boundaryObj.top;
+      if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
+      if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
+
+      obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+      obj.setCoords();
+      this._fc.renderAll();
+      // this.props.checkForOverlap(obj);
+    }
+    obj.setCoords();
+    this.props.checkForOverlap(obj);
+    this.props.onShapeAdded();
     obj.__version += 1
     let prevState = JSON.stringify(obj.__originalState)
     let objState = obj.toJSON()
     // record current object state as json and update to originalState
     obj.__originalState = objState
     let currState = JSON.stringify(objState)
+    this.props.updateIsTrackingSettingsChanged({
+      isTrackingSettingChanged: true,
+      defineArenaZoneEdited: true
+    });
     // this._history.keep([obj, prevState, currState]);
-    onObjectModified(e)
+  }
+
+  trackingAreaModified = (obj) =>{    
+    let canvas = this._fc;
+    var canvasTL = new fabric.Point(0, 0);
+    var canvasBR = new fabric.Point(canvas.getWidth() -1, canvas.getHeight() -1);
+    if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
+      console.log("%c[Animal Tracking]%c [Traking Area] Modified outside the canvas","color:blue; font-weight: bold;",
+      "color: black;",obj);
+      var objBounds = obj.getBoundingRect();
+      obj.setCoords();
+      var objTL = obj.getPointByOrigin("left", "top");
+      var left = objTL.x;
+      var top = objTL.y;
+
+      if (objBounds.left < canvasTL.x) left = 0;
+      if (objBounds.top < canvasTL.y) top = 0;
+      if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
+      if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
+      if(top < 0) top = 0;
+      if(left < 0) left = 0;
+      obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+      obj.setCoords();
+      this._fc.renderAll();
+      this.props.onShapeAdded();
+      this.checkWithInBoundary();
+    }else{
+      console.log("%c[Animal Tracking]%c [Traking Area] Modified with in canvas","color:blue; font-weight: bold;",
+      "color: black;",obj);
+      this.props.onShapeAdded();
+      this.checkWithInBoundary();
+    }
+    this.props.updateIsTrackingSettingsChanged({
+      isTrackingSettingChanged: true,
+      trackingAreaEdited: true
+    });
+  }
+
+  checkWithInBoundary = async() =>{
+    let canvas = this._fc; 
+    canvas.getObjects().forEach((shape) => {
+      if(shape.id === "calibratedLine") return;
+      let boundaryObj = this.props.getboudaryCoords();
+      if(!boundaryObj) return;
+      var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
+      var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX), (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
+      // if (!shape.isContainedWithinRect(canvasTL, canvasBR, true, true) && shape.id !== "trackingArea") {
+      //   this.props.addColorInDefaultShapeColors(shape.stroke);
+      //   this.props.deleteROIDefaultName(shape.defaultName);
+      //   canvas.remove(shape);
+      // }
+      if((shape.left < boundaryObj.left ||
+        shape.top < boundaryObj.top ||
+        shape.left + shape.width > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
+        shape.top + shape.height > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
+          this.props.addColorInDefaultShapeColors(shape.stroke);
+          this.props.deleteROIDefaultName(shape.defaultName);
+          canvas.remove(shape);
+        }
+    });   
+    canvas.renderAll();
+    // this.props.onShapeAdded();
+  }
+
+  removeUnCompletedShapes = () =>{
+    let canvas = this._fc; 
+    let roiTypes = ["rect", "ellipse", "polygon"];
+    canvas.getObjects().forEach((shape) => {
+      if(shape.id !== "calibratedLine" && !roiTypes.includes(shape.type)) 
+        canvas.remove(shape);
+    });   
+    canvas.renderAll();
+  }
+
+  checkForMinDistance = (polygon) =>{
+    const points = polygon.points;
+    const minDistance = 10;
+    let distance;
+    for (let i = 0; i < points.length - 1; i++) {
+      distance = Math.sqrt(
+        Math.pow(points[i + 1].x - points[i].x, 2) +
+        Math.pow(points[i + 1].y - points[i].y, 2)
+      );
+      if (distance < minDistance) {
+          this.props.setSelected(polygon, true);
+          return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -303,7 +529,7 @@ class SketchField extends PureComponent {
   */
   _onMouseDown = e => {
     const { onMouseDown } = this.props
-    this._selectedTool.doMouseDown(e)
+    this._selectedTool.doMouseDown(e, this.props, this)
     onMouseDown(e)
   }
 
@@ -312,7 +538,7 @@ class SketchField extends PureComponent {
   */
   _onMouseMove = e => {
     const { onMouseMove } = this.props
-    this._selectedTool.doMouseMove(e)
+    this._selectedTool.doMouseMove(e, this.props)
     onMouseMove(e)
   }
 
@@ -333,7 +559,7 @@ class SketchField extends PureComponent {
 
   _onMouseUp = e => {
     const { onMouseUp } = this.props
-    this._selectedTool.doMouseUp(e)
+    this._selectedTool.doMouseUp(e, this.props, this)
     // Update the final state to new-generated object
     // Ignore Path object since it would be created after mouseUp
     // Assumed the last object in canvas.getObjects() in the newest object
@@ -361,213 +587,169 @@ class SketchField extends PureComponent {
   * @private
   */
 
-  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
-  // if (e) e.preventDefault();
-  // let { widthCorrection, heightCorrection } = this.props;
-  // let canvas = this._fc;
-  // let { offsetWidth, clientHeight } = this._container;
-  // console.log(this._fc.height, "height");
-  // console.log(offsetWidth, "container width");
-
-  // // let containerHeight = Math.round(800 / (1280 / overlayWidth));
-  // let prevWidth = canvasWidth || canvas.getWidth();
-  // let prevHeight = canvasHeight || canvas.getHeight();
-  // let wfactor = ((offsetWidth - widthCorrection) / prevWidth).toFixed(2);
-  // let hfactor = ((clientHeight - heightCorrection) / prevHeight).toFixed(2);
-  // canvas.setWidth(offsetWidth - widthCorrection);
-  // canvas.setHeight(clientHeight - heightCorrection);
-  // if (canvas.backgroundImage) {
-  // // Need to scale background images as well
-  // let bi = canvas.backgroundImage;
-  // bi.width = bi.width * wfactor;
-  // bi.height = bi.height * hfactor
-  // }
-  // let objects = canvas.getObjects();
-  // for (let i in objects) {
-  // let obj = objects[i];
-  // let scaleX = obj.scaleX;
-  // let scaleY = obj.scaleY;
-  // let left = obj.left;
-  // let top = obj.top;
-  // let tempScaleX = scaleX * wfactor;
-  // let tempScaleY = scaleY * hfactor;
-  // let tempLeft = left * wfactor;
-  // let tempTop = top * hfactor;
-  // obj.scaleX = tempScaleX;
-  // obj.scaleY = tempScaleY;
-  // obj.left = tempLeft;
-  // obj.top = tempTop;
-  // obj.setCoords()
-  // }
-
-  // this.setState({
-  // parentWidth: offsetWidth
-  // });
-  // canvas.renderAll();
-  // canvas.calcOffset();
-  // };
-
-  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
-  // if (e) e.preventDefault();
-  // let canvas = this._fc;
-
-  // let { offsetWidth, clientHeight } = this._container;
-  // var overlayWidth = offsetWidth;
-
-  // var overlayHeight = Math.round(800 / (1280 / overlayWidth));
-  // var overlayContrain = overlayWidth / overlayHeight;
-  // console.log('[ONEPTWOP] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
-
-  // console.log(canvas.width, "canvas width");
-  // console.log(canvas.height, "canvas.height");
-  // var scaleMultiplier = overlayWidth / canvas.width;
-  // var scaleHeightMultiplier = overlayHeight / canvas.height;
-  // console.log(scaleMultiplier, "width scaler");
-  // console.log(scaleHeightMultiplier, "height scaler");
-  // var objects = canvas.getObjects();
-  // for (var i in objects) {
-  // if (objects[i].type == "image" || scaleLandmarks) {
-  // //objects[i].width = objects[i].width * scaleMultiplier;
-  // //objects[i].height = objects[i].height * scaleHeightMultiplier;
-  // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-  // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-  // this.scaleFactor = this.scaleFactor * scaleMultiplier;
-  // }
-  // objects[i].left = objects[i].left * scaleMultiplier;
-  // objects[i].top = objects[i].top * scaleMultiplier;
-  // objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
-  // objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
-  // objects[i].setCoords();
-  // }
-  // var obj = canvas.backgroundImage;
-  // if (obj) {
-  // obj.scaleX = obj.scaleX * scaleMultiplier;
-  // obj.scaleY = obj.scaleY * scaleMultiplier;
-  // }
-  // console.log(canvas.getWidth(), "canvas width");
-  // console.log(canvas.getHeight(), "canvas height");
-  // console.log("[ONEPTWOP] resize canvas dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
-  // canvas.discardActiveObject();
-  // canvas.setWidth(canvas.getWidth() * scaleMultiplier);
-  // canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
-  // canvas.renderAll();
-  // canvas.calcOffset();
-
-  // this.setState({
-  // parentWidth: offsetWidth
-  // });
-  // canvas.renderAll();
-  // canvas.calcOffset();
-  // };
-
-  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
-  // let canvas = this._fc
-
-  // if (canvas && canvas.upperCanvasEl) {
-  // var overlayWidth = document.getElementById('onep-twop-container-2')
-  // .offsetWidth
-  // } else {
-  // var overlayWidth = document.getElementById('oneptwop-container')
-  // .offsetWidth
-  // }
-  // // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-  // // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
-  // var overlayHeight = Math.round(800 / (1280 / overlayWidth))
-  // var overlayContrain = overlayWidth / overlayHeight
-  // console.log(
-  // '[ONEPTWOP] Color Overlay Width:',
-  // overlayWidth,
-  // overlayHeight,
-  // overlayContrain
-  // )
-  // this.getCanvasAtResoution(overlayWidth, overlayHeight, false)
-  // }
-
-  // getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
-  // let canvas = this._fc
-  // // let { offsetWidth, clientHeight } = this._container;
-
-  // if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
-  // var scaleMultiplier = newWidth / canvas.width
-  // var scaleHeightMultiplier = newHeight / canvas.height
-  // var objects = canvas.getObjects()
-
-  // for (var i in objects) {
-  // if (objects[i].type == 'image' || scaleLandmarks) {
-  // // objects[i].width = objects[i].width * scaleMultiplier;
-  // // objects[i].height = objects[i].height * scaleHeightMultiplier;
-  // objects[i].scaleX = objects[i].scaleX * scaleMultiplier
-  // objects[i].scaleY = objects[i].scaleY * scaleMultiplier
-  // objects[i].setCoords()
-  // let scaleFactor = this.state.scaleFactor * scaleMultiplier
-  // this.setState({ scaleFactor })
-  // }
-  // objects[i].left = objects[i].left * scaleMultiplier
-  // objects[i].top = objects[i].top * scaleMultiplier
-  // objects[i].cnWidth = canvas.getWidth() * scaleMultiplier
-  // objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier
-  // objects[i].setCoords()
-  // }
-  // var obj = canvas.backgroundImage
-  // if (obj) {
-  // obj.scaleX = obj.scaleX * scaleMultiplier
-  // obj.scaleY = obj.scaleY * scaleMultiplier
-  // }
-  // console.log(
-  // '[ONEPTWOP] Resize Canvas Dimensions: ',
-  // canvas.getWidth() * scaleMultiplier,
-  // canvas.getHeight() * scaleHeightMultiplier
-  // )
-  // canvas.discardActiveObject()
-  // canvas.setWidth(canvas.getWidth() * scaleMultiplier)
-  // canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier)
-  // canvas.renderAll()
-  // canvas.calcOffset()
-  // // this.setState({
-  // // parentWidth: offsetWidth
-  // // });
-  // // var boss = window.canvas.getObjects().filter(o => o.type == "image")[0];
-  // // if (boss) {
-  // // this.bindLandmarks();
-  // // }
-  // }
-  // }
-
-
-  _resize = (e, canvasWidth = null, canvasHeight = null) => {
+  getOverlayDimensions  = () => {
     let canvas = this._fc;
-
     if (canvas && canvas.upperCanvasEl) {
       var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
     }
     else {
       var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
     }
-    // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-    // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
-    var overlayHeight = Math.round(800 / (1280 / overlayWidth));
-    var overlayContrain = overlayWidth / overlayHeight;
-    console.log('[MIRA] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
+    let resolutionRatio = this.props.resolutionWidth / this.props.resolutionHeight;
+    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+      var overlayHeight = Math.ceil(this.props.resolutionHeight / (this.props.resolutionWidth / overlayWidth));
+    }else{
+      //var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
+      //var overlayWidth = overlayHeight * resolutionRatio;
+      var overlayHeight = document.getElementById("video-container-3").offsetHeight;
+      var overlayWidth = Math.ceil(this.props.resolutionWidth / (this.props.resolutionHeight / overlayHeight));
+    }
+    console.log('[Tracking Setting][Tracking Area] Canvas Overlay Width:', overlayWidth, overlayHeight);
+    return { overlayWidth: overlayWidth,overlayHeight: overlayHeight }
+  }
+
+  _resize = (e, canvasWidth = null, canvasHeight = null) => {
+    let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
     this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
-
-
   };
 
-  getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
+  resizeZones = (oldWidth, oldHeight) => {
+    return;
+    let { scaleHeightMultiplier, scaleMultiplier } = this.state;
+    let canvas = this._fc;
+    //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    //let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    let newWidth = oldWidth - this.state.strokeWidth;
+    let newHeight = oldHeight - this.state.strokeWidth;
+    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+      //cHeight = canvas.getHeight() - this.state.strokeWidth;
+    }
+    console.log("[Tracking Settings][Sketch Field][resizeZones]: Overlay container new width and new height", newWidth, newHeight );
+    console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas width and height", cWidth, cHeight );
+    console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas scaleMultiplier", scaleMultiplier, "heightmultiplier", scaleHeightMultiplier);
+    if (canvas && canvas.upperCanvasEl) {
+    //if (canvas && canvas.upperCanvasEl) {
+      // if(!scaleMultiplier)
+        scaleMultiplier = cWidth / newWidth;
+      // if(!scaleHeightMultiplier)
+        scaleHeightMultiplier =  cHeight / newHeight;
+        let cnwidthMultiplier = newWidth / cWidth;
+        let cnHeightMultiplier = newHeight / cHeight;
+        console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
+      var objects = canvas.getObjects();
+      for (var i in objects) {
+        //objects[i].width = objects[i].width * scaleMultiplier;
+        //objects[i].height = objects[i].height * scaleHeightMultiplier;
+        objects[i].left = objects[i].left * scaleMultiplier;
+        objects[i].top = objects[i].top * scaleMultiplier;
+        objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+        objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+        objects[i].setCoords();
+        var scaleFactor = this.state.scaleFactor * scaleMultiplier;
+        // this.setState({ scaleFactor });
+        console.log("[Tracking Settings][Sketch Field][resizeZones]: object details after resizing", objects[i]);
+      }
+
+      this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier);
+      this.updateObjectsInRedux(scaleMultiplier);
+      console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas Dimensions after resize", cHeight * cnwidthMultiplier, cWidth * cnHeightMultiplier);
+      canvas.discardActiveObject();
+      // canvas.setWidth(cWidth * cnwidthMultiplier);
+      // canvas.setHeight(cHeight * cnHeightMultiplier);
+      //this.props.trackingCanvasHeight(cHeight * cnHeightMultiplier);
+      //this.props.trackingCanvasWidth( cWidth * cnwidthMultiplier);
+      canvas.renderAll();
+      // canvas.calcOffset();
+      // this.props.onShapeAdded();
+      // this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
+      // });
+    }
+  }
+
+  resizeZonesOnImport = (newWidth, newHeight) => {
+    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport] New width",newWidth,"NewHeight", newHeight);
+    let { scaleHeightMultiplier, scaleMultiplier } = this.state;
+    let canvas = this._fc;
+    //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    //let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    let cWidth =  canvas.getWidth();
+    let cHeight = canvas.getHeight();
+    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+      //cHeight = canvas.getHeight() - this.state.strokeWidth;
+    }
+    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Overlay container new width and new height", newWidth, newHeight );
+    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas width and height", cWidth, cHeight );
+    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas scaleMultiplier", scaleMultiplier, "heightmultiplier", scaleHeightMultiplier);
+    if (canvas && canvas.upperCanvasEl) {
+    //if (canvas && canvas.upperCanvasEl) {
+      // if(!scaleMultiplier)
+        scaleMultiplier = cWidth / newWidth;
+      // if(!scaleHeightMultiplier)
+        scaleHeightMultiplier =  cHeight / newHeight;
+        let cnwidthMultiplier = newWidth / cWidth;
+        let cnHeightMultiplier = newHeight / cHeight;
+        console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
+      var objects = canvas.getObjects();
+      for (var i in objects) {
+        //objects[i].width = objects[i].width * scaleMultiplier;
+        //objects[i].height = objects[i].height * scaleHeightMultiplier;
+        objects[i].left = objects[i].left * scaleMultiplier;
+        objects[i].top = objects[i].top * scaleMultiplier;
+        objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+        objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+        objects[i].setCoords();
+        var scaleFactor = this.state.scaleFactor * scaleMultiplier;
+        // this.setState({ scaleFactor });
+        console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: object details after resizing", objects[i]);
+      }
+
+      // this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier);
+      // this.updateObjectsInRedux(scaleMultiplier);
+      console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas Dimensions after resize", cHeight * cnwidthMultiplier, cWidth * cnHeightMultiplier);
+      canvas.discardActiveObject();
+      // canvas.setWidth(cWidth * cnwidthMultiplier);
+      // canvas.setHeight(cHeight * cnHeightMultiplier);
+      // this.props.trackingCanvasHeight(cHeight);
+      // this.props.trackingCanvasWidth( cWidth);
+      canvas.renderAll();
+      // canvas.calcOffset();
+      // this.props.onShapeAdded();
+      // this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
+      // });
+    }
+  }
+
+  resizeOverlayAndCanvasOnCompoentMount = (e, canvasWidth = null, canvasHeight = null) => {
+    let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
+    this.getCanvasAtComponentMount(overlayWidth, overlayHeight, false);
+  };
+
+  /*getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
     let canvas = this._fc;
     // let { offsetWidth, clientHeight } = this._container;
-
-    if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
-      var scaleMultiplier = newWidth / canvas.width;
-      var scaleHeightMultiplier = newHeight / canvas.height;
+    let cWidth =  canvas.getWidth() - 1;
+    let cHeight = canvas.getHeight() - 1;
+    //let cWidth =  canvas.getWidth();
+    //let cHeight = canvas.getHeight();
+    console.log("[getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
+    console.log("[getCanvasAtResoution]: Canvas width and height after removing 1 px", cWidth, cHeight );
+    if (canvas && cWidth !== newWidth  && canvas.upperCanvasEl) {
+    //if (canvas && canvas.upperCanvasEl) {
+      let isMira = this.props.from === undefined ? true : false;  
+      var scaleMultiplier = newWidth / cWidth;
+      var scaleHeightMultiplier = newHeight / cHeight;
       var objects = canvas.getObjects();
 
       for (var i in objects) {
-        if (objects[i].type === "image" || scaleLandmarks) {
-          // objects[i].width = objects[i].width * scaleMultiplier;
-          // objects[i].height = objects[i].height * scaleHeightMultiplier;
-          objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-          objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+        let isObjectTypeImage = isMira ? objects[i].type === "image" : objects[i].type !== "image";
+        if (isObjectTypeImage || scaleLandmarks) {
+          objects[i].width = objects[i].width * scaleMultiplier;
+          objects[i].height = objects[i].height * scaleHeightMultiplier;
+          console.log("object before scaling>>>", objects[i]);
+          //objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+          //objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
           objects[i].setCoords();
           var scaleFactor = this.state.scaleFactor * scaleMultiplier;
           this.setState({ scaleFactor });
@@ -576,9 +758,10 @@ class SketchField extends PureComponent {
         // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
         objects[i].left = objects[i].left * scaleMultiplier;
         objects[i].top = objects[i].top * scaleMultiplier;
-        objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
-        objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
+        objects[i].cnWidth = cWidth * scaleMultiplier;
+        objects[i].cnHeight = cHeight * scaleHeightMultiplier;
         objects[i].setCoords();
+        console.log("object after scaling>>>>>>>>", objects[i]);
       }
 
 
@@ -588,10 +771,20 @@ class SketchField extends PureComponent {
         obj.scaleY = obj.scaleY * scaleMultiplier;
       }
 
-      console.log("[MIRA] Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
+      //console.log("Resize Canvas Dimensions: ", canvas.getHeight() * scaleMultiplier, canvas.getWidth() * scaleHeightMultiplier);
+      console.log("Resize Canvas Dimensions: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
       canvas.discardActiveObject();
-      canvas.setWidth(canvas.getWidth() * scaleMultiplier);
-      canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
+      //let refactorCanvasHeight = Math.ceil(cHeight * scaleHeightMultiplier) + 1;
+      //let refactorCanvasWidth = Math.ceil(cWidth * scaleMultiplier) + 1;
+      canvas.setWidth(cWidth * scaleMultiplier);
+      canvas.setHeight(cHeight * scaleHeightMultiplier);
+      this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
+      this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
+      /*canvas.setWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));
+      canvas.setHeight(Math.ceil(canvas.getHeight() * scaleHeightMultiplier));
+      this.props.trackingCanvasHeight(Math.ceil(canvas.getHeight() * scaleHeightMultiplier));
+      this.props.trackingCanvasWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));*/
+      /*
       canvas.renderAll();
       canvas.calcOffset();
 
@@ -602,8 +795,152 @@ class SketchField extends PureComponent {
       if (boss) {
         this.bindLandmarks();
       }
-      this.setState({canvasHeight:canvas.height});
+      this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width},()=>{
+        if(!isMira){
+          this.props.onShapeAdded();
+        }
+      });
     }
+  } */
+
+  getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
+    let canvas = this._fc;
+    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+      //cHeight = canvas.getHeight() - this.state.strokeWidth;
+    }
+    console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
+    console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas width and height after removing 2 px", cWidth, cHeight );
+    if (canvas && cWidth !== newWidth  && canvas.upperCanvasEl) {
+    //if (canvas && canvas.upperCanvasEl) {
+      var scaleMultiplier = newWidth / cWidth;
+      var scaleHeightMultiplier = newHeight / cHeight;
+      var objects = canvas.getObjects();
+      for (var i in objects) {
+        //objects[i].width = objects[i].width * scaleMultiplier;
+        //objects[i].height = objects[i].height * scaleHeightMultiplier;
+        objects[i].left = objects[i].left * scaleMultiplier;
+        objects[i].top = objects[i].top * scaleMultiplier;
+        objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+        objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+        objects[i].cnWidth = Math.round(cWidth * scaleMultiplier);
+        objects[i].cnHeight = Math.round(cHeight * scaleHeightMultiplier);
+        objects[i].setCoords();
+        var scaleFactor = this.state.scaleFactor * scaleMultiplier;
+        this.setState({ scaleFactor });
+        console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: object details after resizing", objects[i]);
+      }
+      this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, cWidth, cHeight, true);
+      this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, cWidth, cHeight, true);
+      console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
+      canvas.discardActiveObject();
+      canvas.setWidth(cWidth * scaleMultiplier);
+      canvas.setHeight(cHeight * scaleHeightMultiplier);
+      this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
+      this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
+      canvas.renderAll();
+      canvas.calcOffset();
+      this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
+              });
+    }
+  }
+
+  scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
+    object.left = object.left * scaleMultiplier;
+    object.top = object.top * scaleMultiplier;
+    object.scaleX = object.scaleX * scaleMultiplier;
+    object.scaleY = object.scaleY * scaleMultiplier;
+    if(updateCanvasDimensions){
+      object.cnWidth = Math.round(cWidth * scaleMultiplier);
+      object.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
+    }
+    return object;
+  }
+
+  updateObjectsInReduxAnimalTrackingKey = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false ) => {
+    let scaleMultiplierForObjects = scaleMultiplier;
+    let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    this.props.saveDimesions(trackingArea);
+    let lineShape = [];
+    lineShape[0] = this.props.lineShape.length ? this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions) : {};
+    this.props.updateLineShape(lineShape);
+    let zones = [];
+    this.props.zones.map(zone => {
+      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
+      zones.push(scaledObject);
+    })
+    this.props.updateArenaZoneShapesList(zones);
+  }
+
+  updateObjectsInRedux = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) => {
+    const { selectedCameraForTracking } = this.props;
+    let nVisionSession = JSON.parse(JSON.stringify(this.props.nVisionSession));
+    let trackingInterface = nVisionSession.userInterface.trackingInterface;
+    let trackingArea = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].trackingArea));
+    console.log("[tracking settings][Sketch Field][updateObjectsInRedux][scaling objects][object details before scaling]: ", trackingArea);
+    let lineShape = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates));
+    let arenaZoneShapesList = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].arenaZone.zoneList));
+    trackingArea.geometry.coordinates = this.scaleObject(trackingArea.geometry.coordinates,scaleMultiplier,scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    lineShape[0] = lineShape.length ? this.scaleObject(lineShape[0], scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions) : {};
+    let zones = [];
+    arenaZoneShapesList.map(zone => {
+      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplier,scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
+      zones.push(scaledObject);
+    })
+    console.log("[Tracking Settings][Sketch Field][updateObjectsInRedux][scaling objects]: Objects details after rescaling: ", arenaZoneShapesList );
+    nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].trackingArea = trackingArea;
+    nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates = lineShape;
+    nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].arenaZone.zoneList = zones;
+    this.props.updateNvisionSession(nVisionSession);
+  }
+
+  getCanvasAtComponentMount = (newWidth, newHeight, scaleLandmarks = false) => {
+    let canvas = this._fc;
+    let cWidth =  canvas.getWidth();
+    let cHeight = canvas.getHeight();
+    var scaleMultiplier = newWidth / cWidth;
+    var scaleHeightMultiplier = newHeight / cHeight;
+    /*let scaleMultiplierForObjects = newWidth / this.props.oldCanvasWidth;
+    let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects);
+    this.props.saveDimesions(trackingArea);
+    let lineShape = this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape)), scaleMultiplierForObjects);
+    this.props.updateLineShape(lineShape);
+    let zones = [];
+    this.props.zones.map(zone => {
+      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects)));
+      zones.push(scaledObject);
+    })
+    this.props.updateArenaZoneShapesList(zones);*/
+    console.log("[Tracking Settings][Sketch Field][getCanvasAtComponentMount][component mount] Resize Canvas Dimensions to: ", cHeight * scaleHeightMultiplier, cWidth * scaleMultiplier);
+    canvas.setWidth(cWidth * scaleMultiplier);
+    canvas.setHeight(cHeight * scaleHeightMultiplier);
+    this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
+    this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
+    canvas.renderAll();
+    canvas.calcOffset();
+    this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width},()=>{
+          });
+    this.resizeCanvas(true);
+  }
+
+  resizeCanvas = (addDimension = false) => {
+    let currCanvas = this._fc;
+    let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
+    console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of overlay container] :", overlayWidth, overlayHeight);
+    console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of canvas] :", currCanvas.getWidth(),currCanvas.getHeight());
+    let newCanvasWidth = overlayWidth;
+    let newCanvasHeight = overlayHeight;
+    if(addDimension){
+      newCanvasWidth = this.getActualCanvasDimensions(overlayWidth, overlayHeight, true).width;
+      newCanvasHeight = this.getActualCanvasDimensions(overlayWidth,overlayHeight,true).height;
+    }
+    currCanvas.setHeight(newCanvasHeight);
+    currCanvas.setWidth(newCanvasWidth);
+    currCanvas.requestRenderAll();
+    this.props.trackingCanvasHeight(currCanvas.getHeight());
+    this.props.trackingCanvasWidth(currCanvas.getWidth());
+        console.log("[Tracking Settings][Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
   }
 
   bindLandmarks = (updateLandmarks = false, canvasData) => {
@@ -626,6 +963,43 @@ class SketchField extends PureComponent {
       let landMarks = canvas ? JSON.parse(JSON.stringify(canvas.getObjects().filter(o => o.type !== "image"))) : [];
       this.updateOnepTwop('_landmarks');
       console.log("[MIRA] Updated list of landmarks objects: ", JSON.stringify(landMarks));
+    }
+  }
+
+  getActualCanvasDimensions = (width, height, fullWidth=true) => {
+    let canvas = this._fc;
+    let obj = { width:width, height:height };
+    obj.width = width + this.state.strokeWidth;
+    obj.height = height + ( fullWidth ? this.state.strokeWidth : (this.state.strokeWidth +0) );
+    return obj;
+  }
+
+  onMountUpdateObjectsInReduxAnimalTrackingKey = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false, trackingArea, arenaZoneShapesList, lineShape) => {
+    let scaleMultiplierForObjects = scaleMultiplier;
+    let trackingObject = this.scaleObject(JSON.parse(JSON.stringify(trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    this.props.saveDimesions(trackingObject);
+    let lineObject = this.scaleObject(JSON.parse(JSON.stringify(lineShape)), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    this.props.updateLineShape(lineObject);
+    let zones = [];
+    arenaZoneShapesList.map(zone => {
+      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
+      zones.push(scaledObject);
+    })
+    this.props.updateArenaZoneShapesList(zones);
+  }
+
+  resizeReduxAndSessionObjectsOnMount = (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) => {
+    let canvas = this._fc;
+    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsOnMount]: canvas Old width and old height:", oldWidth, oldHeight);
+    console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsOnMount]: Current Canvas width and height : ", cWidth, cHeight );
+    if (canvas && oldWidth !== cWidth && canvas.upperCanvasEl) {
+    //if (canvas && canvas.upperCanvasEl) {
+      var scaleMultiplier = cWidth/oldWidth;
+      var scaleHeightMultiplier = cHeight/oldHeight;
+      this.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape );
+      //this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true);
     }
   }
 
@@ -796,7 +1170,7 @@ class SketchField extends PureComponent {
   clear = propertiesToInclude => {
     let discarded = this.toJSON(propertiesToInclude)
     this._fc.clear()
-    this._history.clear()
+    // this._history.clear()
     return discarded
   }
 
@@ -819,7 +1193,7 @@ class SketchField extends PureComponent {
         let objState = obj.toJSON()
         obj.__originalState = objState
         let state = JSON.stringify(objState)
-        this._history.keep([obj, state, state])
+        // this._history.keep([obj, state, state])
         canvas.remove(obj)
       })
       canvas.discardActiveObject()
@@ -1024,7 +1398,7 @@ class SketchField extends PureComponent {
       this._canvas,
       {
         centeredRotation: true,
-        centeredScaling: true,
+        centeredScaling: false,
         //id: "roi-canvas"
       } /*, {
  preserveObjectStacking: false,
@@ -1032,7 +1406,7 @@ class SketchField extends PureComponent {
  skipTargetFind: true
  }*/
     ))
-
+    canvas.centeredScaling = false;
     this._initTools(canvas)
 
     // set initial backgroundColor
@@ -1044,7 +1418,7 @@ class SketchField extends PureComponent {
 
     // Control resize
 
-    window.addEventListener('resize', this._resize, false)
+    //window.addEventListener('resize', this._resize, false)
 
     // Initialize History, with maximum number of undo steps
     // this._history = new History(undoSteps);
@@ -1069,7 +1443,8 @@ class SketchField extends PureComponent {
     this.disableTouchScroll()
 
     // setTimeout(() => {
-    this._resize()
+    //this._resize()
+    this.resizeOverlayAndCanvasOnCompoentMount();
       // }, 3000);
 
       // if (image !== null) {
@@ -1080,8 +1455,11 @@ class SketchField extends PureComponent {
 
   }
 
-  componentWillUnmount = () =>
+  componentWillUnmount = () => {
     window.removeEventListener('resize', this._resize)
+    executeCanvasResize = false;
+  }
+    
 
   componentDidUpdate = (prevProps, prevState) => {
     // console.log(this.props, "props");
@@ -1091,7 +1469,8 @@ class SketchField extends PureComponent {
       this.props.width !== prevProps.width ||
       this.props.height !== prevProps.height
     ) {
-      this._resize()
+    //   this._resize();
+    // this.resizeCanvas(true);
     }
 
     if (this.props.tool !== prevProps.tool) {
@@ -1099,7 +1478,7 @@ class SketchField extends PureComponent {
       //Bring the cursor back to default if it is changed by a tool
       this._fc.defaultCursor = 'default'
       if (this._selectedTool) {
-        // this._selectedTool.configureCanvas(this.props);
+        this._selectedTool.configureCanvas(this.props);
       }
     }
 
@@ -1127,7 +1506,7 @@ class SketchField extends PureComponent {
 
     // if (this.props.callResize !== this.state.callResize) {
     // this._resize();
-    // this.setState({ callResize: this.props.callResize });
+        // this.setState({ callResize: this.props.callResize });
     // }
 
     if (this.props.oneptwop) {
@@ -1199,7 +1578,8 @@ class SketchField extends PureComponent {
     // // }
     // }
 
-    this._resize()
+    this._resize();
+    this.resizeCanvas(true);
   }
 
   updateLandmarksPosition = () => {
@@ -1343,6 +1723,40 @@ class SketchField extends PureComponent {
     }
   }
 
+  createRect = () =>{
+    let canvas = this._fc;
+    let updatedheight =  canvas.getHeight();
+    let updatedWidth = canvas.getWidth();
+    // let updatedTop = obj.y * canvas.getHeight() / fov.height;
+    // let updatedLeft = obj.x * canvas.getWidth() / fov.width;
+    // console.log(updatedTop,"updatedTop");
+    // console.log(updatedLeft,"updatedLeft");
+    let rect = new fabric.Rect({
+      left: 0,
+      top: 0,
+      originX: "left",
+      originY: "top",
+      strokeWidth: this.state.strokeWidth,
+      transparentCorners: false,
+      name: "trackingArea",
+      defaultName: "trackingArea",
+      width: updatedWidth,
+      height: updatedheight,
+      id: "trackingArea",
+      fill: "transparent",
+      stroke: '#ff0000',
+      selectable: true,
+      evented: true,
+      hasBorders: false,
+      cornerSize: 6,
+      enable: true,
+      description: "",
+      angle: 0
+    });
+    canvas.add(rect);
+    this.props.onShapeAdded();
+  }
+
   render = () => {
     let { className, style, width, height } = this.props
 
@@ -1352,6 +1766,7 @@ class SketchField extends PureComponent {
       {},
       style ? style : {},
       width ? { width: '100%' } : { width: '100%' },
+      //width ? { width: this.state.canvasWidth } : { width: this.state.canvasWidth },
       height ? { height: this.state.canvasHeight } : { height: this.state.canvasHeight }
     )
 
@@ -1362,10 +1777,11 @@ class SketchField extends PureComponent {
         style={canvasDivStyle}
         id="onep-twop-container-2"
       >
-        <ReactResizeDetector onResize={this.onChangeSize.bind(this)} />
+        <ReactResizeDetector handleWidth handleHeight skipOnMount ={true} onResize={this.onChangeSize.bind(this)} />
         <div style={{ position: 'absolute' }}>
           <canvas
-            id={uuid4()}
+            //id={uuid4()}
+            id="tracking-canvas"
             // style={{
             // margin: "0 auto",
             // position: "absolute",
@@ -1381,11 +1797,10 @@ class SketchField extends PureComponent {
             // }}
             ref={c => (this._canvas = c)}
           >
-            Sorry, Canvas HTML5 element is not supported by your browser :(
- </canvas>
-        </div>
+          </canvas>
+          </div>
         {/* </ReactResizeDetector> */}
-        {this._fc !== null && this._fc.item(0) &&
+        {this._fc !== null && this._fc.item(0) && this.props.from === undefined &&
           <NvistaRoiSettings
             canvasProps={this._fc}
             landMarks={this.props.oneptwop.inscopix.frontend}

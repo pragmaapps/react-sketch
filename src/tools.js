@@ -8,4 +8,7 @@ export default {
   Select: 'select',
   Pan: 'pan',
   DefaultTool: 'default-tool',
+  Ellipse: 'ellipse',
+  Polygon: 'polygon',
+  FreeDrawLine: 'freedrawline'
 }
