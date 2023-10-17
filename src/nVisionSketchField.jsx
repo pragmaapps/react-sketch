@@ -704,15 +704,15 @@ class NvisionSketchField extends PureComponent {
         // this.setState({ scaleFactor });
         console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: object details after resizing", objects[i]);
       }
-
-      // this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier);
-      // this.updateObjectsInRedux(scaleMultiplier);
+      // this.props.onShapeAdded();
+      this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, cWidth, cHeight, true);
+      this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, cWidth, cHeight, true);
       console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas Dimensions after resize", cHeight * cnwidthMultiplier, cWidth * cnHeightMultiplier);
       canvas.discardActiveObject();
       // canvas.setWidth(cWidth * cnwidthMultiplier);
       // canvas.setHeight(cHeight * cnHeightMultiplier);
-      // this.props.trackingCanvasHeight(cHeight);
-      // this.props.trackingCanvasWidth( cWidth);
+      this.props.trackingCanvasHeight(cHeight);
+      this.props.trackingCanvasWidth( cWidth);
       canvas.renderAll();
       // canvas.calcOffset();
       // this.props.onShapeAdded();
@@ -847,15 +847,25 @@ class NvisionSketchField extends PureComponent {
   }
 
   scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
-    object.left = object.left * scaleMultiplier;
-    object.top = object.top * scaleMultiplier;
-    object.scaleX = object.scaleX * scaleMultiplier;
-    object.scaleY = object.scaleY * scaleMultiplier;
-    if(updateCanvasDimensions){
-      object.cnWidth = Math.round(cWidth * scaleMultiplier);
-      object.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
+    let obj = JSON.parse(JSON.stringify(object));
+    obj.left = obj.left * scaleMultiplier;
+    obj.top = obj.top * scaleMultiplier;
+    obj.scaleX = obj.scaleX * scaleMultiplier;
+    obj.scaleY = obj.scaleY * scaleMultiplier;
+    if(obj.type === "polygon"){
+      let canvas = this._fc;
+      let selectedObject = canvas.getObjects().find(ob => ob.defaultName === obj.defaultName);
+      if(selectedObject){
+        let oCoords = {};
+        oCoords = JSON.parse(JSON.stringify(selectedObject.oCoords));
+        obj.oCoords = oCoords;
+      }
     }
-    return object;
+    if(updateCanvasDimensions){
+      obj.cnWidth = Math.round(cWidth * scaleMultiplier);
+      obj.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
+    }
+    return obj;
   }
 
   updateObjectsInReduxAnimalTrackingKey = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false ) => {
@@ -863,11 +873,13 @@ class NvisionSketchField extends PureComponent {
     let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
     this.props.saveDimesions(trackingArea);
     let lineShape = [];
-    lineShape[0] = this.props.lineShape.length ? this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions) : {};
+    if(this.props.lineShape.length){
+      lineShape[0] = this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    }
     this.props.updateLineShape(lineShape);
     let zones = [];
     this.props.zones.map(zone => {
-      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
+      let scaledObject = this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
       zones.push(scaledObject);
     })
     this.props.updateArenaZoneShapesList(zones);
@@ -882,7 +894,9 @@ class NvisionSketchField extends PureComponent {
     let lineShape = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates));
     let arenaZoneShapesList = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].arenaZone.zoneList));
     trackingArea.geometry.coordinates = this.scaleObject(trackingArea.geometry.coordinates,scaleMultiplier,scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
-    lineShape[0] = lineShape.length ? this.scaleObject(lineShape[0], scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions) : {};
+    if(lineShape.length){
+      lineShape[0] = this.scaleObject(lineShape[0], scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    }
     let zones = [];
     arenaZoneShapesList.map(zone => {
       let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplier,scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
@@ -978,7 +992,10 @@ class NvisionSketchField extends PureComponent {
     let scaleMultiplierForObjects = scaleMultiplier;
     let trackingObject = this.scaleObject(JSON.parse(JSON.stringify(trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
     this.props.saveDimesions(trackingObject);
-    let lineObject = this.scaleObject(JSON.parse(JSON.stringify(lineShape)), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    let lineObject = [];
+    if(lineShape.length){
+      lineObject[0] = this.scaleObject(JSON.parse(JSON.stringify(lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    }
     this.props.updateLineShape(lineObject);
     let zones = [];
     arenaZoneShapesList.map(zone => {
@@ -999,7 +1016,7 @@ class NvisionSketchField extends PureComponent {
       var scaleMultiplier = cWidth/oldWidth;
       var scaleHeightMultiplier = cHeight/oldHeight;
       this.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape );
-      //this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true);
+      this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true);
     }
   }
 
