@@ -846,7 +846,7 @@ class NvisionSketchField extends PureComponent {
     }
   }
 
-  scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
+  /*scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
     let obj = JSON.parse(JSON.stringify(object));
     obj.left = obj.left * scaleMultiplier;
     obj.top = obj.top * scaleMultiplier;
@@ -866,8 +866,34 @@ class NvisionSketchField extends PureComponent {
       obj.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
     }
     return obj;
-  }
+  }*/
 
+  scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
+    let obj = JSON.parse(JSON.stringify(object));
+    let canvas = this._fc;
+    let selectedObject = canvas.getObjects().find(ob => ob.defaultName === obj.defaultName);
+    if(selectedObject){
+      let left = 0, top = 0, scaleX = 1, scaleY = 1;
+      left = selectedObject.left;
+      top = selectedObject.top;
+      scaleX = selectedObject.scaleX;
+      scaleY = selectedObject.scaleY;
+      obj.left = left;
+      obj.top = top;
+      obj.scaleX = scaleX;
+      obj.scaleY = scaleY;
+      if(obj.type === "polygon"){
+        let oCoords = {};
+        oCoords = JSON.parse(JSON.stringify(selectedObject.oCoords));
+        obj.oCoords = oCoords;
+      }
+    }
+    if(updateCanvasDimensions){
+      obj.cnWidth = Math.round(cWidth * scaleMultiplier);
+      obj.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
+    }
+    return obj;
+  }
   updateObjectsInReduxAnimalTrackingKey = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false ) => {
     let scaleMultiplierForObjects = scaleMultiplier;
     let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
