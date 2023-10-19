@@ -846,31 +846,31 @@ class NvisionSketchField extends PureComponent {
     }
   }
 
-  /*scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
-    let obj = JSON.parse(JSON.stringify(object));
-    obj.left = obj.left * scaleMultiplier;
-    obj.top = obj.top * scaleMultiplier;
-    obj.scaleX = obj.scaleX * scaleMultiplier;
-    obj.scaleY = obj.scaleY * scaleMultiplier;
-    if(obj.type === "polygon"){
+  scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
+    object.left = object.left * scaleMultiplier;
+    object.top = object.top * scaleMultiplier;
+    object.scaleX = object.scaleX * scaleMultiplier;
+    object.scaleY = object.scaleY * scaleMultiplier;
+    if(object.type === "polygon"){
       let canvas = this._fc;
-      let selectedObject = canvas.getObjects().find(ob => ob.defaultName === obj.defaultName);
+      let selectedObject = canvas.getObjects().find(ob => ob.defaultName === object.defaultName);
       if(selectedObject){
         let oCoords = {};
         oCoords = JSON.parse(JSON.stringify(selectedObject.oCoords));
-        obj.oCoords = oCoords;
+        object.oCoords = oCoords;
       }
     }
     if(updateCanvasDimensions){
-      obj.cnWidth = Math.round(cWidth * scaleMultiplier);
-      obj.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
+      object.cnWidth = Math.round(cWidth * scaleMultiplier);
+      object.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
     }
-    return obj;
-  }*/
+    return object;
+  }
 
-  scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
+  /*scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
     let obj = JSON.parse(JSON.stringify(object));
     let canvas = this._fc;
+    console.log("[scledd Object]Object before scaling", object);
     let selectedObject = canvas.getObjects().find(ob => ob.defaultName === obj.defaultName);
     if(selectedObject){
       let left = 0, top = 0, scaleX = 1, scaleY = 1;
@@ -887,13 +887,19 @@ class NvisionSketchField extends PureComponent {
         oCoords = JSON.parse(JSON.stringify(selectedObject.oCoords));
         obj.oCoords = oCoords;
       }
+    }else{
+      obj.left = obj.left * scaleMultiplier;
+      obj.top = obj.top * scaleMultiplier;
+      obj.scaleX = obj.scaleX * scaleMultiplier;
+      obj.scaleY = obj.scaleY * scaleMultiplier;
     }
     if(updateCanvasDimensions){
       obj.cnWidth = Math.round(cWidth * scaleMultiplier);
       obj.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
     }
+    console.log("[scledd Object]Object after scaling", obj);
     return obj;
-  }
+  }*/
   updateObjectsInReduxAnimalTrackingKey = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false ) => {
     let scaleMultiplierForObjects = scaleMultiplier;
     let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
@@ -983,6 +989,12 @@ class NvisionSketchField extends PureComponent {
         console.log("[Tracking Settings][Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
   }
 
+  setCanvasWidthHeightInRedux = () => {
+    let currCanvas = this._fc;
+    this.props.trackingCanvasHeight(currCanvas.getHeight());
+    this.props.trackingCanvasWidth(currCanvas.getWidth());
+  }
+
   bindLandmarks = (updateLandmarks = false, canvasData) => {
     let canvas = canvasData ? canvasData : this._fc;
     var multiply = fabric.util.multiplyTransformMatrices;
@@ -1046,6 +1058,20 @@ class NvisionSketchField extends PureComponent {
     }
   }
 
+  resizeReduxAndSessionObjectsAfterPageLoad = (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) => {
+    let canvas = this._fc;
+    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+    let cHeight = canvas.getHeight() - this.state.strokeWidth;
+    console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsAfterPageLoad]: canvas Old width and old height:", oldWidth, oldHeight);
+    console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsAfterPageLoad]: Current Canvas width and height : ", cWidth, cHeight );
+    if (canvas && oldWidth !== cWidth && canvas.upperCanvasEl) {
+    //if (canvas && canvas.upperCanvasEl) {
+      var scaleMultiplier = cWidth/oldWidth;
+      var scaleHeightMultiplier = cHeight/oldHeight;
+      this.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape );
+      this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true);
+    }
+  }
   /**
   * Sets the background color for this sketch
   * @param color in rgba or hex format
