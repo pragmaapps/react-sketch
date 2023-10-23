@@ -459,6 +459,7 @@ class NvisionSketchField extends PureComponent {
 
   checkWithInBoundary = async() =>{
     let canvas = this._fc; 
+    let showNotification = false;
     canvas.getObjects().forEach((shape) => {
       if(shape.id === "calibratedLine") return;
       let boundaryObj = this.props.getboudaryCoords();
@@ -474,11 +475,13 @@ class NvisionSketchField extends PureComponent {
         shape.top < boundaryObj.top ||
         shape.left + shape.width > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
         shape.top + shape.height > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
+          showNotification = true;
           this.props.addColorInDefaultShapeColors(shape.stroke);
           this.props.deleteROIDefaultName(shape.defaultName);
           canvas.remove(shape);
         }
     });   
+    showNotification && this.props.notificationShow("Zones lying outside of tracking area were removed.");   
     canvas.renderAll();
     // this.props.onShapeAdded();
   }
