@@ -970,14 +970,17 @@ class NvisionSketchField extends PureComponent {
     canvas.calcOffset();
     this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width},()=>{
           });
-    this.resizeCanvas(true);
+    this.resizeCanvas(true, false);
   }
 
-  resizeCanvas = (addDimension = false) => {
+  resizeCanvas = (addDimension = false, resize = true) => {
     let currCanvas = this._fc;
     let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
     console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of overlay container] :", overlayWidth, overlayHeight);
     console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of canvas] :", currCanvas.getWidth(),currCanvas.getHeight());
+    if(resize){
+      this._resize();
+    }
     let newCanvasWidth = overlayWidth;
     let newCanvasHeight = overlayHeight;
     if(addDimension){
@@ -1650,7 +1653,7 @@ class NvisionSketchField extends PureComponent {
     // // }
     // }
 
-    this._resize();
+    // this._resize();
     this.resizeCanvas(true);
   }
 
