@@ -861,6 +861,16 @@ class NvisionSketchField extends PureComponent {
         let oCoords = {};
         oCoords = JSON.parse(JSON.stringify(selectedObject.oCoords));
         object.oCoords = oCoords;
+      }else{
+        let oCoords = {};
+        Object.keys(object.oCoords).forEach((key) => {
+          oCoords[key] = {
+            ...object.oCoords[key],
+            x: object.oCoords[key].x * scaleMultiplier,
+            y: object.oCoords[key].y * scaleMultiplier,
+          };
+        });
+        object.oCoords = oCoords;
       }
     }
     if(updateCanvasDimensions){
