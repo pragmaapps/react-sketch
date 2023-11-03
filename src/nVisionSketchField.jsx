@@ -24,7 +24,7 @@ let controlsVisible = {
 };
 let executeCanvasResize = false;
 fabric.Object.prototype.noScaleCache = false;
-fabric.Object.prototype.setControlsVisibility(controlsVisible);
+//fabric.Object.prototype.setControlsVisibility(controlsVisible);
 fabric.Object.prototype.set({
   cornerSize: 6,
   cornerColor : 'red',
@@ -389,22 +389,51 @@ class NvisionSketchField extends PureComponent {
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
     var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
-      var objBounds = obj.getBoundingRect();
-      obj.setCoords();
-      var objTL = obj.getPointByOrigin("left", "top");
-      var left = objTL.x;
-      var top = objTL.y;
-
-      if (objBounds.left < canvasTL.x) left = boundaryObj.left;
-      if (objBounds.top < canvasTL.y) top = boundaryObj.top;
-      if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
-      if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
-
-      obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+      var vertices = obj.getCoords(); // Get the transformed vertices
+    
+      // Define the boundaries
+      var boundaryLeft = canvasTL.x;
+      var boundaryTop = canvasTL.y;
+      var boundaryRight = canvasBR.x;
+      var boundaryBottom = canvasBR.y;
+    
+      var leftAdjustment = 0;
+      var topAdjustment = 0;
+      var rightAdjustment = 0;
+      var bottomAdjustment = 0;
+    
+      // Check each vertex
+      vertices.forEach(function (vertex) {
+        if (vertex.x < boundaryLeft) {
+          leftAdjustment = Math.max(leftAdjustment, boundaryLeft - vertex.x);
+        }
+        if (vertex.x > boundaryRight) {
+          rightAdjustment = Math.max(rightAdjustment, vertex.x - boundaryRight);
+        }
+        if (vertex.y < boundaryTop) {
+          topAdjustment = Math.max(topAdjustment, boundaryTop - vertex.y);
+        }
+        if (vertex.y > boundaryBottom) {
+          bottomAdjustment = Math.max(bottomAdjustment, vertex.y - boundaryBottom);
+        }
+      });
+    
+      // Apply adjustments to the object's position
+      var newLeft = obj.left + leftAdjustment - rightAdjustment;
+      var newTop = obj.top + topAdjustment - bottomAdjustment;
+    
+      obj.set({
+        left: newLeft,
+        top: newTop
+      });
+    
       obj.setCoords();
       this._fc.renderAll();
-      // this.props.checkForOverlap(obj);
     }
+    
+    
+    
+    
     obj.setCoords();
     this.props.checkForOverlap(obj);
     this.props.onShapeAdded();

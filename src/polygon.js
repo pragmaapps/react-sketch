@@ -267,10 +267,11 @@ class Polygon extends FabricCanvasTool {
       enable: true,
       description: "",
       strokeUniform: true,
+      rotate: false
     });
     canvas.add(polygon);
     this.toggleDrawPolygon();
-    this.editPolygon(polygon, props);
+    this.editPolygon(polygon, false);
     polygon.setCoords();
     if(!this.checkForMinDistance(polygon, props)){ 
       props.notificationShow("Zone size should be bigger then 100px");
@@ -297,16 +298,17 @@ class Polygon extends FabricCanvasTool {
     }
   };
 
-  editPolygon = (polygon, props) => {
+  editPolygon = (polygon, editForRotate) => {
     let canvas = this._canvas;
-    let activeObject = canvas.getActiveObject();
+    let activeObject;
     if (!activeObject) {
       activeObject = polygon;
       // canvas.setActiveObject(activeObject);
     }
 
-    activeObject.edit = true;
+    activeObject.edit = !polygon.edit;
     activeObject.objectCaching = false;
+    if(!editForRotate){
 
     const lastControl = activeObject.points.length - 1;
     activeObject.cornerStyle = "circle";
@@ -333,6 +335,20 @@ class Polygon extends FabricCanvasTool {
       });
       return acc;
     }, {});
+  }else{
+    activeObject.controls = fabric.Object.prototype.controls;
+    activeObject.setControlsVisibility({
+      mtr: true,
+      mb: false,
+      ml: false,
+      mr: false,
+      mt: false,
+      tl: false,
+      tr: false,
+      bl: false,
+      br: false
+    });
+  }
 
     activeObject.hasBorders = true;
     activeObject.setCoords();
