@@ -530,15 +530,25 @@ class NvisionSketchField extends PureComponent {
       //   this.props.deleteROIDefaultName(shape.defaultName);
       //   canvas.remove(shape);
       // }
-      if((shape.left < boundaryObj.left ||
-        shape.top < boundaryObj.top ||
-        shape.left + shape.width > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
-        shape.top + shape.height > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
-          showNotification = true;
-          this.props.addColorInDefaultShapeColors(shape.stroke);
-          this.props.deleteROIDefaultName(shape.defaultName);
-          canvas.remove(shape);
+      let transformedPoints = shape.getCoords(true);
+      // Check if any of the transformed points are outside the boundary
+      let isOutsideBoundary = false;
+      transformedPoints.forEach((point) => {
+        if (
+          point.x < boundaryObj.left ||
+          point.y < boundaryObj.top ||
+          point.x > boundaryObj.left + boundaryObj.width * boundaryObj.scaleX ||
+          point.y > boundaryObj.top + boundaryObj.height * boundaryObj.scaleY
+        ) {
+          isOutsideBoundary = true;
         }
+      });
+      if (isOutsideBoundary && shape.id !== "trackingArea") {
+        showNotification = true;
+        this.props.addColorInDefaultShapeColors(shape.stroke);
+        this.props.deleteROIDefaultName(shape.defaultName);
+        canvas.remove(shape);
+      }
     });   
     showNotification && this.props.notificationShow("Zones lying outside of tracking area were removed.");   
     canvas.renderAll();
