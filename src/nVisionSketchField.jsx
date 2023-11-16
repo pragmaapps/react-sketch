@@ -473,8 +473,8 @@ class NvisionSketchField extends PureComponent {
       // }
       if((shape.left < boundaryObj.left ||
         shape.top < boundaryObj.top ||
-        shape.left + shape.width > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
-        shape.top + shape.height > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
+        shape.left + (shape.width * shape.scaleX) > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
+        shape.top + (shape.height * shape.scaleY) > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
           showNotification = true;
           this.props.addColorInDefaultShapeColors(shape.stroke);
           this.props.deleteROIDefaultName(shape.defaultName);
