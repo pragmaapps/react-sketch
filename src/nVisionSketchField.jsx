@@ -483,7 +483,7 @@ class NvisionSketchField extends PureComponent {
     });   
     showNotification && this.props.notificationShow("Zones lying outside of tracking area were removed.");   
     canvas.renderAll();
-    // this.props.onShapeAdded();
+    this.props.onShapeAdded();
   }
 
   removeUnCompletedShapes = () =>{
