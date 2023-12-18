@@ -81,6 +81,8 @@ class Rectangle extends FabricCanvasTool {
       enable: true,
       description: "",
       strokeUniform: true,
+      triggerEvent: "none",
+      triggerType: "none"
     });
     canvas.add(this.rect);
     this.rect.setCoords();

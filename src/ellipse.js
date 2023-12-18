@@ -77,6 +77,8 @@ class Ellipse extends FabricCanvasTool {
       enable: true,
       description: "",
       strokeUniform: true,
+      triggerEvent: "none",
+      triggerType: "none"
     });
     canvas.add(this.ellipse);
     this.ellipse.setCoords();

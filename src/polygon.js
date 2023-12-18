@@ -267,6 +267,8 @@ class Polygon extends FabricCanvasTool {
       enable: true,
       description: "",
       strokeUniform: true,
+      triggerEvent: "none",
+      triggerType: "none"
     });
     canvas.add(polygon);
     this.toggleDrawPolygon();
