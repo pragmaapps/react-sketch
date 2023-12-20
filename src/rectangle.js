@@ -80,10 +80,9 @@ class Rectangle extends FabricCanvasTool {
       angle: 0,
       enable: true,
       description: "",
-      strokeUniform: true,
-      triggerEvent: "none",
-      triggerType: "none"
+      strokeUniform: true
     });
+    this.addEventTriggerKeys();
     canvas.add(this.rect);
     this.rect.setCoords();
     // this.containInsideBoundary(options);
@@ -92,6 +91,10 @@ class Rectangle extends FabricCanvasTool {
     removeColorInDefaultShapeColors(props.defaultShapeColors);
     addROIDefaultName(props.roiDefaultNames);
   };
+  addEventTriggerKeys = ()=>{
+    this.rect.triggerEvent= "none";
+    this.rect.triggerType= "none";
+  }
 
   doMouseMove(o, props) {
     if (!this.isDown) return;

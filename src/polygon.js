@@ -254,7 +254,7 @@ class Polygon extends FabricCanvasTool {
     canvas.remove(this.activeShape).remove(this.activeLine);
 
     // create polygon from collected points
-    const polygon = new fabric.Polygon(points, {
+    let polygon = new fabric.Polygon(points, {
       id: new Date().getTime(),
       fill: this._fill,
       strokeWidth: this._width,
@@ -266,10 +266,9 @@ class Polygon extends FabricCanvasTool {
       evented: false,
       enable: true,
       description: "",
-      strokeUniform: true,
-      triggerEvent: "none",
-      triggerType: "none"
+      strokeUniform: true
     });
+    polygon = this.addEventTriggerKeys(polygon);
     canvas.add(polygon);
     this.toggleDrawPolygon();
     this.editPolygon(polygon, props);
@@ -281,6 +280,11 @@ class Polygon extends FabricCanvasTool {
     props.checkForOverlap();
     props.onShapeAdded();
   };
+  addEventTriggerKeys = (polygon)=>{
+    polygon.triggerEvent= "none";
+    polygon.triggerType= "none";
+    return polygon;
+  }
 
   toggleDrawPolygon = () => {
     let canvas = this._canvas;
