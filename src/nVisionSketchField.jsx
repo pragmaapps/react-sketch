@@ -285,7 +285,20 @@ class NvisionSketchField extends PureComponent {
   * Action when an object is moving around inside the canvas
   */
   _onObjectMoving = e => {
-    const { onObjectMoving } = this.props
+    const { onObjectMoving } = this.props;
+    let obj = e.target;
+    let roiTypes = ["rect", "ellipse", "polygon"];
+    let boundary = this.props.getboudaryCoords();
+    var brNew = obj.getBoundingRect();
+    if (boundary && ((brNew.height +brNew.top) > (boundary.height * boundary.scaleY) + boundary.top  || (brNew.width +brNew.left) > (boundary.width * boundary.scaleX) + boundary.left  || brNew.left < boundary.left || brNew.top < boundary.top)) return;
+    if(obj.id !== "trackingArea" && roiTypes.includes(obj.type)){
+      this.left1 =obj.left;
+      this.top1 =obj.top;
+      this.scale1x = obj.scaleX;
+      this.scale1y=obj.scaleY;
+      this.width1=obj.width;
+      this.height1=obj.height;
+    }
     onObjectMoving(e)
   }
 
@@ -383,9 +396,10 @@ class NvisionSketchField extends PureComponent {
     //   return;
     // }
     let boundaryObj = this.props.getboudaryCoords();
-    if(boundaryObj && obj.height > (boundaryObj.height * boundaryObj.scaleY) || obj.width > (boundaryObj.width * boundaryObj.scaleX) ){
-      return;
-    }      
+    //FEN-413
+    /*if(boundaryObj && obj.height > (boundaryObj.height * boundaryObj.scaleY) || obj.width > (boundaryObj.width * boundaryObj.scaleX) ){
+    return;
+    }*/      
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
     var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
