@@ -142,7 +142,7 @@ class Polygon extends FabricCanvasTool {
         objectCaching: false,
       });
       canvas.remove(this.activeShape);
-      canvas.add(polygon);
+      // canvas.add(polygon);
       this.activeShape = polygon;
       canvas.renderAll();
     } else {
