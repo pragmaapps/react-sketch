@@ -133,16 +133,17 @@ class Polygon extends FabricCanvasTool {
       const polygon = new fabric.Polygon(points, {
         stroke: "#333333",
         strokeWidth: 1,
-        fill: "#cccccc",
+        fill: this._fill,
         opacity: 0.3,
         selectable: false,
         hasBorders: false,
         hasControls: false,
         evented: false,
         objectCaching: false,
+        visible: false
       });
       canvas.remove(this.activeShape);
-      // canvas.add(polygon);
+      canvas.add(polygon);
       this.activeShape = polygon;
       canvas.renderAll();
     } else {
@@ -162,6 +163,7 @@ class Polygon extends FabricCanvasTool {
         hasControls: false,
         evented: false,
         objectCaching: false,
+        visible: false
       });
       this.activeShape = polygon;
       canvas.add(polygon);
@@ -176,9 +178,9 @@ class Polygon extends FabricCanvasTool {
   };
 
   doMouseMove(options, props) {
-    if (!this.isDown) return;
+    //if (!this.isDown) return;
     let canvas = this._canvas;
-    let pointer = canvas.getPointer(o.e);
+    let pointer = canvas.getPointer(options.e);
     let boundary = props.getboudaryCoords();
     if(boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top  || pointer.x > (boundary.width * boundary.scaleX) + boundary.left  || pointer.x < boundary.left || pointer.y < boundary.top)){
         
@@ -201,7 +203,7 @@ class Polygon extends FabricCanvasTool {
           y2: pointer.y,
         });
         const points = this.activeShape.get("points");
-        points[pointArray.length] = {
+        points[this.pointArray.length] = {
           x: pointer.x,
           y: pointer.y,
         };
