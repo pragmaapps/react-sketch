@@ -166,8 +166,9 @@ class Rectangle extends FabricCanvasTool {
   checkWithInBoundary = async (props) => {
     let canvas = this._canvas; 
     let isObjectOutSideBoundary = false;
-        canvas.getObjects().forEach((shape) => {
-      if(shape.id === "calibratedLine") return;
+    let roiTypes = ["rect", "ellipse", "polygon"];
+    canvas.getObjects().forEach((shape) => {
+      if(shape.id === "calibratedLine" || !roiTypes.includes(shape.type)) return;
       let boundaryObj = props.getboudaryCoords();
       if(!boundaryObj) return;
       if((shape.left < boundaryObj.left ||
