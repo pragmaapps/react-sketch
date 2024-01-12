@@ -76,8 +76,9 @@ class Ellipse extends FabricCanvasTool {
       id: new Date().getTime(),
       enable: true,
       description: "",
-      strokeUniform: true,
+      strokeUniform: true
     });
+    this.addEventTriggerKeys();
     canvas.add(this.ellipse);
     this.ellipse.setCoords();
     // this.containInsideBoundary(options);
@@ -86,6 +87,10 @@ class Ellipse extends FabricCanvasTool {
     removeColorInDefaultShapeColors(props.defaultShapeColors);
     addROIDefaultName(props.roiDefaultNames);
   };
+  addEventTriggerKeys = ()=>{
+    this.ellipse.triggerEvent= "none";
+    this.ellipse.triggerType= "none";
+  }
 
   doMouseMove(o, props) {
     if (!this.isDown) return;
