@@ -21,6 +21,8 @@ let fabric = require('fabric').fabric;
 let controlsVisible = {
   mtr: false,
 };
+let executeCanvasResize = false;
+fabric.Object.prototype.noScaleCache = false;
 fabric.Object.prototype.setControlsVisibility(controlsVisible);
 fabric.Object.prototype.set({
   cornerSize: 6,
@@ -28,11 +30,12 @@ fabric.Object.prototype.set({
   cornerStyle : 'circle',
   strokeUniform: true,
 });
+fabric.Object.NUM_FRACTION_DIGITS = 17;
 
 /**
  * Sketch Tool based on FabricJS for React Applications
  */
-class MiniscopeSketchField extends PureComponent {
+class MiniscopeClosedLoop extends PureComponent {
   static propTypes = {
     // the color of the line
     lineColor: PropTypes.string,
@@ -137,7 +140,11 @@ class MiniscopeSketchField extends PureComponent {
     resetAllLandmarks: false,
     frontEnd: [],
     canvasHeight:512,
+    canvasWidth:800,
+    strokeWidth:2,
     updateLandmarksForOtherWindow: false,
+    scaleHeightMultiplier: 1,
+    scaleMultiplier: 1,
     lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
 
   }
@@ -333,6 +340,7 @@ class MiniscopeSketchField extends PureComponent {
       obj.setCoords();
       this._fc.renderAll();
     }
+    this.props.onShapeAdded();
     obj.__version += 1
     let prevState = JSON.stringify(obj.__originalState)
     let objState = obj.toJSON()
@@ -340,6 +348,33 @@ class MiniscopeSketchField extends PureComponent {
     obj.__originalState = objState
     let currState = JSON.stringify(objState)
     // this._history.keep([obj, prevState, currState]);
+  }
+
+  removeUnCompletedShapes = () =>{
+    let canvas = this._fc; 
+    let roiTypes = ["rect", "ellipse", "polygon"];
+    canvas.getObjects().forEach((shape) => {
+      if(shape.id !== "calibratedLine" && !roiTypes.includes(shape.type)) 
+        canvas.remove(shape);
+    });   
+    canvas.renderAll();
+  }
+
+  checkForMinDistance = (polygon) =>{
+    const points = polygon.points;
+    const minDistance = 10;
+    let distance;
+    for (let i = 0; i < points.length - 1; i++) {
+      distance = Math.sqrt(
+        Math.pow(points[i + 1].x - points[i].x, 2) +
+        Math.pow(points[i + 1].y - points[i].y, 2)
+      );
+      if (distance < minDistance) {
+          this.props.setSelected(polygon, true);
+          return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -361,7 +396,7 @@ class MiniscopeSketchField extends PureComponent {
   */
   _onMouseDown = e => {
     const { onMouseDown } = this.props
-    this._selectedTool.doMouseDown(e, this.props)
+    this._selectedTool.doMouseDown(e, this.props, this)
     onMouseDown(e)
   }
 
@@ -370,7 +405,7 @@ class MiniscopeSketchField extends PureComponent {
   */
   _onMouseMove = e => {
     const { onMouseMove } = this.props
-    this._selectedTool.doMouseMove(e)
+    this._selectedTool.doMouseMove(e, this.props)
     onMouseMove(e)
   }
 
@@ -391,7 +426,7 @@ class MiniscopeSketchField extends PureComponent {
 
   _onMouseUp = e => {
     const { onMouseUp } = this.props
-    this._selectedTool.doMouseUp(e, this.props)
+    this._selectedTool.doMouseUp(e, this.props, this)
     // Update the final state to new-generated object
     // Ignore Path object since it would be created after mouseUp
     // Assumed the last object in canvas.getObjects() in the newest object
@@ -1476,4 +1511,4 @@ class MiniscopeSketchField extends PureComponent {
   }
 }
 
-export default MiniscopeSketchField
+export default MiniscopeClosedLoop;

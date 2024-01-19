@@ -1,7 +1,7 @@
 /*eslint no-unused-vars: 0*/
 
 import FabricCanvasTool from "../fabrictool";
-
+import { uuid4 } from '../utils'
 const fabric = require("fabric").fabric;
 
 class Rectangle extends FabricCanvasTool {
@@ -15,9 +15,19 @@ class Rectangle extends FabricCanvasTool {
     this.isDown = true;
     this.isDragging = false;
     this.objectAdd = false;
+    this.strokeWidth = 2;
   }
 
-  doMouseDown(options, props) {
+  doMouseDown(options, props, sketch) {
+    if(this.objectAdd) {
+      // console.log("[Animal Tracking][Rectangle] Object has not removed and do not called mouse up function.");
+      this._canvas.off("mouse:up");
+      this._canvas.on("mouse:up", function () {});
+      return;
+    }
+    // console.log("[Animal Tracking][Rectangle] Object has added and called mouse up function.");
+    this._canvas.off("mouse:up");
+    this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props, sketch));
     if (!this.isDown) return;
     const { notificationShow, addROIDefaultName } = props;
     if (this._canvas.getObjects().length >= 5) {
@@ -39,6 +49,14 @@ class Rectangle extends FabricCanvasTool {
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
+    if (
+      pointer.x < 0 ||
+      pointer.x > canvas.getWidth() ||
+      pointer.y < 0 ||
+      pointer.y > canvas.getHeight()
+    ) {
+      return;
+    }
     let objects = canvas.getObjects();
     let name = props.roiDefaultNames[0];
     let defaultName = props.roiDefaultNames[0];
@@ -59,10 +77,14 @@ class Rectangle extends FabricCanvasTool {
       defaultName: defaultName,
       selectable: false,
       evented: false,
-      id: new Date().getTime(),
+      id: uuid4(),
       hasBorders: false,
       cornerSize: 6,
       angle: 0,
+      enable: true,
+      description: "",
+      strokeUniform: true,
+      parentKey: props.selectedRoi     
     });
     canvas.add(this.rect);
     this.containInsideBoundary(options);
@@ -97,13 +119,48 @@ class Rectangle extends FabricCanvasTool {
     }
   }
 
-  doMouseUp(o, props) {
-    this.containInsideBoundary(o);
+  async doMouseUp(o, props, sketch) {
+    // this.containInsideBoundary(o);
     this.isDown = true;
     this.isDragging = false;
     const { onShapeAdded } = props;
-    if(this.objectAdd)
-      onShapeAdded();
+    if(this.objectAdd){
+      let rectSmall = await props.checkForMinTotalArea();
+      let outsideZone = await this.checkWithInBoundary(props);
+      if(outsideZone){
+        console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] Rectangle is created outside the tracking area.","color:blue; font-weight: bold;",
+        "color: black;");
+        props.notificationShow("Zone should not be created outside tracking area.");
+      }
+      else if(!rectSmall){ 
+        console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
+          "color: black;");
+        props.notificationShow("Zone size should be bigger than 100px.");
+      }
+      await onShapeAdded();
+      setTimeout(() => {
+        this.objectAdd = false;
+      },0); 
+    }
+  }
+
+
+  checkWithInBoundary = async (props) => {
+    let canvas = this._canvas; 
+    let isObjectOutSideBoundary = false;
+    let roiTypes = ["rect", "ellipse", "polygon"];
+    canvas.getObjects().forEach((shape) => {
+      if(!roiTypes.includes(shape.type)) return;
+      if((shape.left < 0 ||
+        shape.top < 0 ||
+        shape.left + (shape.width * shape.scaleX) > canvas.getWidth() ||
+        shape.top + (shape.height * shape.scaleY) > canvas.getHeight())){
+          props.deleteROIDefaultName(shape.defaultName);
+          canvas.remove(shape);
+          isObjectOutSideBoundary = true;
+        }
+    });
+    return isObjectOutSideBoundary;
   }
 
   containInsideBoundary = (o) => {

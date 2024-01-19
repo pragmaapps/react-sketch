@@ -1,8 +1,9 @@
 /*eslint no-unused-vars: 0*/
 
 import FabricCanvasTool from "../fabrictool";
-
+import { uuid4 } from '../utils';
 const fabric = require("fabric").fabric;
+const geometric = require("geometric");
 
 class Polygon extends FabricCanvasTool {
   activeLine;
@@ -54,7 +55,7 @@ class Polygon extends FabricCanvasTool {
         this.generatePolygon(this.pointArray, props);
         addROIDefaultName(props.roiDefaultNames);
       } else {
-        this.addPoint(options);
+        this.addPoint(options, props);
       }
     }
 
@@ -67,7 +68,7 @@ class Polygon extends FabricCanvasTool {
     }
   }
 
-  addPoint = (options) => {
+  addPoint = (options, props) => {
     let canvas = this._canvas;
     const pointOption = {
       id: new Date().getTime(),
@@ -124,13 +125,14 @@ class Polygon extends FabricCanvasTool {
       const polygon = new fabric.Polygon(points, {
         stroke: "#333333",
         strokeWidth: 1,
-        fill: "#cccccc",
+        fill: this._fill,
         opacity: 0.3,
         selectable: false,
         hasBorders: false,
         hasControls: false,
         evented: false,
         objectCaching: false,
+        visible: false
       });
       canvas.remove(this.activeShape);
       canvas.add(polygon);
@@ -153,6 +155,7 @@ class Polygon extends FabricCanvasTool {
         hasControls: false,
         evented: false,
         objectCaching: false,
+        visible: false
       });
       this.activeShape = polygon;
       canvas.add(polygon);
@@ -166,10 +169,10 @@ class Polygon extends FabricCanvasTool {
     canvas.add(point);
   };
 
-  doMouseMove(options) {
-    if (!this.isDown) return;
+  doMouseMove(options, props) {
+    //if (!this.isDown) return;
     let canvas = this._canvas;
-    let pointer = canvas.getPointer(o.e);
+    let pointer = canvas.getPointer(options.e);
     if (
       pointer.x < 0 ||
       pointer.x > canvas.getWidth() ||
@@ -195,7 +198,7 @@ class Polygon extends FabricCanvasTool {
           y2: pointer.y,
         });
         const points = this.activeShape.get("points");
-        points[pointArray.length] = {
+        points[this.pointArray.length] = {
           x: pointer.x,
           y: pointer.y,
         };
@@ -215,8 +218,8 @@ class Polygon extends FabricCanvasTool {
     this.selection = true;
     this.drawMode = true;
     const { onShapeAdded } = props;
-    if(this.objectAdd)
-      onShapeAdded();
+    // if(this.objectAdd)
+    //   onShapeAdded();
   }
 
   generatePolygon = (pointArray, props) => {
@@ -248,8 +251,8 @@ class Polygon extends FabricCanvasTool {
     canvas.remove(this.activeShape).remove(this.activeLine);
 
     // create polygon from collected points
-    const polygon = new fabric.Polygon(points, {
-      id: new Date().getTime(),
+    let polygon = new fabric.Polygon(points, {
+      id: uuid4(),
       fill: this._fill,
       strokeWidth: this._width,
       stroke: this._color,
@@ -258,10 +261,20 @@ class Polygon extends FabricCanvasTool {
       defaultName: defaultName,
       selectable: false,
       evented: false,
+      enable: true,
+      description: "",
+      strokeUniform: true,
+      parentKey: props.selectedRoi
     });
     canvas.add(polygon);
     this.toggleDrawPolygon();
-    this.editPolygon(polygon);
+    this.editPolygon(polygon, props);
+    polygon.setCoords();
+    if(!this.checkForMinDistance(polygon, props)){ 
+      props.notificationShow("Zone size should be bigger then 100px");
+      return;
+    }
+    props.onShapeAdded();
   };
 
   toggleDrawPolygon = () => {
@@ -273,7 +286,7 @@ class Polygon extends FabricCanvasTool {
       this.lineArray = [];
       this.pointArray = [];
       this.canvas.selection = true;
-      this.drawMode = false;
+      // this.drawMode = false;
     } else {
       // start draw mode
       canvas.selection = false;
@@ -281,7 +294,7 @@ class Polygon extends FabricCanvasTool {
     }
   };
 
-  editPolygon = (polygon) => {
+  editPolygon = (polygon, props) => {
     let canvas = this._canvas;
     let activeObject = canvas.getActiveObject();
     if (!activeObject) {
@@ -318,8 +331,8 @@ class Polygon extends FabricCanvasTool {
       return acc;
     }, {});
 
-    activeObject.hasBorders = false;
-
+    activeObject.hasBorders = true;
+    activeObject.setCoords();
     canvas.requestRenderAll();
   };
 
@@ -381,9 +394,24 @@ class Polygon extends FabricCanvasTool {
       if(finalPointPosition.x > canvas.getWidth() || finalPointPosition.y > canvas.getHeight() || finalPointPosition.x < 0 || finalPointPosition.y < 0){
         return; 
        }
+    let tempPolygon =  JSON.parse(JSON.stringify(polygon));
+    tempPolygon.points[currentControl.pointIndex] = finalPointPosition;
+    if(!this.checkForMinDistance(tempPolygon)){
+      polygon.points[currentControl.pointIndex]  = polygon.points[currentControl.pointIndex];
+      return true;
+    } 
     polygon.points[currentControl.pointIndex] = finalPointPosition;
     return true;
   };
+
+  checkWithinBoundary = (finalPointPosition) => {
+    let canvas = this._canvas;
+    if (canvas && (finalPointPosition.y > canvas.getHeight() || finalPointPosition.x > canvas.getWidth() || finalPointPosition.x < 0 || finalPointPosition.y < 0)) {
+      return false;
+    }
+    return true
+  }
+
   getObjectSizeWithStroke = (object) => {
     var stroke = new fabric.Point(
       object.strokeUniform ? 1 / object.scaleX : 1,
@@ -391,6 +419,41 @@ class Polygon extends FabricCanvasTool {
     ).multiply(object.strokeWidth);
     return new fabric.Point(object.width + stroke.x, object.height + stroke.y);
   };
+
+  checkForMinDistance = (polygon, props) =>{
+    const minArea = 100;
+    let totalArea = geometric.polygonArea(this.getPolygonCoords(polygon))
+    if (totalArea < minArea) {
+        if(props)
+        props.setSelected(polygon, true);
+        return false;
+    }
+    return true;
+  }
+
+  getboudaryCoords = () =>{
+    let canvas = this._canvas;
+    let cords = {};
+      cords["width"] = canvas.getWidth();
+      cords["height"] = canvas.getHeight();
+      cords["left"] = 0;
+      cords["top"] = 0;
+      cords["scaleX"] = 1;
+      cords["scaleY"] = 1;
+    return cords;
+  }
+
+  getPolygonCoords =(obj) => {
+    const coords = [];
+    for (let i = 0; i < obj.points.length; i++) {
+      const point = obj.points[i];
+      const x = point.x;
+      const y = point.y;
+      coords.push([x, y]);
+    }
+    return coords;
+  }
+
 }
 
 export default Polygon;

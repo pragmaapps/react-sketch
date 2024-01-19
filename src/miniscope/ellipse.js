@@ -1,7 +1,7 @@
 /*eslint no-unused-vars: 0*/
 
 import FabricCanvasTool from "../fabrictool";
-
+import { uuid4 } from '../utils'
 const fabric = require("fabric").fabric;
 
 class Ellipse extends FabricCanvasTool {
@@ -17,7 +17,16 @@ class Ellipse extends FabricCanvasTool {
     this.objectAdd = false;
   }
 
-  doMouseDown(options, props) {
+  doMouseDown(options, props, sketch) {
+    if(this.objectAdd) {
+      // console.log("[Animal Tracking][Ellipse] Object has not added/removed and do not called mouse up function");
+      this._canvas.off("mouse:up");
+      this._canvas.on("mouse:up", function () {});
+      return;
+    }
+    // console.log("[Animal Tracking][Ellipse] Object has added and called mouse up function.");
+    this._canvas.off("mouse:up");
+    this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props, sketch));
     if (!this.isDown) return;
     const { notificationShow, addROIDefaultName } = props;
     if (this._canvas.getObjects().length >= 5) {
@@ -58,7 +67,8 @@ class Ellipse extends FabricCanvasTool {
       selectable: false,
       evented: false,
       transparentCorners: false,
-      id: new Date().getTime(),
+      id: uuid4(),
+      parentKey: props.selectedRoi
     });
     canvas.add(this.ellipse);
     this.containInsideBoundary(options);
@@ -90,15 +100,51 @@ class Ellipse extends FabricCanvasTool {
       }
       this.ellipse.set({ rx: rx, ry: ry });
       this.containInsideBoundary(o);
+      this.ellipse.setCoords();
       canvas.renderAll();
     }
   }
 
-  doMouseUp(o, props) {
+  async doMouseUp(o, props, sketch) {
     this.isDown = true;
     this.isDragging = false;
-    if(this.objectAdd)
-      props.onShapeAdded();
+    const { onShapeAdded } = props;
+    if(this.objectAdd){
+      let ellipseSmall = await props.checkForMinTotalArea();
+      let outsideZone = await this.checkWithInBoundary(props);
+      if(outsideZone){
+        console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] Ellipse is created outside the tracking area.","color:blue; font-weight: bold;",
+        "color: black;");
+        props.notificationShow("Zone should not be created outside tracking area.");
+      }
+      else if(!ellipseSmall){ 
+        console.log("%c[Animal Tracking]%c [Skecth Field][Ellipse][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
+          "color: black;");
+        props.notificationShow("Zone size should be bigger then 100px.");
+      }
+      await onShapeAdded();
+      setTimeout(() => {
+        this.objectAdd = false;
+      }, 0); 
+    }
+  }
+
+  checkWithInBoundary = async (props) => {
+    let canvas = this._canvas; 
+    let isObjectOutSideBoundary = false;
+    let roiTypes = ["rect", "ellipse", "polygon"];
+    canvas.getObjects().forEach((shape) => {
+      if(!roiTypes.includes(shape.type)) return;
+      if((shape.left < 0 ||
+        shape.top < 0 ||
+        shape.left + (shape.width * shape.scaleX) > canvas.getWidth() ||
+        shape.top + (shape.height * shape.scaleY) > canvas.getHeight())){
+          props.deleteROIDefaultName(shape.defaultName);
+          canvas.remove(shape);
+          isObjectOutSideBoundary = true;
+        }
+    });
+    return isObjectOutSideBoundary;
   }
 
   containInsideBoundary = (o) => {
