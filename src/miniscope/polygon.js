@@ -36,10 +36,10 @@ class Polygon extends FabricCanvasTool {
       objects = objects.filter(
         (object) => object.id !== undefined && roiTypes.includes(object.type)
       );
-      if (objects.length >= 5) {
+      if (objects.length >= 100) {
         notificationShow();
         console.log(
-          `%c[ROI]%c , maximum 5 roi shapes allowed `,
+          `%c[ROI]%c , maximum 100 roi shapes allowed `,
           "color:blue; font-weight:bold;",
           "color:black;"
         );
@@ -53,7 +53,7 @@ class Polygon extends FabricCanvasTool {
       ) {
         this.objectAdd = true;
         this.generatePolygon(this.pointArray, props);
-        addROIDefaultName(props.roiDefaultNames);
+        // addROIDefaultName(props.roiDefaultNames);
       } else {
         this.addPoint(options, props);
       }
@@ -210,7 +210,7 @@ class Polygon extends FabricCanvasTool {
     }
   }
 
-  doMouseUp(o, props) {
+  async doMouseUp(o, props) {
     this.isDown = false;
     let canvas = this._canvas;
     canvas.selection = true;
@@ -220,6 +220,12 @@ class Polygon extends FabricCanvasTool {
     const { onShapeAdded } = props;
     // if(this.objectAdd)
     //   onShapeAdded();
+    let obj = o.target;
+    if(props.enableRoiDelete && obj){
+      let canvas = this._canvas; 
+      canvas.remove(obj);
+      await onShapeAdded();
+    }
   }
 
   generatePolygon = (pointArray, props) => {
@@ -255,10 +261,10 @@ class Polygon extends FabricCanvasTool {
       id: uuid4(),
       fill: this._fill,
       strokeWidth: this._width,
-      stroke: this._color,
+      stroke: props.lineColor,
       transparentCorners: false,
       name: name,
-      defaultName: defaultName,
+      // defaultName: defaultName,
       selectable: false,
       evented: false,
       enable: true,

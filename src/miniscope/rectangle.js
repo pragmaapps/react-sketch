@@ -30,10 +30,10 @@ class Rectangle extends FabricCanvasTool {
     this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props, sketch));
     if (!this.isDown) return;
     const { notificationShow, addROIDefaultName } = props;
-    if (this._canvas.getObjects().length >= 5) {
+    if (this._canvas.getObjects().length >= 100) {
       notificationShow();
       console.log(
-        `%c[ROI]%c , maximum 5 roi shapes allowed `,
+        `%c[ROI]%c , maximum 100 roi shapes allowed `,
         "color:blue; font-weight:bold;",
         "color:black;"
       );
@@ -42,7 +42,7 @@ class Rectangle extends FabricCanvasTool {
     }
     this.objectAdd = true;
     this.genrateRect(options, props);
-    addROIDefaultName(props.roiDefaultNames);
+    // addROIDefaultName(props.roiDefaultNames);
   }
 
   genrateRect = (options, props) => {
@@ -69,12 +69,12 @@ class Rectangle extends FabricCanvasTool {
       originY: "top",
       width: 20,
       height: 20,
-      stroke: this._color,
+      stroke: props.lineColor,
       strokeWidth: this._width,
       fill: this._fill,
       transparentCorners: false,
       name: name,
-      defaultName: defaultName,
+      // defaultName: defaultName,
       selectable: false,
       evented: false,
       id: uuid4(),
@@ -141,6 +141,12 @@ class Rectangle extends FabricCanvasTool {
       setTimeout(() => {
         this.objectAdd = false;
       },0); 
+    }
+    let obj = o.target;
+    if(props.enableRoiDelete && obj){
+      let canvas = this._canvas; 
+      canvas.remove(obj);
+      await onShapeAdded();
     }
   }
 
