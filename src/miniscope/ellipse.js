@@ -19,16 +19,14 @@ class Ellipse extends FabricCanvasTool {
 
   doMouseDown(options, props, sketch) {
     if(this.objectAdd) {
-      // console.log("[Animal Tracking][Ellipse] Object has not added/removed and do not called mouse up function");
       this._canvas.off("mouse:up");
       this._canvas.on("mouse:up", function () {});
       return;
     }
-    // console.log("[Animal Tracking][Ellipse] Object has added and called mouse up function.");
     this._canvas.off("mouse:up");
     this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props, sketch));
     if (!this.isDown) return;
-    const { notificationShow, addROIDefaultName } = props;
+    const { notificationShow } = props;
     if (this._canvas.getObjects().length >= 100) {
       notificationShow();
       console.log(
@@ -41,7 +39,6 @@ class Ellipse extends FabricCanvasTool {
     }
     this.objectAdd = true;
     this.genrateEllipse(options, props);
-    // addROIDefaultName(props.roiDefaultNames);
   }
 
   genrateEllipse = (options, props) => {
@@ -49,8 +46,6 @@ class Ellipse extends FabricCanvasTool {
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
     let objects = canvas.getObjects();
-    let name = props.roiDefaultNames[0];
-    let defaultName = props.roiDefaultNames[0];
     [this.startX, this.startY] = [pointer.x, pointer.y];
     this.ellipse = new fabric.Ellipse({
       left: this.startX,
@@ -62,8 +57,6 @@ class Ellipse extends FabricCanvasTool {
       strokeWidth: this._width,
       stroke: props.lineColor,
       fill: this._fill,
-      name: name,
-      // defaultName: defaultName,
       selectable: false,
       evented: false,
       transparentCorners: false,
@@ -113,12 +106,12 @@ class Ellipse extends FabricCanvasTool {
       let ellipseSmall = await props.checkForMinTotalArea();
       let outsideZone = await this.checkWithInBoundary(props);
       if(outsideZone){
-        console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] Ellipse is created outside the tracking area.","color:blue; font-weight: bold;",
+        console.log("%c[Closed Loop]%c [Miniscope Field][Rectangle][do mouse up] Ellipse is created outside the canvas.","color:blue; font-weight: bold;",
         "color: black;");
         props.notificationShow("Zone should not be created outside tracking area.");
       }
       else if(!ellipseSmall){ 
-        console.log("%c[Animal Tracking]%c [Skecth Field][Ellipse][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
+        console.log("%c[Closed Loop]%c [Miniscope Field][Ellipse][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
           "color: black;");
         props.notificationShow("Zone size should be bigger then 100px.");
       }
@@ -145,7 +138,6 @@ class Ellipse extends FabricCanvasTool {
         shape.top < 0 ||
         shape.left + (shape.width * shape.scaleX) > canvas.getWidth() ||
         shape.top + (shape.height * shape.scaleY) > canvas.getHeight())){
-          props.deleteROIDefaultName(shape.defaultName);
           canvas.remove(shape);
           isObjectOutSideBoundary = true;
         }

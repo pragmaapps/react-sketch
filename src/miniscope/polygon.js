@@ -30,7 +30,7 @@ class Polygon extends FabricCanvasTool {
 
   doMouseDown(options, props) {
     if (this.drawMode) {
-      const { notificationShow, addROIDefaultName } = props;
+      const { notificationShow } = props;
       let roiTypes = ["rect", "ellipse", "polygon"];
       let objects = this._canvas.getObjects();
       objects = objects.filter(
@@ -53,7 +53,6 @@ class Polygon extends FabricCanvasTool {
       ) {
         this.objectAdd = true;
         this.generatePolygon(this.pointArray, props);
-        // addROIDefaultName(props.roiDefaultNames);
       } else {
         this.addPoint(options, props);
       }
@@ -235,9 +234,6 @@ class Polygon extends FabricCanvasTool {
     let findIdForObject = objects.filter(
       (object) => object.id !== undefined && roiTypes.includes(object.type)
     );
-    // let name = `ROI#${findIdForObject.length + 1}`;
-    let name = props.roiDefaultNames[0];
-    let defaultName = props.roiDefaultNames[0];
     let points = [];
     // collect points and remove them from canvas
     for (const point of pointArray) {
@@ -263,8 +259,6 @@ class Polygon extends FabricCanvasTool {
       strokeWidth: this._width,
       stroke: props.lineColor,
       transparentCorners: false,
-      name: name,
-      // defaultName: defaultName,
       selectable: false,
       evented: false,
       enable: true,
