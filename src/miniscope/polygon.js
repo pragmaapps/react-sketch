@@ -36,7 +36,8 @@ class Polygon extends FabricCanvasTool {
       objects = objects.filter(
         (object) => object.id !== undefined && roiTypes.includes(object.type)
       );
-      if (objects.length >= 100) {
+      let selectedRoiShpes = this._canvas.getObjects().filter(ob => ob.parentKey === props.selectedRoi);
+      if (selectedRoiShpes.length >= 100) {
         notificationShow();
         console.log(
           `%c[ROI]%c , maximum 100 roi shapes allowed `,
@@ -70,7 +71,7 @@ class Polygon extends FabricCanvasTool {
   addPoint = (options, props) => {
     let canvas = this._canvas;
     const pointOption = {
-      id: new Date().getTime(),
+      // id: new Date().getTime(),
       radius: 2,
       fill: "#ffffff",
       stroke: "#333333",

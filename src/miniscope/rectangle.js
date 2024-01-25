@@ -28,7 +28,8 @@ class Rectangle extends FabricCanvasTool {
     this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props, sketch));
     if (!this.isDown) return;
     const { notificationShow } = props;
-    if (this._canvas.getObjects().length >= 100) {
+    let selectedRoiShpes = this._canvas.getObjects().filter(ob => ob.parentKey === props.selectedRoi);
+    if (selectedRoiShpes.length >= 100) {
       notificationShow();
       console.log(
         `%c[ROI]%c , maximum 100 roi shapes allowed `,

@@ -353,8 +353,9 @@ class MiniscopeClosedLoop extends PureComponent {
   removeUnCompletedShapes = () =>{
     let canvas = this._fc; 
     let roiTypes = ["rect", "ellipse", "polygon"];
+    this._tools["polygon"].toggleDrawPolygon();
     canvas.getObjects().forEach((shape) => {
-      if(shape.id !== "calibratedLine" && !roiTypes.includes(shape.type)) 
+      if(shape.id === undefined) 
         canvas.remove(shape);
     });   
     canvas.renderAll();
