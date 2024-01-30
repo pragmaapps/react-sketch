@@ -42,7 +42,44 @@ class Rectangle extends FabricCanvasTool {
     this.objectAdd = true;
     this.genrateRect(options, props);
   }
+  async doKeyDown(o, props, sketch){
+    if (!this.isDown) return;
+    let canvas = this._canvas;
+    let activeObj = canvas.getActiveObject()
+    console.log("[Rectangle][doKeyDown] active object is", activeObj);
+    
+    // for delete zones
+    if(o.which === 46){
+      canvas.remove(activeObj);
+      await props.onShapeAdded();
+      return ;
+    }
 
+    // for move zones to left right
+    if(o.which === 37 || o.which === 39){
+      let left = activeObj.left;
+      left = o.which === 37 ? left - 1 : left + 1;
+      let canvasWidth = canvas.getWidth();
+      let totalWidth = left + activeObj.width;
+      if(left < 0 || totalWidth >= canvasWidth){
+        left = left < 0 ? 0 : activeObj.left;
+      }
+      activeObj.set('left',left).setCoords();
+    }
+    
+    // for move zones to top bottom
+    if(o.which === 38 || o.which === 40){
+      let top = activeObj.top;
+      top = o.which === 38 ? top - 1 : top + 1;
+      let canvasHeight = canvas.getHeight();
+      let totalHeight = top + activeObj.height;
+      if(top < 0 || totalHeight >= canvasHeight){
+        top = top < 0 ? 0 : activeObj.top;
+      }
+      activeObj.set('top',top).setCoords();
+    } 
+    canvas.renderAll();
+  }
   genrateRect = (options, props) => {
     let canvas = this._canvas;
     this.isDown = true;

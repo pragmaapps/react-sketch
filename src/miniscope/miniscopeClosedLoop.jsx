@@ -98,7 +98,9 @@ class MiniscopeClosedLoop extends PureComponent {
     //add image
     image: PropTypes.string,
     //resize
-    callResize: PropTypes.bool
+    callResize: PropTypes.bool,
+    // event key down
+    onKeyDown: PropTypes.func,
   }
 
   static defaultProps = {
@@ -123,7 +125,8 @@ class MiniscopeClosedLoop extends PureComponent {
     onMouseOut: () => null,
     onObjectMoving: () => null,
     onObjectScaling: () => null,
-    onObjectRotating: () => null
+    onObjectRotating: () => null,
+    onKeyDown: () => null,
   }
 
   state = {
@@ -399,6 +402,22 @@ class MiniscopeClosedLoop extends PureComponent {
     const { onMouseDown } = this.props
     this._selectedTool.doMouseDown(e, this.props, this)
     onMouseDown(e)
+  }
+
+  _onKeyDown = e => {
+    const { onKeyDown } = this.props;
+    let canvas = this._fc;
+    let activeObj = canvas.getActiveObject(); 
+    //left arrow: 37, top arrow: 38, right arrow: 39, bottom arrow: 40
+    // delete button: 46
+    let allowedKeysCode = [37,38,39,40,46];
+    if(!activeObj || !allowedKeysCode.includes(e.which)) return ;
+    if (activeObj) {
+      // Handle keydown event for the selected object
+      let tool = activeObj.type === 'rect'? Tool.Rectangle : (activeObj.type === 'ellipse' ? Tool.Ellipse: (activeObj.type === 'polygon' ? Tool.Polygon:  Tool.Rectangle));
+      this._tools[tool].doKeyDown(e, this.props, this)
+      onKeyDown(e)
+    }
   }
 
   /**
@@ -1145,7 +1164,8 @@ class MiniscopeClosedLoop extends PureComponent {
     // Control resize
 
     window.addEventListener('resize', this._resize, false)
-
+    // Attach a keydown event listener to the document
+    document.addEventListener('keydown', this._onKeyDown)
     // Initialize History, with maximum number of undo steps
     // this._history = new History(undoSteps);
 
