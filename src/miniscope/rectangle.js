@@ -114,7 +114,9 @@ class Rectangle extends FabricCanvasTool {
       enable: true,
       description: "",
       strokeUniform: true,
-      parentKey: props.selectedRoi     
+      parentKey: props.selectedRoi,
+      cnWidth: canvas.getWidth(),
+      cnHeight: canvas.getHeight()     
     });
     canvas.add(this.rect);
     this.containInsideBoundary(options);

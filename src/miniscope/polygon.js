@@ -302,7 +302,9 @@ class Polygon extends FabricCanvasTool {
       enable: true,
       description: "",
       strokeUniform: true,
-      parentKey: props.selectedRoi
+      parentKey: props.selectedRoi,
+      cnWidth: canvas.getWidth(),
+      cnHeight: canvas.getHeight()
     });
     canvas.add(polygon);
     this.toggleDrawPolygon();

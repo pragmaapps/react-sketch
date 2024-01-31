@@ -358,7 +358,7 @@ class MiniscopeClosedLoop extends PureComponent {
     let roiTypes = ["rect", "ellipse", "polygon"];
     this._tools["polygon"].toggleDrawPolygon();
     canvas.getObjects().forEach((shape) => {
-      if(shape.id === undefined) 
+      if(shape.id === undefined && shape.type !== "group") 
         canvas.remove(shape);
     });   
     canvas.renderAll();
@@ -722,6 +722,55 @@ class MiniscopeClosedLoop extends PureComponent {
           this.props.onShapeAdded();
         }
       });
+    }
+  }
+
+  _resizeOnImport = (canvasWidth = null, canvasHeight = null) => {
+    console.log('[Closed Loop] Canvas old width and Height:', canvasWidth, canvasHeight);
+    this.getCanvasAtResoutionForImport(canvasWidth, canvasHeight, false);
+  };
+
+  getCanvasAtResoutionForImport = (newWidth, newHeight, scaleLandmarks = false) => {
+    let canvas = this._fc;
+    // let { offsetWidth, clientHeight } = this._container;
+
+    if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
+      let isMira = this.props.from === undefined ? true : false;  
+      var scaleMultiplier = canvas.width / newWidth;
+      var scaleHeightMultiplier = canvas.height / newHeight;
+      var objects = canvas.getObjects();
+
+      for (var i in objects) {
+        let isObjectTypeImage = isMira ? objects[i].type === "image" : objects[i].type !== "image";
+        if (isObjectTypeImage || scaleLandmarks) {
+          // objects[i].width = objects[i].width * scaleMultiplier;
+          // objects[i].height = objects[i].height * scaleHeightMultiplier;
+          objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+          objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+          objects[i].setCoords();
+          var scaleFactor = this.state.scaleFactor * scaleMultiplier;
+          this.setState({ scaleFactor });
+        }
+        // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+        // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+        objects[i].left = objects[i].left * scaleMultiplier;
+        objects[i].top = objects[i].top * scaleMultiplier;
+        objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
+        objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
+        objects[i].setCoords();
+      }
+
+
+      var obj = canvas.backgroundImage;
+      if (obj) {
+        obj.scaleX = obj.scaleX * scaleMultiplier;
+        obj.scaleY = obj.scaleY * scaleMultiplier;
+      }
+
+      console.log("[MIRA] Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
+      canvas.discardActiveObject();
+      canvas.renderAll();
+      this.props.onShapeAdded();
     }
   }
 
@@ -1448,6 +1497,35 @@ class MiniscopeClosedLoop extends PureComponent {
     this.setState({
       updateLandmarksForOtherWindow: updateLandmarksForOtherWindow
     })
+  }
+
+  multiselect = (enableMultiSelect) => {
+    let canvas = this._fc;
+    if (!canvas) return;
+   
+    if(enableMultiSelect){
+      canvas.discardActiveObject();
+      let selectObjects = canvas.getObjects().filter(ob => ob.parentKey === this.props.selectedRoi);
+      console.log("selected objects", selectObjects);
+      var sel = new fabric.ActiveSelection(selectObjects, {
+        canvas: canvas,
+      });
+      canvas.setActiveObject(sel);
+      if(canvas.getActiveObject().type === 'activeSelection'){
+        console.log("[Closed Loop][MiniscopeClosedLoop][multiselect] Make the group with the selected objects", selectObjects);
+        canvas.getActiveObject().toGroup();
+        canvas.requestRenderAll();
+      }
+      canvas.requestRenderAll();
+    }else{
+      if(canvas.getActiveObject() && canvas.getActiveObject().type === "group"){
+        canvas.getActiveObject().toActiveSelection();
+        console.log("[Closed Loop][MiniscopeClosedLoop][multiselect] Remove the group", canvas.getObjects());
+      }
+      canvas.discardActiveObject();
+      canvas.requestRenderAll();
+      this.props.onShapeAdded();
+    }
   }
 
   removeAddOrMoveMode = () => {

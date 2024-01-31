@@ -101,7 +101,9 @@ class Ellipse extends FabricCanvasTool {
       evented: false,
       transparentCorners: false,
       id: uuid4(),
-      parentKey: props.selectedRoi
+      parentKey: props.selectedRoi,
+      cnWidth: canvas.getWidth(),
+      cnHeight: canvas.getHeight()
     });
     canvas.add(this.ellipse);
     this.containInsideBoundary(options);
