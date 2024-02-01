@@ -719,7 +719,7 @@ class MiniscopeClosedLoop extends PureComponent {
       }
       this.setState({canvasHeight:canvas.height},()=>{
         if(!isMira){
-          this.props.onShapeAdded();
+          this.props.onShapeAdded(false);
         }
       });
     }
@@ -1524,7 +1524,7 @@ class MiniscopeClosedLoop extends PureComponent {
       }
       canvas.discardActiveObject();
       canvas.requestRenderAll();
-      // this.props.onShapeAdded();
+      this.props.onShapeAdded();
     }
   }
 
