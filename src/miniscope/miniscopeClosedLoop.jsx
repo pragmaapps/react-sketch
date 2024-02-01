@@ -321,10 +321,7 @@ class MiniscopeClosedLoop extends PureComponent {
   }
 
   _onObjectModified = e => {
-    let obj = e.target;
-    if(obj.height > this._fc.height || obj.width > this._fc.width){
-      return;
-  }      
+    let obj = e.target;  
     var canvasTL = new fabric.Point(0, 0);
     var canvasBR = new fabric.Point(this._fc.getWidth(), this._fc.getHeight());
     if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
@@ -342,6 +339,9 @@ class MiniscopeClosedLoop extends PureComponent {
       obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
       obj.setCoords();
       this._fc.renderAll();
+    }
+    if(obj.type === "group"){
+      this.props.isROIChanged(true);
     }
     this.props.onShapeAdded();
     obj.__version += 1
@@ -1506,7 +1506,7 @@ class MiniscopeClosedLoop extends PureComponent {
     if(enableMultiSelect){
       canvas.discardActiveObject();
       let selectObjects = canvas.getObjects().filter(ob => ob.parentKey === this.props.selectedRoi);
-      console.log("selected objects", selectObjects);
+      if(selectObjects.length === 0) return;
       var sel = new fabric.ActiveSelection(selectObjects, {
         canvas: canvas,
       });
@@ -1524,7 +1524,7 @@ class MiniscopeClosedLoop extends PureComponent {
       }
       canvas.discardActiveObject();
       canvas.requestRenderAll();
-      this.props.onShapeAdded();
+      // this.props.onShapeAdded();
     }
   }
 
