@@ -24,7 +24,37 @@ let controlsVisible = {
 };
 let executeCanvasResize = false;
 fabric.Object.prototype.noScaleCache = false;
-fabric.Object.prototype.setControlsVisibility(controlsVisible);
+//fabric.Object.prototype.setControlsVisibility(controlsVisible);
+var svgData = '<svg xmlns="http://www.w3.org/2000/svg" class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiBox-root css-uqopch" viewBox="0 0 24 24" focusable="false" aria-hidden="true" data-testid="Rotate90DegreesCwIcon"><path fill="red" d="M4.64 19.37c3.03 3.03 7.67 3.44 11.15 1.25l-1.46-1.46c-2.66 1.43-6.04 1.03-8.28-1.21-2.73-2.73-2.73-7.17 0-9.9C7.42 6.69 9.21 6.03 11 6.03V9l4-4-4-4v3.01c-2.3 0-4.61.87-6.36 2.63-3.52 3.51-3.52 9.21 0 12.73zM11 13l6 6 6-6-6-6-6 6z"></path></svg>';
+
+var rotateIcon = 'data:image/svg+xml,' + encodeURIComponent(svgData);
+var img = document.createElement('img');
+img.src = rotateIcon;
+
+// here's where your custom rotation control is defined
+// by changing the values you can customize the location, size, look, and behavior of the control
+fabric.Object.prototype.controls.mtr = new fabric.Control({
+  x: 0,
+  y: -0.5,
+  offsetY: -40,
+  cursorStyle: 'crosshair',
+  actionHandler: fabric.controlsUtils.rotationWithSnapping,
+  actionName: 'rotate',
+  render: renderIcon,
+  cornerSize: 16,
+  withConnection: true
+});
+
+// here's where the render action for the control is defined
+function renderIcon(ctx, left, top, styleOverride, fabricObject) {
+  var size = this.cornerSize;
+  ctx.save();
+  ctx.translate(left, top);
+  ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle));
+  ctx.drawImage(img, -size / 2, -size / 2, size, size);
+  ctx.restore();
+}
+
 fabric.Object.prototype.set({
   cornerSize: 6,
   cornerColor : 'red',
@@ -403,22 +433,51 @@ class NvisionSketchField extends PureComponent {
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
     var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
-      var objBounds = obj.getBoundingRect();
-      obj.setCoords();
-      var objTL = obj.getPointByOrigin("left", "top");
-      var left = objTL.x;
-      var top = objTL.y;
-
-      if (objBounds.left < canvasTL.x) left = boundaryObj.left;
-      if (objBounds.top < canvasTL.y) top = boundaryObj.top;
-      if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
-      if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
-
-      obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+      var vertices = obj.getCoords(); // Get the transformed vertices
+    
+      // Define the boundaries
+      var boundaryLeft = canvasTL.x;
+      var boundaryTop = canvasTL.y;
+      var boundaryRight = canvasBR.x;
+      var boundaryBottom = canvasBR.y;
+    
+      var leftAdjustment = 0;
+      var topAdjustment = 0;
+      var rightAdjustment = 0;
+      var bottomAdjustment = 0;
+    
+      // Check each vertex
+      vertices.forEach(function (vertex) {
+        if (vertex.x < boundaryLeft) {
+          leftAdjustment = Math.max(leftAdjustment, boundaryLeft - vertex.x);
+        }
+        if (vertex.x > boundaryRight) {
+          rightAdjustment = Math.max(rightAdjustment, vertex.x - boundaryRight);
+        }
+        if (vertex.y < boundaryTop) {
+          topAdjustment = Math.max(topAdjustment, boundaryTop - vertex.y);
+        }
+        if (vertex.y > boundaryBottom) {
+          bottomAdjustment = Math.max(bottomAdjustment, vertex.y - boundaryBottom);
+        }
+      });
+    
+      // Apply adjustments to the object's position
+      var newLeft = obj.left + leftAdjustment - rightAdjustment;
+      var newTop = obj.top + topAdjustment - bottomAdjustment;
+    
+      obj.set({
+        left: newLeft,
+        top: newTop
+      });
+    
       obj.setCoords();
       this._fc.renderAll();
-      // this.props.checkForOverlap(obj);
     }
+    
+    
+    
+    
     obj.setCoords();
     this.props.checkForOverlap(obj);
     this.props.onShapeAdded();
@@ -499,6 +558,45 @@ class NvisionSketchField extends PureComponent {
     canvas.renderAll();
     this.props.onShapeAdded();
   }
+
+  // checkWithInBoundary = async() =>{
+  //   let canvas = this._fc; 
+  //   let showNotification = false;
+  //   canvas.getObjects().forEach((shape) => {
+  //     if(shape.id === "calibratedLine") return;
+  //     let boundaryObj = this.props.getboudaryCoords();
+  //     if(!boundaryObj) return;
+  //     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
+  //     var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX), (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
+  //     // if (!shape.isContainedWithinRect(canvasTL, canvasBR, true, true) && shape.id !== "trackingArea") {
+  //     //   this.props.addColorInDefaultShapeColors(shape.stroke);
+  //     //   this.props.deleteROIDefaultName(shape.defaultName);
+  //     //   canvas.remove(shape);
+  //     // }
+  //     let transformedPoints = shape.getCoords(true);
+  //     // Check if any of the transformed points are outside the boundary
+  //     let isOutsideBoundary = false;
+  //     transformedPoints.forEach((point) => {
+  //       if (
+  //         point.x < boundaryObj.left ||
+  //         point.y < boundaryObj.top ||
+  //         point.x > boundaryObj.left + boundaryObj.width * boundaryObj.scaleX ||
+  //         point.y > boundaryObj.top + boundaryObj.height * boundaryObj.scaleY
+  //       ) {
+  //         isOutsideBoundary = true;
+  //       }
+  //     });
+  //     if (isOutsideBoundary && shape.id !== "trackingArea") {
+  //       showNotification = true;
+  //       this.props.addColorInDefaultShapeColors(shape.stroke);
+  //       this.props.deleteROIDefaultName(shape.defaultName);
+  //       canvas.remove(shape);
+  //     }
+  //   });   
+  //   showNotification && this.props.notificationShow("Zones lying outside of tracking area were removed.");   
+  //   canvas.renderAll();
+  //   // this.props.onShapeAdded();
+  // }
 
   removeUnCompletedShapes = () =>{
     let canvas = this._fc; 
