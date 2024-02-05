@@ -1,8 +1,7 @@
 /*eslint no-unused-vars: 0*/
 
-import FabricCanvasTool from "./fabrictool";
-import { linearDistance } from "./utils";
-
+import FabricCanvasTool from "../fabrictool";
+import { uuid4 } from '../utils'
 const fabric = require("fabric").fabric;
 
 class Ellipse extends FabricCanvasTool {
@@ -20,21 +19,19 @@ class Ellipse extends FabricCanvasTool {
 
   doMouseDown(options, props, sketch) {
     if(this.objectAdd) {
-      // console.log("[Animal Tracking][Ellipse] Object has not added/removed and do not called mouse up function");
       this._canvas.off("mouse:up");
       this._canvas.on("mouse:up", function () {});
       return;
     }
-    // console.log("[Animal Tracking][Ellipse] Object has added and called mouse up function.");
     this._canvas.off("mouse:up");
     this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props, sketch));
     if (!this.isDown) return;
-    const { notificationShow, roiDefaultNames } = props;
-    let objects = this._canvas.getObjects().filter(obj => obj.id !== "trackingArea" && obj.id !== "calibratedLine");
-    if (objects.length >= 5 && roiDefaultNames.length === 0) {
+    const { notificationShow } = props;
+    let selectedRoiShpes = this._canvas.getObjects().filter(ob => ob.parentKey === props.selectedRoi);
+    if (selectedRoiShpes.length >= 100) {
       notificationShow();
       console.log(
-        `Maximum five shapes allowed `,
+        `%c[ROI]%c , maximum 100 roi shapes allowed `,
         "color:blue; font-weight:bold;",
         "color:black;"
       );
@@ -45,19 +42,51 @@ class Ellipse extends FabricCanvasTool {
     this.genrateEllipse(options, props);
   }
 
+  async doKeyDown(o, props, sketch){
+    if (!this.isDown) return;
+    let canvas = this._canvas;
+    let activeObj = canvas.getActiveObject()
+    console.log("[Ellipse][doKeyDown] active object is", activeObj);
+    
+    // for delete zones
+    if(o.which === 46){
+      canvas.remove(activeObj);
+      await props.onShapeAdded();
+      return ;
+    }
+
+    // for move zones to left right
+    if(o.which === 37 || o.which === 39){
+      let left = activeObj.left;
+      left = o.which === 37 ? left - 1 : left + 1;
+      let canvasWidth = canvas.getWidth();
+      let totalWidth = left + activeObj.width;
+      if(left < 0 || totalWidth >= canvasWidth){
+        left = left < 0 ? 0 : activeObj.left;
+      }
+      activeObj.set('left',left).setCoords();
+    }
+    
+    // for move zones to top bottom
+    if(o.which === 38 || o.which === 40){
+      let top = activeObj.top;
+      top = o.which === 38 ? top - 1 : top + 1;
+      let canvasHeight = canvas.getHeight();
+      let totalHeight = top + activeObj.height;
+      if(top < 0 || totalHeight >= canvasHeight){
+        top = top < 0 ? 0 : activeObj.top;
+      }
+      activeObj.set('top',top).setCoords();
+    } 
+    canvas.renderAll();
+  }
+
   genrateEllipse = (options, props) => {
-    const { addROIDefaultName, removeColorInDefaultShapeColors } = props;
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
     let objects = canvas.getObjects();
-    let name = props.roiDefaultNames[0];
-    let defaultName = props.roiDefaultNames[0];
     [this.startX, this.startY] = [pointer.x, pointer.y];
-    let boundary = props.getboudaryCoords();
-    if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
-      return false;
-    }
     this.ellipse = new fabric.Ellipse({
       left: this.startX,
       top: this.startY,
@@ -66,49 +95,38 @@ class Ellipse extends FabricCanvasTool {
       rx: 20,
       ry: 20,
       strokeWidth: this._width,
-      stroke: props.defaultShapeColors[0],
+      stroke: props.lineColor,
       fill: this._fill,
-      name: name,
-      defaultName: defaultName,
       selectable: false,
       evented: false,
       transparentCorners: false,
-      id: new Date().getTime(),
-      enable: true,
-      description: "",
-      strokeUniform: true
+      id: uuid4(),
+      parentKey: props.selectedRoi,
+      cnWidth: canvas.getWidth(),
+      cnHeight: canvas.getHeight()
     });
-    this.addEventTriggerKeys();
     canvas.add(this.ellipse);
-    this.ellipse.setCoords();
-    // this.containInsideBoundary(options);
+    this.containInsideBoundary(options);
     this.isDragging = true;
     this.ellipse.edit = true;
-    removeColorInDefaultShapeColors(props.defaultShapeColors);
-    addROIDefaultName(props.roiDefaultNames);
   };
-  addEventTriggerKeys = ()=>{
-    this.ellipse.triggerEvent= "none";
-    this.ellipse.triggerType= "none";
-  }
 
-  doMouseMove(o, props) {
+  doMouseMove(o) {
     if (!this.isDown) return;
     let canvas = this._canvas;
+    var obj = o.target;
     if (this.isDragging) {
       let pointer = canvas.getPointer(o.e);
-      let boundary = props.getboudaryCoords();
-      if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
-        return false;
+      if (
+        pointer.x < 0 ||
+        pointer.x > canvas.getWidth() ||
+        pointer.y < 0 ||
+        pointer.y > canvas.getHeight()
+      ) {
+        return;
       }
       var rx = Math.abs(this.startX - pointer.x) / 2;
       var ry = Math.abs(this.startY - pointer.y) / 2;
-      if (this.startX > pointer.x) {
-        this.ellipse.set({ left: Math.abs(pointer.x) });
-      }
-      if (this.startY > pointer.y) {
-        this.ellipse.set({ top: Math.abs(pointer.y) });
-      }
       if (rx > this.ellipse.strokeWidth) {
         rx -= this.ellipse.strokeWidth / 2;
       }
@@ -116,59 +134,39 @@ class Ellipse extends FabricCanvasTool {
         ry -= this.ellipse.strokeWidth / 2;
       }
       this.ellipse.set({ rx: rx, ry: ry });
-      this.checkWithInTrackingArea(this.ellipse, boundary);
+      this.containInsideBoundary(o);
       this.ellipse.setCoords();
       canvas.renderAll();
-    }
-  }
-
-  checkWithInTrackingArea = (obj, boundaryObj) =>{   
-    var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
-    var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
-    if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
-      var objBounds = obj.getBoundingRect();
-      obj.setCoords();
-      var objTL = obj.getPointByOrigin("left", "top");
-      var left = objTL.x;
-      var top = objTL.y;
-
-      if (objBounds.left < canvasTL.x) left = boundaryObj.left;
-      if (objBounds.top < canvasTL.y) top = boundaryObj.top;
-      if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
-      if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
-
-      obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
-      obj.setCoords();
-      this._fc.renderAll();
-      // this.props.checkForOverlap(obj);
     }
   }
 
   async doMouseUp(o, props, sketch) {
     this.isDown = true;
     this.isDragging = false;
-    const { onShapeAdded, checkForOverlap } = props;
-    let isOverlap = false;
+    const { onShapeAdded } = props;
     if(this.objectAdd){
       let ellipseSmall = await props.checkForMinTotalArea();
       let outsideZone = await this.checkWithInBoundary(props);
       if(outsideZone){
-        console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] Ellipse is created outside the tracking area.","color:blue; font-weight: bold;",
+        console.log("%c[Closed Loop]%c [Miniscope Field][Rectangle][do mouse up] Ellipse is created outside the canvas.","color:blue; font-weight: bold;",
         "color: black;");
         props.notificationShow("Zone should not be created outside tracking area.");
       }
       else if(!ellipseSmall){ 
-        console.log("%c[Animal Tracking]%c [Skecth Field][Ellipse][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
+        console.log("%c[Closed Loop]%c [Miniscope Field][Ellipse][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
           "color: black;");
         props.notificationShow("Zone size should be bigger then 100px.");
-      }
-      else{
-        isOverlap = await checkForOverlap();
       }
       await onShapeAdded();
       setTimeout(() => {
         this.objectAdd = false;
-      }, isOverlap ? 500 : 0); 
+      }, 0); 
+    }
+    let obj = o.target;
+    if(props.enableRoiDelete && obj){
+      let canvas = this._canvas; 
+      canvas.remove(obj);
+      await onShapeAdded();
     }
   }
 
@@ -177,15 +175,11 @@ class Ellipse extends FabricCanvasTool {
     let isObjectOutSideBoundary = false;
     let roiTypes = ["rect", "ellipse", "polygon"];
     canvas.getObjects().forEach((shape) => {
-      if(shape.id === "calibratedLine" || !roiTypes.includes(shape.type)) return;
-      let boundaryObj = props.getboudaryCoords();
-      if(!boundaryObj) return;
-      if((shape.left < boundaryObj.left ||
-        shape.top < boundaryObj.top ||
-        shape.left + (shape.width * shape.scaleX) > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
-        shape.top + (shape.height * shape.scaleY) > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
-          props.addColorInDefaultShapeColors(shape.stroke);
-          props.deleteROIDefaultName(shape.defaultName);
+      if(!roiTypes.includes(shape.type)) return;
+      if((shape.left < 0 ||
+        shape.top < 0 ||
+        shape.left + (shape.width * shape.scaleX) > canvas.getWidth() ||
+        shape.top + (shape.height * shape.scaleY) > canvas.getHeight())){
           canvas.remove(shape);
           isObjectOutSideBoundary = true;
         }
