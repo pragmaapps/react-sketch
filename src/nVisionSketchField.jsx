@@ -16,7 +16,8 @@ import ReactResizeDetector from 'react-resize-detector'
 import NvistaRoiSettings from './NvistaRoiSettingsPanel'
 import Ellipse from './ellipse'
 import Polygon from './polygon'
-import FreeDrawLine from './freedrawline'
+import FreeDrawLine from './freedrawline';
+import { isInside, getOverlapPoints, getOverlapSize, getOverlapAreas } from "overlap-area";
 
 let fabric = require('fabric').fabric;
 let controlsVisible = {
@@ -528,6 +529,73 @@ class NvisionSketchField extends PureComponent {
       isTrackingSettingChanged: true,
       trackingAreaEdited: true
     });
+  }
+
+  areShapesOverlapping = (obj1, obj2) => {
+    let shape1Points = this.convertShapeToPolygon(obj1);
+    let shape2Points = this.convertShapeToPolygon(obj2);
+    console.log(getOverlapAreas(shape1Points,shape2Points).length > 0,"isOverlap");
+    let isOverlap = getOverlapAreas(shape1Points,shape2Points).length > 0 ? true : false;
+    return isOverlap;
+  }
+
+  generateEllipsePoints = (ellipse) => {
+    const points = [];
+    const center = ellipse.getCenterPoint();
+    const radiusX = ellipse.rx * ellipse.scaleX;
+    const radiusY = ellipse.ry * ellipse.scaleY;
+    const angle = ellipse.angle * (Math.PI / 180); // Convert angle to radians
+    const numPoints = 32; // Adjust as needed
+    for (let i = 0; i < numPoints; i++) {
+        const angleIncrement = (i / numPoints) * 2 * Math.PI;
+        const x = center.x + radiusX * Math.cos(angleIncrement);
+        const y = center.y + radiusY * Math.sin(angleIncrement);
+        points.push({x, y})
+    }
+  
+    // Rotate all points
+    const rotatedPoints = []
+    points.map(point => {
+        const rotatedX = center.x + (point.x - center.x) * Math.cos(angle) - (point.y - center.y) * Math.sin(angle);
+        const rotatedY = center.y + (point.x - center.x) * Math.sin(angle) + (point.y - center.y) * Math.cos(angle);
+        rotatedPoints.push([rotatedX,rotatedY]);
+    });
+    return rotatedPoints;
+  };
+
+  convertShapeToPolygon = (shape) => {
+    switch (shape.type) {
+      case 'rect':
+        const x1 = shape.oCoords.tl.x;
+        const y1 = shape.oCoords.tl.y;
+        const x2 = shape.oCoords.tr.x;
+        const y2 = shape.oCoords.tr.y;
+        const x3 = shape.oCoords.br.x;
+        const y3 = shape.oCoords.br.y;
+        const x4 = shape.oCoords.bl.x;
+        const y4 = shape.oCoords.bl.y;
+  
+        return [[x1,y1],[x2,y2],[x3,y3],[x4,y4]];
+  
+      case 'ellipse':
+        return this.generateEllipsePoints(shape);
+  
+        case 'polygon':
+          let points = []
+          Object.keys(shape.oCoords).map(p => {
+            let tempObj = JSON.parse(JSON.stringify(shape.oCoords[p]));
+            let obj = [
+              tempObj.x, 
+              tempObj.y
+            ];
+            points.push(obj);
+          });
+          return points;
+    
+  
+      default:
+        throw new Error(`Unknown shape type: ${shape.type}`);
+    }
   }
 
   checkWithInBoundary = async() =>{
