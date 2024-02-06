@@ -409,8 +409,8 @@ class MiniscopeClosedLoop extends PureComponent {
     let canvas = this._fc;
     let activeObj = canvas.getActiveObject(); 
     //left arrow: 37, top arrow: 38, right arrow: 39, bottom arrow: 40
-    // delete button: 46
-    let allowedKeysCode = [37,38,39,40,46];
+    // delete button: 46, backspace button:8
+    let allowedKeysCode = [37,38,39,40,46,8];
     if(!activeObj || !allowedKeysCode.includes(e.which)) return ;
     if (activeObj) {
       // Handle keydown event for the selected object

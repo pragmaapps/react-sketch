@@ -73,7 +73,7 @@ class Polygon extends FabricCanvasTool {
     console.log("[Polygon][doKeyDown] active object is", activeObj);
     
     // for delete zones
-    if(o.which === 46){
+    if(o.which === 46 || o.which === 8){
       canvas.remove(activeObj);
       await props.onShapeAdded();
       return ;
