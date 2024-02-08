@@ -531,6 +531,14 @@ class NvisionSketchField extends PureComponent {
     });
   }
 
+  getCenterPoint = (obj) => {
+    let selectedObj = this._fc.getObjects().find(ob => ob.defaultName === obj.defaultName);
+    if(selectedObj){
+      return selectedObj.getCenterPoint();
+    }
+    return obj.centerPoint;
+  }
+
   areShapesOverlapping = (obj1, obj2) => {
     let shape1Points = this.convertShapeToPolygon(obj1);
     let shape2Points = this.convertShapeToPolygon(obj2);
@@ -583,12 +591,14 @@ class NvisionSketchField extends PureComponent {
         case 'polygon':
           let points = []
           Object.keys(shape.oCoords).map(p => {
-            let tempObj = JSON.parse(JSON.stringify(shape.oCoords[p]));
-            let obj = [
-              tempObj.x, 
-              tempObj.y
-            ];
-            points.push(obj);
+            if(p !== "mtr"){
+              let tempObj = JSON.parse(JSON.stringify(shape.oCoords[p]));
+              let obj = [
+                tempObj.x, 
+                tempObj.y
+              ];
+              points.push(obj);
+            }
           });
           return points;
     
