@@ -189,6 +189,7 @@ class NvisionSketchField extends PureComponent {
   scale1y = 0 ;    
   width1 = 0 ;    
   height1 = 0 ;
+  angle1=0;
 
   _initTools = fabricCanvas => {
     this._tools = {}
@@ -410,8 +411,32 @@ class NvisionSketchField extends PureComponent {
   * Action when an object is rotating inside the canvas
   */
   _onObjectRotating = e => {
-    const { onObjectRotating } = this.props
-
+    const { onObjectRotating } = this.props;
+    let roiTypes = ["rect", "ellipse", "polygon"];
+    var obj = e.target;
+    obj.setCoords();
+    var brNew = obj.getBoundingRect();
+    if(obj.id !== "trackingArea" && roiTypes.includes(obj.type)){
+      let boundary = this.props.getboudaryCoords();
+      if (boundary && ((brNew.height +brNew.top) > (boundary.height * boundary.scaleY) + boundary.top  || (brNew.width +brNew.left) > (boundary.width * boundary.scaleX) + boundary.left  || brNew.left < boundary.left || brNew.top < boundary.top)) {
+        obj.angle = this.angle1;
+        obj.left = this.left1;
+        obj.top=this.top1;
+        obj.scaleX=this.scale1x;
+        obj.scaleY=this.scale1y;
+        obj.width=this.width1;
+        obj.height=this.height1;
+      }else{  
+        this.angle1 = obj.angle;
+        this.left1 =obj.left;
+        this.top1 =obj.top;
+        this.scale1x = obj.scaleX;
+        this.scale1y=obj.scaleY;
+        this.width1=obj.width;
+        this.height1=obj.height;
+        }
+      return;
+    }
     onObjectRotating(e)
   }
 
