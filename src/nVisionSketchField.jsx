@@ -636,35 +636,27 @@ class NvisionSketchField extends PureComponent {
   checkWithInBoundary = async() =>{
     let canvas = this._fc; 
     let showNotification = false;
-    canvas.getObjects().forEach((shape) => {
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    let boundryCoords = [];
+    if(boundary){
+      boundryCoords = this.convertShapeToPolygon(boundary);
+    }
+    boundryCoords.length && canvas.getObjects().forEach((shape) => {
       if(shape.id === "calibratedLine") return;
-      let boundaryObj = this.props.getboudaryCoords();
-      if(!boundaryObj) return;
-      var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
-      var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX), (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
-      // if (!shape.isContainedWithinRect(canvasTL, canvasBR, true, true) && shape.id !== "trackingArea") {
-      //   this.props.addColorInDefaultShapeColors(shape.stroke);
-      //   this.props.deleteROIDefaultName(shape.defaultName);
-      //   canvas.remove(shape);
-      // }
-      let transformedPoints = shape.getCoords(true);
-      // Check if any of the transformed points are outside the boundary
-      let isOutsideBoundary = false;
-      transformedPoints.forEach((point) => {
-        if (
-          point.x < boundaryObj.left ||
-          point.y < boundaryObj.top ||
-          point.x > boundaryObj.left + boundaryObj.width * boundaryObj.scaleX ||
-          point.y > boundaryObj.top + boundaryObj.height * boundaryObj.scaleY
-        ) {
-          isOutsideBoundary = true;
+      if(shape.id !== "trackingArea"){
+        let isOutsideBoundary = false;
+        let transformedPoints = this.convertShapeToPolygon(shape);
+        transformedPoints.forEach((point) => {
+          if (!isInside(point, boundryCoords)) {
+            isOutsideBoundary = true;
+          }
+        });
+        if(isOutsideBoundary){
+          showNotification = true;
+          this.props.addColorInDefaultShapeColors(shape.stroke);
+          this.props.deleteROIDefaultName(shape.defaultName);
+          canvas.remove(shape);
         }
-      });
-      if (isOutsideBoundary && shape.id !== "trackingArea") {
-        showNotification = true;
-        this.props.addColorInDefaultShapeColors(shape.stroke);
-        this.props.deleteROIDefaultName(shape.defaultName);
-        canvas.remove(shape);
       }
     });   
     showNotification && this.props.notificationShow("Zones lying outside of tracking area were removed.");   
