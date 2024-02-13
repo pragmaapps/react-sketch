@@ -62,6 +62,9 @@ class Polygon extends FabricCanvasTool {
         this.objectAdd = false;
         return;
       }
+      if(options.target && this.pointArray.length === 1 && options.target.id === this.pointArray[0].id){
+        return;
+      }
       if (
         options.target &&
         this.pointArray[0] &&
