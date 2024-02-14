@@ -542,14 +542,13 @@ class NvisionSketchField extends PureComponent {
       obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
       obj.setCoords();
       this._fc.renderAll();
-      this.props.onShapeAdded();
       this.checkWithInBoundary();
     }else{
       console.log("%c[Animal Tracking]%c [Traking Area] Modified with in canvas","color:blue; font-weight: bold;",
       "color: black;",obj);
-      this.props.onShapeAdded();
       this.checkWithInBoundary();
     }
+    this.props.onShapeAdded();
     this.props.updateIsTrackingSettingsChanged({
       isTrackingSettingChanged: true,
       trackingAreaEdited: true
