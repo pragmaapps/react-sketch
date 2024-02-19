@@ -6,6 +6,21 @@ import { linearDistance } from "./utils";
 const fabric = require("fabric").fabric;
 const geometric = require("geometric");
 
+var svgData = '<svg xmlns="http://www.w3.org/2000/svg" class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiBox-root css-uqopch" viewBox="0 0 24 24" focusable="false" aria-hidden="true" data-testid="Rotate90DegreesCwIcon"><path fill="red" d="M4.64 19.37c3.03 3.03 7.67 3.44 11.15 1.25l-1.46-1.46c-2.66 1.43-6.04 1.03-8.28-1.21-2.73-2.73-2.73-7.17 0-9.9C7.42 6.69 9.21 6.03 11 6.03V9l4-4-4-4v3.01c-2.3 0-4.61.87-6.36 2.63-3.52 3.51-3.52 9.21 0 12.73zM11 13l6 6 6-6-6-6-6 6z"></path></svg>';
+
+var rotateIcon = 'data:image/svg+xml,' + encodeURIComponent(svgData);
+var img = document.createElement('img');
+img.src = rotateIcon;
+
+function renderIcon(ctx, left, top, styleOverride, fabricObject) {
+  var size = this.cornerSize;
+  ctx.save();
+  ctx.translate(left, top);
+  ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle));
+  ctx.drawImage(img, -size / 2, -size / 2, size, size);
+  ctx.restore();
+}
+
 class Polygon extends FabricCanvasTool {
   activeLine;
   activeShape;
@@ -45,6 +60,9 @@ class Polygon extends FabricCanvasTool {
           "color:black;"
         );
         this.objectAdd = false;
+        return;
+      }
+      if(options.target && this.pointArray.length === 1 && options.target.id === this.pointArray[0].id){
         return;
       }
       if (
@@ -269,10 +287,11 @@ class Polygon extends FabricCanvasTool {
       enable: true,
       description: "",
       strokeUniform: true,
+      rotate: false
     });
     canvas.add(polygon);
     this.toggleDrawPolygon();
-    this.editPolygon(polygon, props);
+    this.editPolygon(polygon, false);
     polygon.setCoords();
     if(!this.checkForMinDistance(polygon, props)){ 
       props.notificationShow("Zone size should be bigger then 100px");
@@ -299,17 +318,16 @@ class Polygon extends FabricCanvasTool {
     }
   };
 
-  editPolygon = (polygon, props) => {
+  editPolygon = (polygon, editForRotate) => {
     let canvas = this._canvas;
-    let activeObject = canvas.getActiveObject();
+    let activeObject;
     if (!activeObject) {
       activeObject = polygon;
       // canvas.setActiveObject(activeObject);
     }
 
-    activeObject.edit = true;
+    activeObject.edit = !polygon.edit;
     activeObject.objectCaching = false;
-
     const lastControl = activeObject.points.length - 1;
     activeObject.cornerStyle = "circle";
     activeObject.controls = activeObject.points.reduce((acc, point, index) => {
@@ -335,6 +353,25 @@ class Polygon extends FabricCanvasTool {
       });
       return acc;
     }, {});
+    let controlsVisibility = {};
+    Object.keys(activeObject.controls).map(ob => ob === "mtr" ? controlsVisibility[ob] = false : controlsVisibility[ob] = true);
+    activeObject.setControlsVisibility(controlsVisibility);
+    if(editForRotate){
+      activeObject.controls.mtr = new fabric.Control({
+        x: 0,
+        y: -0.5,
+        offsetY: -40,
+        cursorStyle: 'crosshair',
+        actionHandler: fabric.controlsUtils.rotationWithSnapping,
+        actionName: 'rotate',
+        render: renderIcon,
+        cornerSize: 16,
+        withConnection: true
+      });
+      let controlsVisibility = {};
+      Object.keys(activeObject.controls).map(ob => ob === "mtr" ? controlsVisibility[ob] = true : controlsVisibility[ob] = false)
+      activeObject.setControlsVisibility(controlsVisibility);
+  }
 
     activeObject.hasBorders = true;
     activeObject.setCoords();

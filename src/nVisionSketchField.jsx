@@ -16,7 +16,8 @@ import ReactResizeDetector from 'react-resize-detector'
 import NvistaRoiSettings from './NvistaRoiSettingsPanel'
 import Ellipse from './ellipse'
 import Polygon from './polygon'
-import FreeDrawLine from './freedrawline'
+import FreeDrawLine from './freedrawline';
+import { isInside, getOverlapPoints, getOverlapSize, getOverlapAreas } from "overlap-area";
 
 let fabric = require('fabric').fabric;
 let controlsVisible = {
@@ -24,7 +25,37 @@ let controlsVisible = {
 };
 let executeCanvasResize = false;
 fabric.Object.prototype.noScaleCache = false;
-fabric.Object.prototype.setControlsVisibility(controlsVisible);
+//fabric.Object.prototype.setControlsVisibility(controlsVisible);
+var svgData = '<svg xmlns="http://www.w3.org/2000/svg" class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiBox-root css-uqopch" viewBox="0 0 24 24" focusable="false" aria-hidden="true" data-testid="Rotate90DegreesCwIcon"><path fill="red" d="M4.64 19.37c3.03 3.03 7.67 3.44 11.15 1.25l-1.46-1.46c-2.66 1.43-6.04 1.03-8.28-1.21-2.73-2.73-2.73-7.17 0-9.9C7.42 6.69 9.21 6.03 11 6.03V9l4-4-4-4v3.01c-2.3 0-4.61.87-6.36 2.63-3.52 3.51-3.52 9.21 0 12.73zM11 13l6 6 6-6-6-6-6 6z"></path></svg>';
+
+var rotateIcon = 'data:image/svg+xml,' + encodeURIComponent(svgData);
+var img = document.createElement('img');
+img.src = rotateIcon;
+
+// here's where your custom rotation control is defined
+// by changing the values you can customize the location, size, look, and behavior of the control
+fabric.Object.prototype.controls.mtr = new fabric.Control({
+  x: 0,
+  y: -0.5,
+  offsetY: -40,
+  cursorStyle: 'crosshair',
+  actionHandler: fabric.controlsUtils.rotationWithSnapping,
+  actionName: 'rotate',
+  render: renderIcon,
+  cornerSize: 16,
+  withConnection: true
+});
+
+// here's where the render action for the control is defined
+function renderIcon(ctx, left, top, styleOverride, fabricObject) {
+  var size = this.cornerSize;
+  ctx.save();
+  ctx.translate(left, top);
+  ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle));
+  ctx.drawImage(img, -size / 2, -size / 2, size, size);
+  ctx.restore();
+}
+
 fabric.Object.prototype.set({
   cornerSize: 6,
   cornerColor : 'red',
@@ -158,6 +189,7 @@ class NvisionSketchField extends PureComponent {
   scale1y = 0 ;    
   width1 = 0 ;    
   height1 = 0 ;
+  angle1=0;
 
   _initTools = fabricCanvas => {
     this._tools = {}
@@ -379,8 +411,32 @@ class NvisionSketchField extends PureComponent {
   * Action when an object is rotating inside the canvas
   */
   _onObjectRotating = e => {
-    const { onObjectRotating } = this.props
-
+    const { onObjectRotating } = this.props;
+    let roiTypes = ["rect", "ellipse", "polygon"];
+    var obj = e.target;
+    obj.setCoords();
+    var brNew = obj.getBoundingRect();
+    if(obj.id !== "trackingArea" && roiTypes.includes(obj.type)){
+      let boundary = this.props.getboudaryCoords();
+      if (boundary && ((brNew.height +brNew.top) > (boundary.height * boundary.scaleY) + boundary.top  || (brNew.width +brNew.left) > (boundary.width * boundary.scaleX) + boundary.left  || brNew.left < boundary.left || brNew.top < boundary.top)) {
+        obj.angle = this.angle1;
+        obj.left = this.left1;
+        obj.top=this.top1;
+        obj.scaleX=this.scale1x;
+        obj.scaleY=this.scale1y;
+        obj.width=this.width1;
+        obj.height=this.height1;
+      }else{  
+        this.angle1 = obj.angle;
+        this.left1 =obj.left;
+        this.top1 =obj.top;
+        this.scale1x = obj.scaleX;
+        this.scale1y=obj.scaleY;
+        this.width1=obj.width;
+        this.height1=obj.height;
+        }
+      return;
+    }
     onObjectRotating(e)
   }
 
@@ -403,22 +459,51 @@ class NvisionSketchField extends PureComponent {
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
     var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
-      var objBounds = obj.getBoundingRect();
-      obj.setCoords();
-      var objTL = obj.getPointByOrigin("left", "top");
-      var left = objTL.x;
-      var top = objTL.y;
-
-      if (objBounds.left < canvasTL.x) left = boundaryObj.left;
-      if (objBounds.top < canvasTL.y) top = boundaryObj.top;
-      if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
-      if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
-
-      obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
+      var vertices = obj.getCoords(); // Get the transformed vertices
+    
+      // Define the boundaries
+      var boundaryLeft = canvasTL.x;
+      var boundaryTop = canvasTL.y;
+      var boundaryRight = canvasBR.x;
+      var boundaryBottom = canvasBR.y;
+    
+      var leftAdjustment = 0;
+      var topAdjustment = 0;
+      var rightAdjustment = 0;
+      var bottomAdjustment = 0;
+    
+      // Check each vertex
+      vertices.forEach(function (vertex) {
+        if (vertex.x < boundaryLeft) {
+          leftAdjustment = Math.max(leftAdjustment, boundaryLeft - vertex.x);
+        }
+        if (vertex.x > boundaryRight) {
+          rightAdjustment = Math.max(rightAdjustment, vertex.x - boundaryRight);
+        }
+        if (vertex.y < boundaryTop) {
+          topAdjustment = Math.max(topAdjustment, boundaryTop - vertex.y);
+        }
+        if (vertex.y > boundaryBottom) {
+          bottomAdjustment = Math.max(bottomAdjustment, vertex.y - boundaryBottom);
+        }
+      });
+    
+      // Apply adjustments to the object's position
+      var newLeft = obj.left + leftAdjustment - rightAdjustment;
+      var newTop = obj.top + topAdjustment - bottomAdjustment;
+    
+      obj.set({
+        left: newLeft,
+        top: newTop
+      });
+    
       obj.setCoords();
       this._fc.renderAll();
-      // this.props.checkForOverlap(obj);
     }
+    
+    
+    
+    
     obj.setCoords();
     this.props.checkForOverlap(obj);
     this.props.onShapeAdded();
@@ -457,21 +542,128 @@ class NvisionSketchField extends PureComponent {
       obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
       obj.setCoords();
       this._fc.renderAll();
-      this.props.onShapeAdded();
       this.checkWithInBoundary();
     }else{
       console.log("%c[Animal Tracking]%c [Traking Area] Modified with in canvas","color:blue; font-weight: bold;",
       "color: black;",obj);
-      this.props.onShapeAdded();
       this.checkWithInBoundary();
     }
+    this.props.onShapeAdded();
     this.props.updateIsTrackingSettingsChanged({
       isTrackingSettingChanged: true,
       trackingAreaEdited: true
     });
   }
 
+  getCenterPoint = (obj) => {
+    let selectedObj = this._fc.getObjects().find(ob => ob.defaultName === obj.defaultName);
+    if(selectedObj){
+      return selectedObj.getCenterPoint();
+    }
+    return obj.centerPoint;
+  }
+
+  areShapesOverlapping = (obj1, obj2) => {
+    let shape1Points = this.convertShapeToPolygon(obj1);
+    let shape2Points = this.convertShapeToPolygon(obj2);
+    console.log(getOverlapAreas(shape1Points,shape2Points).length > 0,"isOverlap");
+    let isOverlap = getOverlapAreas(shape1Points,shape2Points).length > 0 ? true : false;
+    return isOverlap;
+  }
+
+  generateEllipsePoints = (ellipse) => {
+    const points = [];
+    const center = ellipse.getCenterPoint();
+    const radiusX = ellipse.rx * ellipse.scaleX;
+    const radiusY = ellipse.ry * ellipse.scaleY;
+    const angle = ellipse.angle * (Math.PI / 180); // Convert angle to radians
+    const numPoints = 32; // Adjust as needed
+    for (let i = 0; i < numPoints; i++) {
+        const angleIncrement = (i / numPoints) * 2 * Math.PI;
+        const x = center.x + radiusX * Math.cos(angleIncrement);
+        const y = center.y + radiusY * Math.sin(angleIncrement);
+        points.push({x, y})
+    }
+  
+    // Rotate all points
+    const rotatedPoints = []
+    points.map(point => {
+        const rotatedX = center.x + (point.x - center.x) * Math.cos(angle) - (point.y - center.y) * Math.sin(angle);
+        const rotatedY = center.y + (point.x - center.x) * Math.sin(angle) + (point.y - center.y) * Math.cos(angle);
+        rotatedPoints.push([rotatedX,rotatedY]);
+    });
+    return rotatedPoints;
+  };
+
+  convertShapeToPolygon = (shape) => {
+    switch (shape.type) {
+      case 'rect':
+        const x1 = shape.oCoords.tl.x;
+        const y1 = shape.oCoords.tl.y;
+        const x2 = shape.oCoords.tr.x;
+        const y2 = shape.oCoords.tr.y;
+        const x3 = shape.oCoords.br.x;
+        const y3 = shape.oCoords.br.y;
+        const x4 = shape.oCoords.bl.x;
+        const y4 = shape.oCoords.bl.y;
+  
+        return [[x1,y1],[x2,y2],[x3,y3],[x4,y4]];
+  
+      case 'ellipse':
+        return this.generateEllipsePoints(shape);
+  
+        case 'polygon':
+          let points = []
+          Object.keys(shape.oCoords).map(p => {
+            if(p !== "mtr"){
+              let tempObj = JSON.parse(JSON.stringify(shape.oCoords[p]));
+              let obj = [
+                tempObj.x, 
+                tempObj.y
+              ];
+              points.push(obj);
+            }
+          });
+          return points;
+    
+  
+      default:
+        throw new Error(`Unknown shape type: ${shape.type}`);
+    }
+  }
+
   checkWithInBoundary = async() =>{
+    let canvas = this._fc; 
+    let showNotification = false;
+    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
+    let boundryCoords = [];
+    if(boundary){
+      boundryCoords = this.convertShapeToPolygon(boundary);
+    }
+    boundryCoords.length && canvas.getObjects().forEach((shape) => {
+      if(shape.id === "calibratedLine") return;
+      if(shape.id !== "trackingArea"){
+        let isOutsideBoundary = false;
+        let transformedPoints = this.convertShapeToPolygon(shape);
+        transformedPoints.forEach((point) => {
+          if (!isInside(point, boundryCoords)) {
+            isOutsideBoundary = true;
+          }
+        });
+        if(isOutsideBoundary){
+          showNotification = true;
+          this.props.addColorInDefaultShapeColors(shape.stroke);
+          this.props.deleteROIDefaultName(shape.defaultName);
+          canvas.remove(shape);
+        }
+      }
+    });   
+    showNotification && this.props.notificationShow("Zones lying outside of tracking area were removed.");   
+    canvas.renderAll();
+    // this.props.onShapeAdded();
+  }
+
+  /*checkWithInBoundary = async() =>{
     let canvas = this._fc; 
     let showNotification = false;
     canvas.getObjects().forEach((shape) => {
@@ -498,7 +690,7 @@ class NvisionSketchField extends PureComponent {
     showNotification && this.props.notificationShow("Zones lying outside of tracking area were removed.");   
     canvas.renderAll();
     this.props.onShapeAdded();
-  }
+  }*/
 
   removeUnCompletedShapes = () =>{
     let canvas = this._fc; 

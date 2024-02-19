@@ -75,7 +75,7 @@ class Rectangle extends FabricCanvasTool {
       selectable: false,
       evented: false,
       id: new Date().getTime(),
-      hasBorders: false,
+      hasBorders: true,
       cornerSize: 6,
       angle: 0,
       enable: true,
@@ -231,7 +231,7 @@ class Rectangle extends FabricCanvasTool {
     console.log("[Tracking Settings][Sketch Field][Rectangle][genrateTrackingArea]: Width and Height of canvas after removing stroke width", width, height);
     let name = "trackingArea";
     let defaultName = "trackingArea";
-    this.rect = new fabric.Rect({
+    let rect = new fabric.Rect({
       left: 0,
       top: 0,
       originX: "left",
@@ -256,9 +256,12 @@ class Rectangle extends FabricCanvasTool {
       description: "",
       objectCaching: false
     });
-    canvas.add(this.rect).setActiveObject(this.rect);
+    rect.setControlsVisibility({
+      mtr: false,
+    });
+    canvas.add(rect).setActiveObject(rect);
     // this.containInsideBoundary(options);
-    this.rect.edit = true;
+    rect.edit = true;
   };
 }
 
