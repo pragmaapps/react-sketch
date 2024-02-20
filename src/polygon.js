@@ -289,7 +289,6 @@ class Polygon extends FabricCanvasTool {
       strokeUniform: true,
       rotate: false
     });
-    polygon = this.addEventTriggerKeys(polygon);
     canvas.add(polygon);
     this.toggleDrawPolygon();
     this.editPolygon(polygon, false);
@@ -301,11 +300,6 @@ class Polygon extends FabricCanvasTool {
     props.checkForOverlap();
     props.onShapeAdded();
   };
-  addEventTriggerKeys = (polygon)=>{
-    polygon.triggerEvent= "none";
-    polygon.triggerType= "none";
-    return polygon;
-  }
 
   toggleDrawPolygon = () => {
     let canvas = this._canvas;
