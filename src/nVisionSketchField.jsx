@@ -17,6 +17,7 @@ import NvistaRoiSettings from './NvistaRoiSettingsPanel'
 import Ellipse from './ellipse'
 import Polygon from './polygon'
 import FreeDrawLine from './freedrawline';
+const geometric = require("geometric");
 import { isInside, getOverlapPoints, getOverlapSize, getOverlapAreas } from "overlap-area";
 
 let fabric = require('fabric').fabric;
@@ -178,7 +179,8 @@ class NvisionSketchField extends PureComponent {
     scaleHeightMultiplier: 1,
     scaleMultiplier: 1,
     lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
-
+    resolutionHeight: 1080,
+    resolutionWidth: 1920
   }
 
   _fc = null
@@ -320,7 +322,7 @@ class NvisionSketchField extends PureComponent {
     const { onObjectMoving } = this.props;
     let obj = e.target;
     let roiTypes = ["rect", "ellipse", "polygon"];
-    let boundary = this.props.getboudaryCoords();
+    let boundary = this.getboudaryCoords();
     var brNew = obj.getBoundingRect();
     if (boundary && ((brNew.height +brNew.top) > (boundary.height * boundary.scaleY) + boundary.top  || (brNew.width +brNew.left) > (boundary.width * boundary.scaleX) + boundary.left  || brNew.left < boundary.left || brNew.top < boundary.top)) return;
     if(obj.id !== "trackingArea" && roiTypes.includes(obj.type)){
@@ -334,6 +336,17 @@ class NvisionSketchField extends PureComponent {
     onObjectMoving(e)
   }
 
+  getboudaryCoords = () =>{
+    let canvas = this._fc;
+    let cords = {};
+    cords["width"] = canvas.getWidth();
+    cords["height"] = canvas.getHeight();
+    cords["left"] = 0;
+    cords["top"] = 0;
+    cords["scaleX"] = 1;
+    cords["scaleY"] = 1;
+    return cords;
+  }
   /**
   * Action when an object is scaling inside the canvas
   */
@@ -344,7 +357,7 @@ class NvisionSketchField extends PureComponent {
     var brNew = obj.getBoundingRect();
     let canvas = this._fc;
     if(obj.id !== "trackingArea"){
-      let boundary = this.props.getboudaryCoords();
+      let boundary = this.getboudaryCoords();
       let pointer = canvas.getPointer(e.e)
       if (boundary && ((brNew.height +brNew.top) > (boundary.height * boundary.scaleY) + boundary.top  || (brNew.width +brNew.left) > (boundary.width * boundary.scaleX) + boundary.left  || brNew.left < boundary.left || brNew.top < boundary.top)) {
         obj.left = this.left1;
@@ -353,8 +366,8 @@ class NvisionSketchField extends PureComponent {
         obj.scaleY=this.scale1y;
         obj.width=this.width1;
         obj.height=this.height1;
-      }else if(!this.props.checkForMinTotalArea(obj, "edit")){
-        console.log("%c[Animal Tracking]%c [Skecth Field] [On Object Scaling] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
+      }else if(!this.checkForMinTotalArea(obj, "edit")){
+        console.log("[nVision Sketch Field] [On Object Scaling] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
         "color: black;");
         obj.left = this.left1;
         obj.top=this.top1;
@@ -369,7 +382,6 @@ class NvisionSketchField extends PureComponent {
           this.scale1y=obj.scaleY;
           this.width1=obj.width;
           this.height1=obj.height;
-          // this.props.onShapeAdded();
         }
       return;
     }
@@ -384,8 +396,8 @@ class NvisionSketchField extends PureComponent {
     obj.width=this.width1 === 0 ? obj.width : this.width1;
     obj.height=this.height1 === 0 ? obj.height : this.height1;
     obj.setCoords();
-  }else if(!this.props.checkForMinTotalArea(obj, "edit", true)){
-    console.log("%c[Animal Tracking]%c [Skecth Field] [On Object Scaling] The tracking area should not be less than 200px width and height respectively.","color:blue; font-weight: bold;",
+  }else if(!this.checkForMinTotalArea(obj, "edit", true)){
+    console.log("[nVision Sketch Field] [On Object Scaling] The tracking area should not be less than 200px width and height respectively.","color:blue; font-weight: bold;",
     "color: black;");
     obj.left = this.left1;
     obj.top=this.top1;
@@ -401,7 +413,6 @@ class NvisionSketchField extends PureComponent {
       this.scale1y=obj.scaleY;
       this.width1=obj.width;
       this.height1=obj.height;
-      // this.props.onShapeAdded();
     }
 
     onObjectScaling(e)
@@ -417,7 +428,7 @@ class NvisionSketchField extends PureComponent {
     obj.setCoords();
     var brNew = obj.getBoundingRect();
     if(obj.id !== "trackingArea" && roiTypes.includes(obj.type)){
-      let boundary = this.props.getboudaryCoords();
+      let boundary = this.getboudaryCoords();
       if (boundary && ((brNew.height +brNew.top) > (boundary.height * boundary.scaleY) + boundary.top  || (brNew.width +brNew.left) > (boundary.width * boundary.scaleX) + boundary.left  || brNew.left < boundary.left || brNew.top < boundary.top)) {
         obj.angle = this.angle1;
         obj.left = this.left1;
@@ -446,16 +457,7 @@ class NvisionSketchField extends PureComponent {
       this.trackingAreaModified(obj);
       return;
     }
-    // if(obj.type === "polygon" && this.checkForMinDistance(obj)){
-    //   this.props.notificationShow("Zone size should be bigger then 100px");
-    //   this.props.onShapeAdded();
-    //   return;
-    // }
-    let boundaryObj = this.props.getboudaryCoords();
-    //FEN-413
-    /*if(boundaryObj && obj.height > (boundaryObj.height * boundaryObj.scaleY) || obj.width > (boundaryObj.width * boundaryObj.scaleX) ){
-    return;
-    }*/      
+    let boundaryObj = this.getboudaryCoords();   
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
     var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
@@ -505,18 +507,13 @@ class NvisionSketchField extends PureComponent {
     
     
     obj.setCoords();
-    this.props.checkForOverlap(obj);
-    this.props.onShapeAdded();
+    this.checkForOverlap(obj);
     obj.__version += 1
     let prevState = JSON.stringify(obj.__originalState)
     let objState = obj.toJSON()
     // record current object state as json and update to originalState
     obj.__originalState = objState
     let currState = JSON.stringify(objState)
-    this.props.updateIsTrackingSettingsChanged({
-      isTrackingSettingChanged: true,
-      defineArenaZoneEdited: true
-    });
     // this._history.keep([obj, prevState, currState]);
   }
 
@@ -525,7 +522,7 @@ class NvisionSketchField extends PureComponent {
     var canvasTL = new fabric.Point(0, 0);
     var canvasBR = new fabric.Point(canvas.getWidth() -1, canvas.getHeight() -1);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
-      console.log("%c[Animal Tracking]%c [Traking Area] Modified outside the canvas","color:blue; font-weight: bold;",
+      console.log("%c[nVision Sketch Field]%c [Traking Area] Modified outside the canvas","color:blue; font-weight: bold;",
       "color: black;",obj);
       var objBounds = obj.getBoundingRect();
       obj.setCoords();
@@ -544,15 +541,88 @@ class NvisionSketchField extends PureComponent {
       this._fc.renderAll();
       this.checkWithInBoundary();
     }else{
-      console.log("%c[Animal Tracking]%c [Traking Area] Modified with in canvas","color:blue; font-weight: bold;",
+      console.log("%c[nVision Sketch Field]%c [Traking Area] Modified with in canvas","color:blue; font-weight: bold;",
       "color: black;",obj);
       this.checkWithInBoundary();
     }
-    this.props.onShapeAdded();
-    this.props.updateIsTrackingSettingsChanged({
-      isTrackingSettingChanged: true,
-      trackingAreaEdited: true
-    });
+  }
+
+  checkForOverlap = (overlappedObj) =>{
+      let canvas = this._fc;
+      let allowedtypes = ["rect", "polygon", "ellipse"];
+      var objects = canvas.getObjects().filter(ob => allowedtypes.includes(ob.type));
+      let isOveralaping = false;
+      var lastObject = overlappedObj === undefined ? objects[objects.length - 1] : overlappedObj;
+      lastObject !== undefined ? lastObject.setCoords() : "";
+      for (var i = 0; i < objects.length; i++) {
+        objects[i].setCoords();
+        if(lastObject !== objects[i] && (lastObject.intersectsWithObject(objects[i]) || objects[i].intersectsWithObject(lastObject))){
+          if(this.areShapesOverlapping(lastObject, objects[i]) || this.areShapesOverlapping(objects[i], lastObject)){
+            isOveralaping = true;
+            // canvas.remove(lastObject);
+            lastObject.set({"stroke":"yellow"});
+            console.log("%c[nVision Sketch Field]%c Deleted overlapped zone","color:blue; font-weight: bold;",
+            "color: black;",lastObject, "overlapped with", objects[i]);
+            break;
+          }
+        }
+        lastObject.set({"stroke":"black"});
+      }
+      return isOveralaping;
+  }
+
+  checkForMinTotalArea = (obj="",from="") =>{
+      let canvas = this._fc;
+      let canvasObject = canvas.getObjects();
+      if(!canvasObject.length) return true;
+      if(obj === ""){
+        obj = canvasObject[canvasObject.length-1];
+      }
+      if(obj.type === "rect"){
+        const objHeight = obj.height * obj.scaleY;
+        const objWidth = obj.width * obj.scaleX;
+        const minTotalArea = 100;
+        let area = objHeight  * objWidth;
+        if (area < minTotalArea) {
+          if(from !== "edit")
+           canvas.remove(obj);
+          return false;
+        }
+      }
+      if(obj.type === "ellipse"){
+        const objRx = obj.rx * obj.scaleX;
+        const objRy = obj.ry * obj.scaleY;
+        const minTotalArea = 100;
+        let area = objRx * objRy * 3.14;
+        if (area < minTotalArea) {
+          if(from !== "edit")
+          canvas.remove(obj);
+          return false;
+        }
+      }
+
+      if(obj.type === "polygon"){
+        const minArea = 100;
+        let totalArea = geometric.polygonArea(this.getPolygonCoords(obj))
+        if (totalArea < minArea) {
+            if(from !== "polygon")
+            canvas.remove(obj);
+            return false;
+        }
+        return true;
+      }
+      return true;
+  }
+
+  getPolygonCoords =(obj) => {
+    const coords = [];
+    for (let i = 0; i < obj.points.length; i++) {
+      const point = obj.points[i];
+      const x = point.x;
+      const y = point.y;
+      coords.push([x, y]);
+    }
+    return coords;
   }
 
   getCenterPoint = (obj) => {
@@ -652,45 +722,12 @@ class NvisionSketchField extends PureComponent {
         });
         if(isOutsideBoundary){
           showNotification = true;
-          this.props.addColorInDefaultShapeColors(shape.stroke);
-          this.props.deleteROIDefaultName(shape.defaultName);
           canvas.remove(shape);
         }
       }
-    });   
-    showNotification && this.props.notificationShow("Zones lying outside of tracking area were removed.");   
+    });     
     canvas.renderAll();
-    // this.props.onShapeAdded();
   }
-
-  /*checkWithInBoundary = async() =>{
-    let canvas = this._fc; 
-    let showNotification = false;
-    canvas.getObjects().forEach((shape) => {
-      if(shape.id === "calibratedLine") return;
-      let boundaryObj = this.props.getboudaryCoords();
-      if(!boundaryObj) return;
-      var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
-      var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX), (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
-      // if (!shape.isContainedWithinRect(canvasTL, canvasBR, true, true) && shape.id !== "trackingArea") {
-      //   this.props.addColorInDefaultShapeColors(shape.stroke);
-      //   this.props.deleteROIDefaultName(shape.defaultName);
-      //   canvas.remove(shape);
-      // }
-      if((shape.left < boundaryObj.left ||
-        shape.top < boundaryObj.top ||
-        shape.left + (shape.width * shape.scaleX) > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
-        shape.top + (shape.height * shape.scaleY) > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
-          showNotification = true;
-          this.props.addColorInDefaultShapeColors(shape.stroke);
-          this.props.deleteROIDefaultName(shape.defaultName);
-          canvas.remove(shape);
-        }
-    });   
-    showNotification && this.props.notificationShow("Zones lying outside of tracking area were removed.");   
-    canvas.renderAll();
-    this.props.onShapeAdded();
-  }*/
 
   removeUnCompletedShapes = () =>{
     let canvas = this._fc; 
@@ -712,7 +749,6 @@ class NvisionSketchField extends PureComponent {
         Math.pow(points[i + 1].y - points[i].y, 2)
       );
       if (distance < minDistance) {
-          this.props.setSelected(polygon, true);
           return true;
       }
     }
@@ -747,7 +783,7 @@ class NvisionSketchField extends PureComponent {
   */
   _onMouseMove = e => {
     const { onMouseMove } = this.props
-    this._selectedTool.doMouseMove(e, this.props)
+    this._selectedTool.doMouseMove(e, this.props, this)
     onMouseMove(e)
   }
 
@@ -798,22 +834,23 @@ class NvisionSketchField extends PureComponent {
 
   getOverlayDimensions  = () => {
     let canvas = this._fc;
+    const { resolutionHeight, resolutionWidth } = this.state;
     if (canvas && canvas.upperCanvasEl) {
       var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
     }
     else {
       var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
     }
-    let resolutionRatio = this.props.resolutionWidth / this.props.resolutionHeight;
-    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
-      var overlayHeight = Math.ceil(this.props.resolutionHeight / (this.props.resolutionWidth / overlayWidth));
+    let resolutionRatio = resolutionWidth / resolutionHeight;
+    if(resolutionHeight === 1080 && resolutionWidth === 1920){
+      var overlayHeight = Math.ceil(resolutionHeight / (resolutionWidth / overlayWidth));
     }else{
       //var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
       //var overlayWidth = overlayHeight * resolutionRatio;
       var overlayHeight = document.getElementById("video-container-3").offsetHeight;
-      var overlayWidth = Math.ceil(this.props.resolutionWidth / (this.props.resolutionHeight / overlayHeight));
+      var overlayWidth = Math.ceil(resolutionWidth / (resolutionHeight / overlayHeight));
     }
-    console.log('[Tracking Setting][Tracking Area] Canvas Overlay Width:', overlayWidth, overlayHeight);
+    console.log('[nVision Sketch Field][Tracking Area] Canvas Overlay Width:', overlayWidth, overlayHeight);
     return { overlayWidth: overlayWidth,overlayHeight: overlayHeight }
   }
 
@@ -822,205 +859,21 @@ class NvisionSketchField extends PureComponent {
     this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
   };
 
-  resizeZones = (oldWidth, oldHeight) => {
-    return;
-    let { scaleHeightMultiplier, scaleMultiplier } = this.state;
-    let canvas = this._fc;
-    //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
-    //let cHeight = canvas.getHeight() - this.state.strokeWidth;
-    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
-    let cHeight = canvas.getHeight() - this.state.strokeWidth;
-    let newWidth = oldWidth - this.state.strokeWidth;
-    let newHeight = oldHeight - this.state.strokeWidth;
-    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
-      //cHeight = canvas.getHeight() - this.state.strokeWidth;
-    }
-    console.log("[Tracking Settings][Sketch Field][resizeZones]: Overlay container new width and new height", newWidth, newHeight );
-    console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas width and height", cWidth, cHeight );
-    console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas scaleMultiplier", scaleMultiplier, "heightmultiplier", scaleHeightMultiplier);
-    if (canvas && canvas.upperCanvasEl) {
-    //if (canvas && canvas.upperCanvasEl) {
-      // if(!scaleMultiplier)
-        scaleMultiplier = cWidth / newWidth;
-      // if(!scaleHeightMultiplier)
-        scaleHeightMultiplier =  cHeight / newHeight;
-        let cnwidthMultiplier = newWidth / cWidth;
-        let cnHeightMultiplier = newHeight / cHeight;
-        console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
-      var objects = canvas.getObjects();
-      for (var i in objects) {
-        //objects[i].width = objects[i].width * scaleMultiplier;
-        //objects[i].height = objects[i].height * scaleHeightMultiplier;
-        objects[i].left = objects[i].left * scaleMultiplier;
-        objects[i].top = objects[i].top * scaleMultiplier;
-        objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-        objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-        objects[i].setCoords();
-        var scaleFactor = this.state.scaleFactor * scaleMultiplier;
-        // this.setState({ scaleFactor });
-        console.log("[Tracking Settings][Sketch Field][resizeZones]: object details after resizing", objects[i]);
-      }
-
-      this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier);
-      this.updateObjectsInRedux(scaleMultiplier);
-      console.log("[Tracking Settings][Sketch Field][resizeZones]: Canvas Dimensions after resize", cHeight * cnwidthMultiplier, cWidth * cnHeightMultiplier);
-      canvas.discardActiveObject();
-      // canvas.setWidth(cWidth * cnwidthMultiplier);
-      // canvas.setHeight(cHeight * cnHeightMultiplier);
-      //this.props.trackingCanvasHeight(cHeight * cnHeightMultiplier);
-      //this.props.trackingCanvasWidth( cWidth * cnwidthMultiplier);
-      canvas.renderAll();
-      // canvas.calcOffset();
-      // this.props.onShapeAdded();
-      // this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
-      // });
-    }
-  }
-
-  resizeZonesOnImport = (newWidth, newHeight) => {
-    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport] New width",newWidth,"NewHeight", newHeight);
-    let { scaleHeightMultiplier, scaleMultiplier } = this.state;
-    let canvas = this._fc;
-    //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
-    //let cHeight = canvas.getHeight() - this.state.strokeWidth;
-    let cWidth =  canvas.getWidth();
-    let cHeight = canvas.getHeight();
-    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
-      //cHeight = canvas.getHeight() - this.state.strokeWidth;
-    }
-    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Overlay container new width and new height", newWidth, newHeight );
-    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas width and height", cWidth, cHeight );
-    console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas scaleMultiplier", scaleMultiplier, "heightmultiplier", scaleHeightMultiplier);
-    if (canvas && canvas.upperCanvasEl) {
-    //if (canvas && canvas.upperCanvasEl) {
-      // if(!scaleMultiplier)
-        scaleMultiplier = cWidth / newWidth;
-      // if(!scaleHeightMultiplier)
-        scaleHeightMultiplier =  cHeight / newHeight;
-        let cnwidthMultiplier = newWidth / cWidth;
-        let cnHeightMultiplier = newHeight / cHeight;
-        console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
-      var objects = canvas.getObjects();
-      for (var i in objects) {
-        //objects[i].width = objects[i].width * scaleMultiplier;
-        //objects[i].height = objects[i].height * scaleHeightMultiplier;
-        objects[i].left = objects[i].left * scaleMultiplier;
-        objects[i].top = objects[i].top * scaleMultiplier;
-        objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-        objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-        objects[i].setCoords();
-        var scaleFactor = this.state.scaleFactor * scaleMultiplier;
-        // this.setState({ scaleFactor });
-        console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: object details after resizing", objects[i]);
-      }
-      // this.props.onShapeAdded();
-      this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, cWidth, cHeight, true);
-      this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, cWidth, cHeight, true);
-      console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas Dimensions after resize", cHeight * cnwidthMultiplier, cWidth * cnHeightMultiplier);
-      canvas.discardActiveObject();
-      // canvas.setWidth(cWidth * cnwidthMultiplier);
-      // canvas.setHeight(cHeight * cnHeightMultiplier);
-      this.props.trackingCanvasHeight(cHeight);
-      this.props.trackingCanvasWidth( cWidth);
-      canvas.renderAll();
-      // canvas.calcOffset();
-      // this.props.onShapeAdded();
-      // this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
-      // });
-    }
-  }
 
   resizeOverlayAndCanvasOnCompoentMount = (e, canvasWidth = null, canvasHeight = null) => {
     let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
     this.getCanvasAtComponentMount(overlayWidth, overlayHeight, false);
   };
 
-  /*getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
-    let canvas = this._fc;
-    // let { offsetWidth, clientHeight } = this._container;
-    let cWidth =  canvas.getWidth() - 1;
-    let cHeight = canvas.getHeight() - 1;
-    //let cWidth =  canvas.getWidth();
-    //let cHeight = canvas.getHeight();
-    console.log("[getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
-    console.log("[getCanvasAtResoution]: Canvas width and height after removing 1 px", cWidth, cHeight );
-    if (canvas && cWidth !== newWidth  && canvas.upperCanvasEl) {
-    //if (canvas && canvas.upperCanvasEl) {
-      let isMira = this.props.from === undefined ? true : false;  
-      var scaleMultiplier = newWidth / cWidth;
-      var scaleHeightMultiplier = newHeight / cHeight;
-      var objects = canvas.getObjects();
-
-      for (var i in objects) {
-        let isObjectTypeImage = isMira ? objects[i].type === "image" : objects[i].type !== "image";
-        if (isObjectTypeImage || scaleLandmarks) {
-          objects[i].width = objects[i].width * scaleMultiplier;
-          objects[i].height = objects[i].height * scaleHeightMultiplier;
-          console.log("object before scaling>>>", objects[i]);
-          //objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-          //objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-          objects[i].setCoords();
-          var scaleFactor = this.state.scaleFactor * scaleMultiplier;
-          this.setState({ scaleFactor });
-        }
-        // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-        // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-        objects[i].left = objects[i].left * scaleMultiplier;
-        objects[i].top = objects[i].top * scaleMultiplier;
-        objects[i].cnWidth = cWidth * scaleMultiplier;
-        objects[i].cnHeight = cHeight * scaleHeightMultiplier;
-        objects[i].setCoords();
-        console.log("object after scaling>>>>>>>>", objects[i]);
-      }
-
-
-      var obj = canvas.backgroundImage;
-      if (obj) {
-        obj.scaleX = obj.scaleX * scaleMultiplier;
-        obj.scaleY = obj.scaleY * scaleMultiplier;
-      }
-
-      //console.log("Resize Canvas Dimensions: ", canvas.getHeight() * scaleMultiplier, canvas.getWidth() * scaleHeightMultiplier);
-      console.log("Resize Canvas Dimensions: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
-      canvas.discardActiveObject();
-      //let refactorCanvasHeight = Math.ceil(cHeight * scaleHeightMultiplier) + 1;
-      //let refactorCanvasWidth = Math.ceil(cWidth * scaleMultiplier) + 1;
-      canvas.setWidth(cWidth * scaleMultiplier);
-      canvas.setHeight(cHeight * scaleHeightMultiplier);
-      this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
-      this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
-      /*canvas.setWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));
-      canvas.setHeight(Math.ceil(canvas.getHeight() * scaleHeightMultiplier));
-      this.props.trackingCanvasHeight(Math.ceil(canvas.getHeight() * scaleHeightMultiplier));
-      this.props.trackingCanvasWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));*/
-      /*
-      canvas.renderAll();
-      canvas.calcOffset();
-
-      // this.setState({
-      // parentWidth: offsetWidth
-      // });
-      var boss = canvas.getObjects().filter(o => o.type == "image")[0];
-      if (boss) {
-        this.bindLandmarks();
-      }
-      this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width},()=>{
-        if(!isMira){
-          this.props.onShapeAdded();
-        }
-      });
-    }
-  } */
-
   getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
     let canvas = this._fc;
-    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
-    let cHeight = canvas.getHeight() - this.state.strokeWidth;
-    if(this.props.resolutionHeight === 1080 && this.props.resolutionWidth === 1920){
+    let cWidth =  canvas.getWidth();
+    let cHeight = canvas.getHeight();
+    if(this.state.resolutionHeight === 1080 && this.state.resolutionWidth === 1920){
       //cHeight = canvas.getHeight() - this.state.strokeWidth;
     }
-    console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
-    console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas width and height after removing 2 px", cWidth, cHeight );
+    console.log("[nVision Sketch Field][Sketch Field][getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
+    console.log("[nVision Sketch Field][Sketch Field][getCanvasAtResoution]: Canvas width and height after removing 2 px", cWidth, cHeight );
     if (canvas && cWidth !== newWidth  && canvas.upperCanvasEl) {
     //if (canvas && canvas.upperCanvasEl) {
       var scaleMultiplier = newWidth / cWidth;
@@ -1038,16 +891,12 @@ class NvisionSketchField extends PureComponent {
         objects[i].setCoords();
         var scaleFactor = this.state.scaleFactor * scaleMultiplier;
         this.setState({ scaleFactor });
-        console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: object details after resizing", objects[i]);
+        console.log("[nVision Sketch Field][Sketch Field][getCanvasAtResoution]: object details after resizing", objects[i]);
       }
-      this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, cWidth, cHeight, true);
-      this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, cWidth, cHeight, true);
-      console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
+      console.log("[nVision Sketch Field][Sketch Field][getCanvasAtResoution]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
       canvas.discardActiveObject();
       canvas.setWidth(cWidth * scaleMultiplier);
       canvas.setHeight(cHeight * scaleHeightMultiplier);
-      this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
-      this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
       canvas.renderAll();
       canvas.calcOffset();
       this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
@@ -1086,79 +935,6 @@ class NvisionSketchField extends PureComponent {
     return object;
   }
 
-  /*scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
-    let obj = JSON.parse(JSON.stringify(object));
-    let canvas = this._fc;
-    console.log("[scledd Object]Object before scaling", object);
-    let selectedObject = canvas.getObjects().find(ob => ob.defaultName === obj.defaultName);
-    if(selectedObject){
-      let left = 0, top = 0, scaleX = 1, scaleY = 1;
-      left = selectedObject.left;
-      top = selectedObject.top;
-      scaleX = selectedObject.scaleX;
-      scaleY = selectedObject.scaleY;
-      obj.left = left;
-      obj.top = top;
-      obj.scaleX = scaleX;
-      obj.scaleY = scaleY;
-      if(obj.type === "polygon"){
-        let oCoords = {};
-        oCoords = JSON.parse(JSON.stringify(selectedObject.oCoords));
-        obj.oCoords = oCoords;
-      }
-    }else{
-      obj.left = obj.left * scaleMultiplier;
-      obj.top = obj.top * scaleMultiplier;
-      obj.scaleX = obj.scaleX * scaleMultiplier;
-      obj.scaleY = obj.scaleY * scaleMultiplier;
-    }
-    if(updateCanvasDimensions){
-      obj.cnWidth = Math.round(cWidth * scaleMultiplier);
-      obj.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
-    }
-    console.log("[scledd Object]Object after scaling", obj);
-    return obj;
-  }*/
-  updateObjectsInReduxAnimalTrackingKey = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false ) => {
-    let scaleMultiplierForObjects = scaleMultiplier;
-    let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
-    this.props.saveDimesions(trackingArea);
-    let lineShape = [];
-    if(this.props.lineShape.length){
-      lineShape[0] = this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
-    }
-    this.props.updateLineShape(lineShape);
-    let zones = [];
-    this.props.zones.map(zone => {
-      let scaledObject = this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
-      zones.push(scaledObject);
-    })
-    this.props.updateArenaZoneShapesList(zones);
-  }
-
-  updateObjectsInRedux = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) => {
-    const { selectedCameraForTracking } = this.props;
-    let nVisionSession = JSON.parse(JSON.stringify(this.props.nVisionSession));
-    let trackingInterface = nVisionSession.userInterface.trackingInterface;
-    let trackingArea = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].trackingArea));
-    console.log("[tracking settings][Sketch Field][updateObjectsInRedux][scaling objects][object details before scaling]: ", trackingArea);
-    let lineShape = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates));
-    let arenaZoneShapesList = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].arenaZone.zoneList));
-    trackingArea.geometry.coordinates = this.scaleObject(trackingArea.geometry.coordinates,scaleMultiplier,scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
-    if(lineShape.length){
-      lineShape[0] = this.scaleObject(lineShape[0], scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
-    }
-    let zones = [];
-    arenaZoneShapesList.map(zone => {
-      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplier,scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
-      zones.push(scaledObject);
-    })
-    console.log("[Tracking Settings][Sketch Field][updateObjectsInRedux][scaling objects]: Objects details after rescaling: ", arenaZoneShapesList );
-    nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].trackingArea = trackingArea;
-    nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates = lineShape;
-    nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].arenaZone.zoneList = zones;
-    this.props.updateNvisionSession(nVisionSession);
-  }
 
   getCanvasAtComponentMount = (newWidth, newHeight, scaleLandmarks = false) => {
     let canvas = this._fc;
@@ -1166,22 +942,9 @@ class NvisionSketchField extends PureComponent {
     let cHeight = canvas.getHeight();
     var scaleMultiplier = newWidth / cWidth;
     var scaleHeightMultiplier = newHeight / cHeight;
-    /*let scaleMultiplierForObjects = newWidth / this.props.oldCanvasWidth;
-    let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects);
-    this.props.saveDimesions(trackingArea);
-    let lineShape = this.scaleObject(JSON.parse(JSON.stringify(this.props.lineShape)), scaleMultiplierForObjects);
-    this.props.updateLineShape(lineShape);
-    let zones = [];
-    this.props.zones.map(zone => {
-      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects)));
-      zones.push(scaledObject);
-    })
-    this.props.updateArenaZoneShapesList(zones);*/
-    console.log("[Tracking Settings][Sketch Field][getCanvasAtComponentMount][component mount] Resize Canvas Dimensions to: ", cHeight * scaleHeightMultiplier, cWidth * scaleMultiplier);
+    console.log("[nVision Sketch Field][getCanvasAtComponentMount][component mount] Resize Canvas Dimensions to: ", cHeight * scaleHeightMultiplier, cWidth * scaleMultiplier);
     canvas.setWidth(cWidth * scaleMultiplier);
     canvas.setHeight(cHeight * scaleHeightMultiplier);
-    this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
-    this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
     canvas.renderAll();
     canvas.calcOffset();
     this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width},()=>{
@@ -1192,52 +955,25 @@ class NvisionSketchField extends PureComponent {
   resizeCanvas = (addDimension = false, resize = true) => {
     let currCanvas = this._fc;
     let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
-    console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of overlay container] :", overlayWidth, overlayHeight);
-    console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of canvas] :", currCanvas.getWidth(),currCanvas.getHeight());
+    console.log("[nVision Sketch Field][resize Canvas][Current width and height of overlay container] :", overlayWidth, overlayHeight);
+    console.log("[nVision Sketch Field][resize Canvas][Current width and height of canvas] :", currCanvas.getWidth(),currCanvas.getHeight());
     if(resize){
       this._resize();
     }
     let newCanvasWidth = overlayWidth;
     let newCanvasHeight = overlayHeight;
-    if(addDimension){
-      newCanvasWidth = this.getActualCanvasDimensions(overlayWidth, overlayHeight, true).width;
-      newCanvasHeight = this.getActualCanvasDimensions(overlayWidth,overlayHeight,true).height;
-    }
-    currCanvas.setHeight(newCanvasHeight);
-    currCanvas.setWidth(newCanvasWidth);
+    // if(addDimension){
+    //   newCanvasWidth = this.getActualCanvasDimensions(overlayWidth, overlayHeight, true).width;
+    //   newCanvasHeight = this.getActualCanvasDimensions(overlayWidth,overlayHeight,true).height;
+    // }
+    // currCanvas.setHeight(newCanvasHeight);
+    // currCanvas.setWidth(newCanvasWidth);
     currCanvas.requestRenderAll();
-    this.props.trackingCanvasHeight(currCanvas.getHeight());
-    this.props.trackingCanvasWidth(currCanvas.getWidth());
-        console.log("[Tracking Settings][Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
+        console.log("[nVision Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
   }
 
   setCanvasWidthHeightInRedux = () => {
     let currCanvas = this._fc;
-    this.props.trackingCanvasHeight(currCanvas.getHeight());
-    this.props.trackingCanvasWidth(currCanvas.getWidth());
-  }
-
-  bindLandmarks = (updateLandmarks = false, canvasData) => {
-    let canvas = canvasData ? canvasData : this._fc;
-    var multiply = fabric.util.multiplyTransformMatrices;
-    var invert = fabric.util.invertTransform;
-    var boss = canvas.getObjects().filter(o => o.type == "image");
-    var minions = canvas.getObjects().filter(o => o.type !== "image");
-    var bossTransform = boss[0].calcTransformMatrix();
-    var invertedBossTransform = invert(bossTransform);
-    minions.forEach(o => {
-      var desiredTransform = multiply(
-        invertedBossTransform,
-        o.calcTransformMatrix()
-      );
-      // save the desired relation here.
-      o.relationship = desiredTransform;
-    });
-    if (updateLandmarks) {
-      let landMarks = canvas ? JSON.parse(JSON.stringify(canvas.getObjects().filter(o => o.type !== "image"))) : [];
-      this.updateOnepTwop('_landmarks');
-      console.log("[MIRA] Updated list of landmarks objects: ", JSON.stringify(landMarks));
-    }
   }
 
   getActualCanvasDimensions = (width, height, fullWidth=true) => {
@@ -1246,53 +982,6 @@ class NvisionSketchField extends PureComponent {
     obj.width = width + this.state.strokeWidth;
     obj.height = height + ( fullWidth ? this.state.strokeWidth : (this.state.strokeWidth +0) );
     return obj;
-  }
-
-  onMountUpdateObjectsInReduxAnimalTrackingKey = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false, trackingArea, arenaZoneShapesList, lineShape) => {
-    let scaleMultiplierForObjects = scaleMultiplier;
-    let trackingObject = this.scaleObject(JSON.parse(JSON.stringify(trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
-    this.props.saveDimesions(trackingObject);
-    let lineObject = [];
-    if(lineShape.length){
-      lineObject[0] = this.scaleObject(JSON.parse(JSON.stringify(lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
-    }
-    this.props.updateLineShape(lineObject);
-    let zones = [];
-    arenaZoneShapesList.map(zone => {
-      let scaledObject = JSON.parse(JSON.stringify(this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions)));
-      zones.push(scaledObject);
-    })
-    this.props.updateArenaZoneShapesList(zones);
-  }
-
-  resizeReduxAndSessionObjectsOnMount = (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) => {
-    let canvas = this._fc;
-    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
-    let cHeight = canvas.getHeight() - this.state.strokeWidth;
-    console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsOnMount]: canvas Old width and old height:", oldWidth, oldHeight);
-    console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsOnMount]: Current Canvas width and height : ", cWidth, cHeight );
-    if (canvas && oldWidth !== cWidth && canvas.upperCanvasEl) {
-    //if (canvas && canvas.upperCanvasEl) {
-      var scaleMultiplier = cWidth/oldWidth;
-      var scaleHeightMultiplier = cHeight/oldHeight;
-      this.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape );
-      this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true);
-    }
-  }
-
-  resizeReduxAndSessionObjectsAfterPageLoad = (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) => {
-    let canvas = this._fc;
-    let cWidth =  canvas.getWidth() - this.state.strokeWidth;
-    let cHeight = canvas.getHeight() - this.state.strokeWidth;
-    console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsAfterPageLoad]: canvas Old width and old height:", oldWidth, oldHeight);
-    console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsAfterPageLoad]: Current Canvas width and height : ", cWidth, cHeight );
-    if (canvas && oldWidth !== cWidth && canvas.upperCanvasEl) {
-    //if (canvas && canvas.upperCanvasEl) {
-      var scaleMultiplier = cWidth/oldWidth;
-      var scaleHeightMultiplier = cHeight/oldHeight;
-      this.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape );
-      this.updateObjectsInRedux(scaleMultiplier,scaleHeightMultiplier, oldWidth, oldHeight, true);
-    }
   }
   /**
   * Sets the background color for this sketch
@@ -1385,7 +1074,7 @@ class NvisionSketchField extends PureComponent {
   */
   canUndo = () => {
 
-    return this._history.canUndo()
+    // return this._history.canUndo()
   }
 
   /**
@@ -1578,98 +1267,8 @@ class NvisionSketchField extends PureComponent {
   }
 
   callEvent = (e, eventFunction) => {
-    // console.log("inside callEvet method");
     if (this._selectedTool)
       eventFunction(e);
-  }
-
-  addLandmarks = (canvas, frontEnd) => {
-    let self = this;
-
-    canvas.selection = false;
-    let imageObject = JSON.parse(JSON.stringify(canvas.getObjects()));
-    let landMarks = frontEnd;
-    if (landMarks.length > 0) {
-      landMarks.splice(0, 0, imageObject[0]);
-    } else {
-      landMarks = imageObject;
-    }
-    canvas.loadFromJSON(`{"objects":${JSON.stringify(landMarks)}}`, function () {
-      if (self.props.oneptwop) {
-        self.props.updateSbpfTransformValues(self.props.oneptwop, self.props.loadFromSession);
-      } else {
-        self.rotateAndScale(canvas.item(0), -0);
-      }
-
-      //if (canvas.item(1) && canvas.item(1).cnWidth !== canvas.getWidth()) {
-      var scaleMultiplier = canvas.getWidth() / canvas.item(1).cnWidth;
-      var objects = canvas.getObjects();
-      for (var i in objects) {
-        if (objects[i].type !== "image") {
-          objects[i].left = objects[i].left * scaleMultiplier;
-          objects[i].top = objects[i].top * scaleMultiplier;
-          objects[i].cnWidth = canvas.getWidth();
-          objects[i].cnHeight = canvas.getHeight();
-          objects[i].setCoords();
-        }
-
-      }
-      // }
-      if (canvas) {
-        let fabricList = JSON.parse(JSON.stringify(canvas.getObjects().filter(o => o.type !== "image")));
-        fabricList.map((item, key) => {
-          let color = item.fill
-          self.state.lmColorUsed.map((item, index) => {
-            if (item == color) {
-              self.state.lmColorUsed.splice(index, 1)
-            }
-          })
-        })
-        canvas.forEachObject(function (o) {
-          o.selectable = false;
-        });
-      }
-      var boss = canvas.getObjects().filter(o => o.type == "image")[0];
-      //if (boss) {
-      self.bindLandmarks(true, canvas);
-      //}
-      //canvas.requestRenderAll();
-      canvas.renderAll();
-    });
-
-    canvas.on('object:modified', function (options) {
-      try {
-        var obj = options.target;
-        if (obj.type == "image") {
-          return;
-        }
-        var canvasTL = new fabric.Point(0, 0);
-        var canvasBR = new fabric.Point(canvas.getWidth(), canvas.getHeight());
-        //if object not totally contained in canvas, adjust position
-        if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
-          var objBounds = obj.getBoundingRect();
-          obj.setCoords();
-          var objTL = obj.getPointByOrigin("left", "top");
-          var left = objTL.x;
-          var top = objTL.y;
-
-          if (objBounds.left < canvasTL.x) left = 0;
-          if (objBounds.top < canvasTL.y) top = 0;
-          if ((objBounds.top + objBounds.height) > canvasBR.y) top = canvasBR.y - objBounds.height;
-          if ((objBounds.left + objBounds.width) > canvasBR.x) left = canvasBR.x - objBounds.width;
-
-          obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
-          obj.setCoords();
-          canvas.renderAll();
-        }
-        self.bindLandmarks(true);
-      }
-      catch (err) {
-        alert("exception in keepObjectInBounds\n\n" + err.message + "\n\n" + err.stack);
-      }
-    });
-
-
   }
 
   componentDidMount = () => {
@@ -1682,37 +1281,21 @@ class NvisionSketchField extends PureComponent {
       image
     } = this.props
 
-    //console.log("value is coming in component did mount before starttttt-- > ", this._fc);
-
-    //let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
     let canvas = (this._fc = new fabric.Canvas(
       this._canvas,
       {
         centeredRotation: true,
         centeredScaling: false,
-        //id: "roi-canvas"
-      } /*, {
- preserveObjectStacking: false,
- renderOnAddRemove: false,
- skipTargetFind: true
- }*/
+      }
     ))
     canvas.centeredScaling = false;
     this._initTools(canvas)
 
-    // set initial backgroundColor
     this._backgroundColor(backgroundColor)
 
     let selectedTool = this._tools[tool]
     if (selectedTool) selectedTool.configureCanvas(this.props)
     this._selectedTool = selectedTool
-
-    // Control resize
-
-    //window.addEventListener('resize', this._resize, false)
-
-    // Initialize History, with maximum number of undo steps
-    // this._history = new History(undoSteps);
 
     // Events binding
     canvas.on('object:added', e => this.callEvent(e, this._onObjectAdded))
@@ -1733,14 +1316,7 @@ class NvisionSketchField extends PureComponent {
 
     this.disableTouchScroll()
 
-    // setTimeout(() => {
-    //this._resize()
     this.resizeOverlayAndCanvasOnCompoentMount();
-      // }, 3000);
-
-      // if (image !== null) {
-      // this.addImg(image);
-      // }
       // initialize canvas with controlled value if exists
       ; (value || defaultValue) && this.fromJSON(value || defaultValue)
 
@@ -1753,7 +1329,6 @@ class NvisionSketchField extends PureComponent {
     
 
   componentDidUpdate = (prevProps, prevState) => {
-    // console.log(this.props, "props");
     let canvas = this._fc
     if (
       this.state.parentWidth !== prevState.parentWidth ||
@@ -1775,6 +1350,10 @@ class NvisionSketchField extends PureComponent {
 
     if (this.props.backgroundColor !== prevProps.backgroundColor) {
       this._backgroundColor(this.props.backgroundColor)
+    }
+
+    if(this.props.resolutionHeight && this.props.resolutionWidth && (this.state.resolutionHeight !== this.props.resolutionHeight || this.state.resolutionWidth !== this.props.resolutionWidth)){
+      this.setState({resolutionHeight:this.props.resolutionHeight, resolutionWidth:this.props.resolutionWidth});
     }
 
 
@@ -1799,206 +1378,10 @@ class NvisionSketchField extends PureComponent {
     // this._resize();
         // this.setState({ callResize: this.props.callResize });
     // }
-
-    if (this.props.oneptwop) {
-
-      if (
-        this.props.oneptwop.inscopix.adapter_lsm.rotation !== this.state.rotation && this._fc.item(0)
-      ) {
-        this.rotateAndScale(
-          this._fc.item(0),
-          -this.props.oneptwop.inscopix.adapter_lsm.rotation
-        )
-        this.updateLandmarksPosition()
-        this._fc.renderAll()
-        this.setState({
-          rotation: this.props.oneptwop.inscopix.adapter_lsm.rotation
-        })
-      }
-      if (
-        this.props.oneptwop.inscopix.frontend !== this.state.frontEnd && this.state.updateLandmarksForOtherWindow && this._fc
-      ) {
-        this.setState({
-          frontEnd: this.props.oneptwop.inscopix.frontend,
-          updateLandmarksForOtherWindow: false
-        });
-        this.props.addLandmarks(this._fc, this.props.oneptwop.inscopix.frontend)
-        this._fc.renderAll()
-      }
-
-      if (
-        this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal !==
-        this.state.flipApplied
-      ) {
-        this.applyFlip(
-          this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal,
-          false
-        )
-        this.setState({
-          flipApplied: this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
-        })
-      }
-    }
-
-    if (this.props.crosshairMode !== this.state.crosshairMode) {
-      this.setState({ crosshairMode: this.props.crosshairMode });
-    }
-
-    if (this.props.crosshairMoveMode !== this.state.crosshairMoveMode) {
-      this.setState({ crosshairMoveMode: this.props.crosshairMoveMode });
-    }
-
-    if (this.props.crosshairDeleteMode !== this.state.crosshairDeleteMode) {
-      this.setState({ crosshairDeleteMode: this.props.crosshairDeleteMode });
-    }
-
-    if (this.props.deleteAllLandmarks !== this.state.deleteAllLandmarks) {
-      this.setState({ deleteAllLandmarks: this.props.deleteAllLandmarks });
-    }
-
-    if (this.props.resetAllLandmarks !== this.state.resetAllLandmarks) {
-      this.setState({ resetAllLandmarks: this.props.resetAllLandmarks });
-    }
   }
   onChangeSize = (width, height) => {
-    // if (this.state.imageUrl !== null) {
-    // this.addImg(this.state.imageUrl);
-    // // if (this.state.rotation !== 0 && this._fc.item(0)) {
-    // // this.rotateAndScale(this._fc.item(0), -this.state.rotation, this._fc, this.state.scaleFactor);
-    // // this._fc.renderAll();
-    // // }
-    // }
-
     // this._resize();
     this.resizeCanvas(true);
-  }
-
-  updateLandmarksPosition = () => {
-    var multiply = fabric.util.multiplyTransformMatrices
-    var invert = fabric.util.invertTransform
-    var boss = this._fc.getObjects().filter(o => o.type == 'image')[0]
-    var minions = this._fc.getObjects().filter(o => o !== boss)
-    minions.forEach(o => {
-      if (!o.relationship) {
-        return
-      }
-      var relationship = o.relationship
-      var newTransform = multiply(boss.calcTransformMatrix(), relationship)
-      let opt = fabric.util.qrDecompose(newTransform)
-      o.set({
-        flipX: false,
-        flipY: false
-      })
-      o.setPositionByOrigin(
-        { x: opt.translateX, y: opt.translateY },
-        'center',
-        'center'
-      )
-      o.set(opt)
-      o.setCoords()
-    })
-  }
-
-  applyFlip = (value, updateOnepTwop) => {
-    if(this._fc.item(0)){
-      this._fc.item(0).set({
-        flipX: value
-      })
-      this._fc.item(0).setCoords()
-    }
-    this.updateLandmarksPosition()
-    /*if(updateOnepTwop) {
-    window.updateOnepTwopData('_transform', []);
-    } */
-    this._fc.requestRenderAll()
-    this._fc.renderAll()
-  }
-
-  rotateAndScale = (obj, angle) => {
-    if (obj) {
-      var width = this._fc.getWidth()
-      var height = this._fc.getHeight()
-      var cos_theta = Math.cos((angle * Math.PI) / 180)
-      var sin_theta = Math.sin((angle * Math.PI) / 180)
-      var x_scale =
-        width / (Math.abs(width * cos_theta) + Math.abs(height * sin_theta))
-      var y_scale =
-        height / (Math.abs(width * sin_theta) + Math.abs(height * cos_theta))
-      var scale = Math.min(x_scale, y_scale)
-      var actScale = this.state.scaleFactor * scale
-      // get the transformMatrix array
-      var rotateMatrix = [cos_theta, -sin_theta, sin_theta, cos_theta, 0, 0]
-      var scaleMatrix = [actScale, 0, 0, actScale, 0, 0]
-      // console.log(scaleMatrix, "scaleMatrix");
-      // console.log(rotateMatrix, "rotateMatrix");
-      //var scaleMatrix = [scale, 0 , 0, scale, 0, 0];
-      var rsT = fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix)
-
-      // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
-      var options = fabric.util.qrDecompose(rsT)
-      // console.log(options, "options");
-      var newCenter = { x: this._fc.getWidth() / 2, y: this._fc.getHeight() / 2 }
-
-      // reset transformMatrix to identity and resets flips since negative scale resulting from decompose, will automatically set them.
-      //obj.flipX = false;
-      obj.flipY = false
-      obj.set(options)
-
-      // position the object in the center given from translateX and translateY
-      obj.setPositionByOrigin(newCenter, 'center', 'center')
-      obj.setCoords();
-    }
-  }
-
-  updateLandmarks = () => {
-    var currentRotation = this.props.oneptwop.inscopix.adapter_lsm.rotation;
-    var isFliped = this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal;
-    if (isFliped) {
-      this.applyFlip(false, true);
-    }
-    this.props.updateSlider(0);
-    let points = []
-    if (this.props.oneptwop.inscopix.frontend.length > 0) {
-      this.props.oneptwop.inscopix.frontend = this.props.oneptwop.inscopix.frontend.filter(o => o.type !== "image")
-      this.props.oneptwop.inscopix.frontend.map((item, key) => {
-        let x, y
-        x = item.left + (item.width / 2);
-        y = item.top + (item.height / 2);
-        points.push({ x, y })
-      })
-      this.props.oneptwop.inscopix.landmarks = { points: points }
-    } else {
-      this.props.oneptwop.inscopix.landmarks = { points: [] }
-    }
-    this.props.updateSlider(currentRotation);
-    if (isFliped) {
-      this.applyFlip(true, true);
-    }
-  }
-
-  updateOnepTwop = (saveAs, updateLandmarksForOtherWindow = false) => {
-    // if (this.sbpfApplyClick) {
-    // this.oneptwop.inscopix.bpf = {
-    // sigma1: $("#deltaSBFSnapSigmaOne").val() * 1,
-    // sigma2: $("#deltaSBFSnapSigmaTwo").val() * 1,
-    // offset: $("#deltaSBFSnapOffset").val() * 1,
-    // gain: $("#deltaSBFSnapGain").val() * 1
-    // }
-    // }
-    // this.oneptwop.inscopix.adapter_lsm = {
-    // rotation: parseInt($(".transforms-rotate-data").val()),
-    // flip_horizontal: $("#flip-horizontal").hasClass("active")
-    // };
-    let landMarks = this._fc ? JSON.parse(JSON.stringify(this._fc.toJSON(['cnWidth', 'cnHeight']))) : [];
-    let oneptwop = this.props.oneptwop;
-    oneptwop.inscopix.frontend = landMarks.objects.filter(o => o.type !== "image");
-    this.props.oneptwopFrontend(oneptwop);
-    /*if (updateLandmarksForOtherWindow) {
-    this.props.addLandmarks()
-    }*/
-    this.setState({
-      updateLandmarksForOtherWindow: updateLandmarksForOtherWindow
-    })
   }
 
   removeAddOrMoveMode = () => {
@@ -2018,10 +1401,6 @@ class NvisionSketchField extends PureComponent {
     let canvas = this._fc;
     let updatedheight =  canvas.getHeight();
     let updatedWidth = canvas.getWidth();
-    // let updatedTop = obj.y * canvas.getHeight() / fov.height;
-    // let updatedLeft = obj.x * canvas.getWidth() / fov.width;
-    // console.log(updatedTop,"updatedTop");
-    // console.log(updatedLeft,"updatedLeft");
     let rect = new fabric.Rect({
       left: 0,
       top: 0,
@@ -2045,7 +1424,6 @@ class NvisionSketchField extends PureComponent {
       angle: 0
     });
     canvas.add(rect);
-    this.props.onShapeAdded();
   }
 
   render = () => {
@@ -2091,27 +1469,6 @@ class NvisionSketchField extends PureComponent {
           </canvas>
           </div>
         {/* </ReactResizeDetector> */}
-        {this._fc !== null && this._fc.item(0) && this.props.from === undefined &&
-          <NvistaRoiSettings
-            canvasProps={this._fc}
-            landMarks={this.props.oneptwop.inscopix.frontend}
-            imageData={this.props.oneptwop}
-            oneptwop={this.props.oneptwop}
-            rotateAndScale={this.rotateAndScale}
-            crosshairMode={this.state.crosshairMode}
-            crosshairMoveMode={this.state.crosshairMoveMode}
-            crosshairDeleteMode={this.state.crosshairDeleteMode}
-            deleteAllLandmarks={this.state.deleteAllLandmarks}
-            oneptwopCompare={this.props.oneptwopCompare}
-            oneptwopDefault={this.props.oneptwopDefault}
-            updateSlider={this.props.updateSlider}
-            applyFlip={this.applyFlip}
-            resetAllLandmarks={this.state.resetAllLandmarks}
-            updateOnepTwop={this.updateOnepTwop}
-            loadFromSession={this.props.loadFromSession}
-            updateSbpfTransformValues={this.props.updateSbpfTransformValues}
-            handleMiraErrorPopup={this.props.handleMiraErrorPopup}
-          />}
 
       </div>
     )

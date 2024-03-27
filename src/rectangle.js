@@ -20,43 +20,28 @@ class Rectangle extends FabricCanvasTool {
 
   doMouseDown(options, props, sketch) {
     if(this.objectAdd) {
-      // console.log("[Animal Tracking][Rectangle] Object has not removed and do not called mouse up function.");
       this._canvas.off("mouse:up");
       this._canvas.on("mouse:up", function () {});
       return;
     }
-    // console.log("[Animal Tracking][Rectangle] Object has added and called mouse up function.");
+    console.log("[Animal Tracking][Rectangle] Object has added and called mouse up function.");
     this._canvas.off("mouse:up");
     this._canvas.on("mouse:up", (e) => this.doMouseUp(e, props, sketch));
     if (!this.isDown) return;
-    const { notificationShow, roiDefaultNames } = props;
-    let objects = this._canvas.getObjects().filter(obj => obj.id !== "trackingArea" && obj.id !== "calibratedLine");
-    if (objects.length >= 5 && roiDefaultNames.length === 0 ) {
-      notificationShow();
-      console.log(
-        `Maximum five shapes allowed `,
-        "color:blue; font-weight:bold;",
-        "color:black;"
-      );
-      this.objectAdd = false;
-      return;
-    }
     this.objectAdd = true;
-    this.genrateRect(options, props);
+    this.genrateRect(options, props, sketch);
   }
 
-  genrateRect = (options, props) => {
-    const { addROIDefaultName, removeColorInDefaultShapeColors } = props;
+  genrateRect = (options, props, sketch) => {
     let canvas = this._canvas;
     this.isDown = true;
     let pointer = canvas.getPointer(options.e);
-    let boundary = props.getboudaryCoords();
+    let boundary = sketch.getboudaryCoords();
     if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
       return false;
     }
-    let objects = canvas.getObjects();
-    let name = props.roiDefaultNames[0];
-    let defaultName = props.roiDefaultNames[0];
+    let name = "rect";
+    let defaultName ="rect";
     this.startX = pointer.x;
     this.startY = pointer.y;
     this.rect = new fabric.Rect({
@@ -66,9 +51,9 @@ class Rectangle extends FabricCanvasTool {
       originY: "top",
       width: 20,
       height: 20,
-      stroke: props.defaultShapeColors[0],
+      stroke: props.lineColor,
       strokeWidth: this._width,
-      fill: this._fill,
+      fill: props.fillColor,
       transparentCorners: false,
       name: name,
       defaultName: defaultName,
@@ -87,16 +72,14 @@ class Rectangle extends FabricCanvasTool {
     // this.containInsideBoundary(options);
     this.isDragging = true;
     this.rect.edit = true;
-    removeColorInDefaultShapeColors(props.defaultShapeColors);
-    addROIDefaultName(props.roiDefaultNames);
   };
 
-  doMouseMove(o, props) {
+  doMouseMove(o, props, sketch) {
     if (!this.isDown) return;
     let canvas = this._canvas;
     if (this.isDragging) {
       let pointer = canvas.getPointer(o.e);
-      let boundary = props.getboudaryCoords();
+      let boundary = sketch.getboudaryCoords();
       if (boundary && (pointer.y > (boundary.height * boundary.scaleY) + boundary.top || pointer.x > (boundary.width * boundary.scaleX) + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
         return false;
       }
@@ -114,7 +97,8 @@ class Rectangle extends FabricCanvasTool {
     }
   }
 
-  checkWithInTrackingArea = (obj, boundaryObj) =>{     
+  checkWithInTrackingArea = (obj, boundaryObj) =>{  
+    if(!boundaryObj) return;  
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
     var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
     if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
@@ -132,35 +116,15 @@ class Rectangle extends FabricCanvasTool {
       obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
       obj.setCoords();
       this._canvas.renderAll();
-      // this.props.checkForOverlap(obj);
     }
   }
   async doMouseUp(o, props, sketch) {
-    // this.containInsideBoundary(o);
     this.isDown = true;
     this.isDragging = false;
-    const { onShapeAdded, checkForOverlap } = props;
-    let isOverlap = false;
-    if(this.objectAdd){
-      let rectSmall = await props.checkForMinTotalArea();
-      let outsideZone = await this.checkWithInBoundary(props);
-      if(outsideZone){
-        console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] Rectangle is created outside the tracking area.","color:blue; font-weight: bold;",
-        "color: black;");
-        props.notificationShow("Zone should not be created outside tracking area.");
-      }
-      else if(!rectSmall){ 
-        console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] The zone size should not be less than 100px of the total area.","color:blue; font-weight: bold;",
-          "color: black;");
-        props.notificationShow("Zone size should be bigger than 100px.");
-      }else{
-        isOverlap = await checkForOverlap();
-      }
-      await onShapeAdded();
       setTimeout(() => {
         this.objectAdd = false;
-      }, isOverlap ? 500 : 0); 
-    }
+      }, 500); 
+    // }
   }
 
   checkWithInBoundary = async (props) => {
@@ -213,55 +177,6 @@ class Rectangle extends FabricCanvasTool {
       this.rect.setCoords();
       canvas.renderAll();
     }
-  };
-
-  genrateTrackingArea = (fullWidth = true) => {
-    let canvas = this._canvas;
-    this.isDown = true;
-    //let width = Math.ceil(canvas.getWidth());
-    //let height = Math.ceil(canvas.getHeight());
-    let width = canvas.getWidth()- this.strokeWidth;
-    let height;
-    if(fullWidth){
-      height = canvas.getHeight() - this.strokeWidth;
-    }else{
-      height = canvas.getHeight() - (this.strokeWidth + 0) ;
-    }
-    //let height = canvas.getHeight();
-    console.log("[Tracking Settings][Sketch Field][Rectangle][genrateTrackingArea]: Width and Height of canvas after removing stroke width", width, height);
-    let name = "trackingArea";
-    let defaultName = "trackingArea";
-    let rect = new fabric.Rect({
-      left: 0,
-      top: 0,
-      originX: "left",
-      originY: "top",
-      width: width,
-      height: height,
-      cnWidth: width,
-      cnHeight:height,
-      stroke: '#ff0000',
-      strokeWidth: this.strokeWidth,
-      fill: this._fill,
-      transparentCorners: false,
-      name: name,
-      defaultName: defaultName,
-      selectable: false,
-      evented: false,
-      id: "trackingArea",
-      hasBorders: false,
-      cornerSize: 10,
-      angle: 0,
-      enable: true,
-      description: "",
-      objectCaching: false
-    });
-    rect.setControlsVisibility({
-      mtr: false,
-    });
-    canvas.add(rect).setActiveObject(rect);
-    // this.containInsideBoundary(options);
-    rect.edit = true;
   };
 }
 
