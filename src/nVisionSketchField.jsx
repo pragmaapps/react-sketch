@@ -548,6 +548,7 @@ class NvisionSketchField extends PureComponent {
   }
 
   checkForOverlap = (overlappedObj) =>{
+      const { onOverlap } = this.props;
       let canvas = this._fc;
       let allowedtypes = ["rect", "polygon", "ellipse"];
       var objects = canvas.getObjects().filter(ob => allowedtypes.includes(ob.type));
@@ -561,6 +562,7 @@ class NvisionSketchField extends PureComponent {
             isOveralaping = true;
             // canvas.remove(lastObject);
             lastObject.set({"stroke":"yellow"});
+            onOverlap();
             console.log("%c[nVision Sketch Field]%c Deleted overlapped zone","color:blue; font-weight: bold;",
             "color: black;",lastObject, "overlapped with", objects[i]);
             break;
@@ -568,6 +570,7 @@ class NvisionSketchField extends PureComponent {
         }
         lastObject.set({"stroke":"black"});
       }
+      canvas.renderAll();
       return isOveralaping;
   }
 

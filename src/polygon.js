@@ -248,8 +248,8 @@ class Polygon extends FabricCanvasTool {
     // create polygon from collected points
     const polygon = new fabric.Polygon(points, {
       id: new Date().getTime(),
-      fill: this._fill,
-      strokeWidth: this._width,
+      fill: props.fillColor,
+      strokeWidth: props.lineWidth,
       stroke:  props.lineColor,
       transparentCorners: false,
       name: name,
@@ -382,7 +382,7 @@ class Polygon extends FabricCanvasTool {
 
   actionHandler = (eventData, transform, x, y) => {
     let canvas = this._canvas;
-    boundary = this.getboudaryCoords();
+    let boundary = this.getboudaryCoords();
     var polygon = transform.target,
       currentControl = polygon.controls[polygon.__corner],
       mouseLocalPosition = polygon.toLocalPoint(

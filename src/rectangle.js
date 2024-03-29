@@ -52,7 +52,7 @@ class Rectangle extends FabricCanvasTool {
       width: 20,
       height: 20,
       stroke: props.lineColor,
-      strokeWidth: this._width,
+      strokeWidth:props.lineWidth,
       fill: props.fillColor,
       transparentCorners: false,
       name: name,
@@ -121,6 +121,7 @@ class Rectangle extends FabricCanvasTool {
   async doMouseUp(o, props, sketch) {
     this.isDown = true;
     this.isDragging = false;
+    sketch.checkForOverlap();
       setTimeout(() => {
         this.objectAdd = false;
       }, 500); 

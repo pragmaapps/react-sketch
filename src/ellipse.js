@@ -48,9 +48,9 @@ class Ellipse extends FabricCanvasTool {
       originY: "top",
       rx: 20,
       ry: 20,
-      strokeWidth: this._width,
+      strokeWidth: props.lineWidth,
       stroke:  props.lineColor,
-      fill: this._fill,
+      fill: props.fillColor,
       name: name,
       defaultName: defaultName,
       selectable: false,
@@ -124,6 +124,7 @@ class Ellipse extends FabricCanvasTool {
     this.isDown = true;
     this.isDragging = false;
     let isOverlap = false;
+    sketch.checkForOverlap();
     if(this.objectAdd){
       setTimeout(() => {
         this.objectAdd = false;

@@ -34,7 +34,7 @@ import ZoomInIcon from '@material-ui/icons/ZoomIn';
 import ZoomOutIcon from '@material-ui/icons/ZoomOut';
 import dataJson from './data.json';
 import dataJsonControlled from './data.json.controlled';
-import {SketchField, Tools} from '../src';
+import {NvisionSketchField, SketchField, Tools} from '../src';
 import dataUrl from './data.url';
 import DropZone from 'react-dropzone';
 import Toolbar from '@material-ui/core/Toolbar/Toolbar';
@@ -121,7 +121,7 @@ class SketchFieldDemo extends React.Component {
       backgroundColor: 'transparent',
       shadowWidth: 0,
       shadowOffset: 0,
-      tool: Tools.Pencil,
+      tool: Tools.Rectangle,
       enableRemoveSelected: false,
       fillWithColor: false,
       fillWithBackgroundColor: false,
@@ -289,6 +289,10 @@ class SketchFieldDemo extends React.Component {
     })(console);
   };
 
+  onOverlap = () => {
+    console.log("mouse overlap");
+  }
+
   render = () => {
     let { controlledValue } = this.state;
     const theme = createMuiTheme({
@@ -340,7 +344,7 @@ class SketchFieldDemo extends React.Component {
         </div>
         <div className="row">
           <div className="col-xs-7 col-sm-7 col-md-9 col-lg-9">
-            <SketchField
+            <NvisionSketchField
               name="sketch"
               className="canvas-area"
               ref={c => (this._sketch = c)}
@@ -367,6 +371,7 @@ class SketchFieldDemo extends React.Component {
               forceValue
               onChange={this._onSketchChange}
               tool={this.state.tool}
+              onOverlap = {this.onOverlap}
             />
           </div>
           <div className="col-xs-5 col-sm-5 col-md-3 col-lg-3">
@@ -397,7 +402,9 @@ class SketchFieldDemo extends React.Component {
                         <MenuItem value={Tools.Rectangle} key="Rectangle">Rectangle</MenuItem>
                         <MenuItem value={Tools.Circle} key="Circle">Circle</MenuItem>
                         <MenuItem value={Tools.Pan} key="Pan">Pan</MenuItem>
-                        <MenuItem value={Tools.RectangleLabel} key="Pan">RectangleLabel</MenuItem>
+                        <MenuItem value={Tools.RectangleLabel} key="RectangleLabel">RectangleLabel</MenuItem>
+                        <MenuItem value={Tools.Ellipse} key="Ellipse">Ellipse</MenuItem>
+                        <MenuItem value={Tools.Polygon} key="Polygon">Polygon</MenuItem>
                       </TextField>
                     </div>
                   </div>
