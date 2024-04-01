@@ -453,10 +453,6 @@ class NvisionSketchField extends PureComponent {
 
   _onObjectModified = e => {
     let obj = e.target;
-    if(obj.id === "trackingArea"){
-      this.trackingAreaModified(obj);
-      return;
-    }
     let boundaryObj = this.getboudaryCoords();   
     var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
     var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) , (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
@@ -539,11 +535,11 @@ class NvisionSketchField extends PureComponent {
       obj.setPositionByOrigin(new fabric.Point(left, top), "left", "top");
       obj.setCoords();
       this._fc.renderAll();
-      this.checkWithInBoundary();
+      // this.checkWithInBoundary();
     }else{
       console.log("%c[nVision Sketch Field]%c [Traking Area] Modified with in canvas","color:blue; font-weight: bold;",
       "color: black;",obj);
-      this.checkWithInBoundary();
+      // this.checkWithInBoundary();
     }
   }
 
@@ -561,7 +557,7 @@ class NvisionSketchField extends PureComponent {
           if(this.areShapesOverlapping(lastObject, objects[i]) || this.areShapesOverlapping(objects[i], lastObject)){
             isOveralaping = true;
             // canvas.remove(lastObject);
-            lastObject.set({"stroke":"yellow"});
+            // lastObject.set({"stroke":"yellow"});
             onOverlap();
             console.log("%c[nVision Sketch Field]%c Deleted overlapped zone","color:blue; font-weight: bold;",
             "color: black;",lastObject, "overlapped with", objects[i]);
@@ -572,6 +568,26 @@ class NvisionSketchField extends PureComponent {
       }
       canvas.renderAll();
       return isOveralaping;
+  }
+
+  downloadAsImage = (filename = 'canvas-image.png') => {
+    let canvas = this._fc;
+    const imageDataUrl = canvas.toDataURL({ format: 'png' });
+    const downloadLink = document.createElement('a');
+    downloadLink.href = imageDataUrl;
+    downloadLink.download = filename;
+    downloadLink.click();
+  }
+
+  downloadCanvasDataAsJson = (filename = 'canvas-data.json') => {
+    let canvas = this._fc;
+    const objects = canvas.getObjects().map(object => object.toJSON());
+    const jsonData = { objects };
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    const downloadLink = document.createElement('a');
+    downloadLink.href = `data:application/json;charset=utf-8,${encodeURIComponent(jsonString)}`;
+    downloadLink.download = filename;
+    downloadLink.click();
   }
 
   checkForMinTotalArea = (obj="",from="") =>{
@@ -637,6 +653,8 @@ class NvisionSketchField extends PureComponent {
   }
 
   areShapesOverlapping = (obj1, obj2) => {
+    let allowedtypes = ["rect", "polygon", "ellipse"];
+    if(!allowedtypes.includes(obj1.type) || !allowedtypes.includes(obj2.type)) return false;
     let shape1Points = this.convertShapeToPolygon(obj1);
     let shape2Points = this.convertShapeToPolygon(obj2);
     console.log(getOverlapAreas(shape1Points,shape2Points).length > 0,"isOverlap");
@@ -703,33 +721,6 @@ class NvisionSketchField extends PureComponent {
       default:
         throw new Error(`Unknown shape type: ${shape.type}`);
     }
-  }
-
-  checkWithInBoundary = async() =>{
-    let canvas = this._fc; 
-    let showNotification = false;
-    let boundary = canvas.getObjects().find(ob => ob.id === "trackingArea");
-    let boundryCoords = [];
-    if(boundary){
-      boundryCoords = this.convertShapeToPolygon(boundary);
-    }
-    boundryCoords.length && canvas.getObjects().forEach((shape) => {
-      if(shape.id === "calibratedLine") return;
-      if(shape.id !== "trackingArea"){
-        let isOutsideBoundary = false;
-        let transformedPoints = this.convertShapeToPolygon(shape);
-        transformedPoints.forEach((point) => {
-          if (!isInside(point, boundryCoords)) {
-            isOutsideBoundary = true;
-          }
-        });
-        if(isOutsideBoundary){
-          showNotification = true;
-          canvas.remove(shape);
-        }
-      }
-    });     
-    canvas.renderAll();
   }
 
   removeUnCompletedShapes = () =>{
@@ -1128,13 +1119,19 @@ class NvisionSketchField extends PureComponent {
   */
   fromJSON = json => {
     if (!json) return
-    let canvas = this._fc
+    let canvas = this._fc;
     setTimeout(() => {
       canvas.loadFromJSON(json, () => {
-        if (this.props.tool === Tool.DefaultTool) {
+        // if (this.props.tool === Tool.DefaultTool) {
           canvas.isDrawingMode = canvas.selection = false
-          canvas.forEachObject(o => (o.selectable = o.evented = false))
-        }
+          canvas.forEachObject((o) => {
+            o.selectable = o.evented = false;
+            if (o.type === "polygon") {
+              this._tools[o.type].editPolygon(o, true);
+            }
+          })
+
+        // }
         canvas.renderAll()
         if (this.props.onChange) {
           this.props.onChange()

@@ -143,6 +143,7 @@ class SketchFieldDemo extends React.Component {
       expandBack: false,
       expandImages: false,
       expandControlled: false,
+      expandImport: false,
       text: 'a text, cool!',
       enableCopyPaste: false,
     };
@@ -153,6 +154,8 @@ class SketchFieldDemo extends React.Component {
       tool: event.target.value,
       enableRemoveSelected: event.target.value === Tools.Select,
       enableCopyPaste: event.target.value === Tools.Select
+    },()=> {
+      // this._sketch.downloadCanvasDataAsJson();
     });
   };
 
@@ -293,6 +296,27 @@ class SketchFieldDemo extends React.Component {
     console.log("mouse overlap");
   }
 
+  handleLoadJSON = async(event) => {
+    if(this._sketch){
+      let jsonValue = {};
+      const fileUploaded = event.target.files[0];
+      if (fileUploaded)
+      console.log("[Data Integrity] Uploaded File : ", fileUploaded);
+      let fr = new FileReader();
+      fr.onload = async (evt) => {
+        try {
+          jsonValue = JSON.parse(evt.target.result);
+          this._sketch.fromJSON(jsonValue);
+          console.log(jsonValue,"file containt");
+        } catch (error) {
+          console.log(error,"error");
+        }
+      }
+      fr.readAsText(fileUploaded);
+      event.target.value = null;
+    }
+  }
+
   render = () => {
     let { controlledValue } = this.state;
     const theme = createMuiTheme({
@@ -396,13 +420,13 @@ class SketchFieldDemo extends React.Component {
                         onChange={this._selectTool}
                         helperText="Please select Canvas Tool">
                         <MenuItem value={Tools.Select} key="Select">Select</MenuItem>
-                        <MenuItem value={Tools.Pencil} key="Pencil">Pencil</MenuItem>
+                        {/* <MenuItem value={Tools.Pencil} key="Pencil">Pencil</MenuItem>
                         <MenuItem value={Tools.Line} key="Line">Line</MenuItem>
-                        <MenuItem value={Tools.Arrow} key="Arrow">Arrow</MenuItem>
+                        <MenuItem value={Tools.Arrow} key="Arrow">Arrow</MenuItem> */}
                         <MenuItem value={Tools.Rectangle} key="Rectangle">Rectangle</MenuItem>
-                        <MenuItem value={Tools.Circle} key="Circle">Circle</MenuItem>
+                        {/* <MenuItem value={Tools.Circle} key="Circle">Circle</MenuItem>
                         <MenuItem value={Tools.Pan} key="Pan">Pan</MenuItem>
-                        <MenuItem value={Tools.RectangleLabel} key="RectangleLabel">RectangleLabel</MenuItem>
+                        <MenuItem value={Tools.RectangleLabel} key="RectangleLabel">RectangleLabel</MenuItem> */}
                         <MenuItem value={Tools.Ellipse} key="Ellipse">Ellipse</MenuItem>
                         <MenuItem value={Tools.Polygon} key="Polygon">Polygon</MenuItem>
                       </TextField>
@@ -431,6 +455,7 @@ class SketchFieldDemo extends React.Component {
                       <ZoomOutIcon/>
                     </IconButton>
                   </div>
+                  <br/>
                   <div className="row">
                     <div className="col-lg-7">
                       <TextField
@@ -512,6 +537,30 @@ class SketchFieldDemo extends React.Component {
                         onClick={this._removeSelected}>
                         <RemoveIcon/>
                       </IconButton>
+                    </div>
+                  </div>
+                </CardContent>
+              </Collapse>
+            </Card>
+
+            <Card style={styles.card}>
+              <CardHeader
+                title="Import/Export"
+                subheader="Import and Export json etc."
+                action={
+                  <IconButton
+                    onClick={(e) => this.setState({ expandImport: !this.state.expandImport })}>
+                    <ExpandMore/>
+                  </IconButton>
+                }/>
+              <Collapse in={this.state.expandImport}>
+                <CardContent>
+                  <div className="row">
+                    <div className="col-lg-12">
+                      <Button onClick={()=> this._sketch.downloadCanvasDataAsJson()}>Download as json</Button>
+                      <Button onClick={()=> this._sketch.downloadAsImage()}>Download as png</Button>
+                      <input type='file' accept='.json' onChange={(e) =>this.handleLoadJSON(e)}/>
+                      <br/>
                     </div>
                   </div>
                 </CardContent>
