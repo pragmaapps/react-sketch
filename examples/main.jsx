@@ -296,10 +296,10 @@ class SketchFieldDemo extends React.Component {
     console.log("mouse overlap");
   }
 
-  handleLoadJSON = async(event) => {
-    if(this._sketch){
+  handleLoadJSON = async(accepted) => {
+    if (accepted && accepted.length > 0 && this._sketch) {
       let jsonValue = {};
-      const fileUploaded = event.target.files[0];
+      const fileUploaded = accepted[0];
       if (fileUploaded)
       console.log("[Data Integrity] Uploaded File : ", fileUploaded);
       let fr = new FileReader();
@@ -313,7 +313,7 @@ class SketchFieldDemo extends React.Component {
         }
       }
       fr.readAsText(fileUploaded);
-      event.target.value = null;
+      accepted.value = null;
     }
   }
 
@@ -557,10 +557,26 @@ class SketchFieldDemo extends React.Component {
                 <CardContent>
                   <div className="row">
                     <div className="col-lg-12">
-                      <Button onClick={()=> this._sketch.downloadCanvasDataAsJson()}>Download as json</Button>
-                      <Button onClick={()=> this._sketch.downloadAsImage()}>Download as png</Button>
-                      <input type='file' accept='.json' onChange={(e) =>this.handleLoadJSON(e)}/>
+                      <h4>Import</h4>
+                      <div>
+                        <DropZone
+                          accept='.json'
+                          multiple={false}
+                          style={styles.dropArea}
+                          activeStyle={styles.activeStyle}
+                          rejectStyle={styles.rejectStyle}
+                          onDrop={this.handleLoadJSON}>
+                          Try dropping an json file here,<br/>
+                          or click<br/>
+                          to select json file for import.
+                        </DropZone>
+                     </div>
                       <br/>
+                      <h4>Export</h4>
+                    <div className='row'>
+                      <div className='col' style={{paddingLeft:"10px"}}><Button variant="outlined" onClick={()=> this._sketch.downloadCanvasDataAsJson()}>JSON </Button></div>
+                      <div className='col' style={{paddingLeft:"15px"}}><Button variant="outlined" onClick={()=> this._sketch.downloadAsImage()}>PNG</Button></div>
+                    </div>
                     </div>
                   </div>
                 </CardContent>
