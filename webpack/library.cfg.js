@@ -1,10 +1,10 @@
 const Paths = require('./paths');
 const DefinePlugin = require('webpack/lib/DefinePlugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const NoEmitOnErrorsPlugin = require('webpack/lib/NoEmitOnErrorsPlugin');
 const OccurrenceOrderPlugin = require('webpack/lib/optimize/OccurrenceOrderPlugin');
 const AggressiveMergingPlugin = require('webpack/lib/optimize/AggressiveMergingPlugin');
 const ModuleConcatenationPlugin = require('webpack/lib/optimize/ModuleConcatenationPlugin');
+const TerserPlugin = require('terser-webpack-plugin'); // Add this line
 
 function containsObject(obj, list) {
   var i;
@@ -55,14 +55,22 @@ module.exports = {
       },
     ]
   },
+  devtool: 'source-map',
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        parallel: true,
+        terserOptions: {
+          warnings: false,
+          output: {
+            comments: false,
+          },
+        },
+      }),
+    ],
+  },
   plugins: [
     new ModuleConcatenationPlugin(),
-    new UglifyJsPlugin({
-      parallel: true,
-      uglifyOptions: {
-        warnings: false
-      }
-    }),
     new NoEmitOnErrorsPlugin(),
     new OccurrenceOrderPlugin(),
     new AggressiveMergingPlugin(),
