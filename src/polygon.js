@@ -358,14 +358,14 @@ class Polygon extends FabricCanvasTool {
     activeObject.setControlsVisibility(controlsVisibility);
     if(editForRotate){
       activeObject.controls.mtr = new fabric.Control({
-        x: 0,
-        y: -0.5,
-        offsetY: -40,
+        x: 0.35,
+        y: -0.45,
+        //offsetY: -40,
         cursorStyle: 'crosshair',
         actionHandler: fabric.controlsUtils.rotationWithSnapping,
         actionName: 'rotate',
         render: renderIcon,
-        cornerSize: 16,
+        cornerSize: 15,
         withConnection: true
       });
       let controlsVisibility = {};

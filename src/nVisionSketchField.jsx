@@ -35,14 +35,14 @@ img.src = rotateIcon;
 // here's where your custom rotation control is defined
 // by changing the values you can customize the location, size, look, and behavior of the control
 fabric.Object.prototype.controls.mtr = new fabric.Control({
-  x: 0,
-  y: -0.5,
-  offsetY: -40,
+  x: 0.35,
+  y: -0.45,
+  //offsetY: -40,
   cursorStyle: 'crosshair',
   actionHandler: fabric.controlsUtils.rotationWithSnapping,
   actionName: 'rotate',
   render: renderIcon,
-  cornerSize: 16,
+  cornerSize: 15,
   withConnection: true
 });
 
