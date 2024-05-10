@@ -890,8 +890,19 @@ class NvisionSketchField extends PureComponent {
       tempPoint
     );
 
+    const { tl, br } = canvas.vptCoords;
+
     ctx.save();
-    ctx.translate(pos.x, pos.y);
+    ctx.translate(
+      Math.min(
+        Math.max(pos.x, tl.x),
+        br.x - rectWidth
+      ),
+      Math.min(
+        Math.max(pos.y, tl.y),
+        br.y - rectHeight
+      )
+    );
     ctx.beginPath();
     ctx.fillStyle = "rgba(37,38,39,0.9)";
     ctx.roundRect(0, 0, rectWidth, rectHeight, borderRadius);
