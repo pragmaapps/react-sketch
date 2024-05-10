@@ -257,6 +257,9 @@ class NvisionSketchField extends PureComponent {
   height1 = 0 ;
   angle1=0;
   lastAngleRotation = null;
+  currentAngle = 0;
+  isRotating = false;
+  cursorPos = new fabric.Point();
 
   _initTools = fabricCanvas => {
     this._tools = {}
@@ -485,6 +488,10 @@ class NvisionSketchField extends PureComponent {
       canvas.setCursor(mouseRotateIcon(angle));
       this.lastAngleRotation = angle;
     };
+    this.isRotating = true;
+    this.currentAngle = e.target.angle;
+    this.cursorPos.x = e.pointer.x;
+    this.cursorPos.y = e.pointer.y;
     let roiTypes = ["rect", "ellipse", "polygon"];
     var obj = e.target;
     obj.setCoords();
@@ -515,6 +522,7 @@ class NvisionSketchField extends PureComponent {
 
   _onObjectModified = e => {
     let obj = e.target;
+    this.isRotating = false;
     if(obj.id === "trackingArea"){
       this.trackingAreaModified(obj);
       return;
@@ -842,6 +850,7 @@ class NvisionSketchField extends PureComponent {
   _onMouseUp = e => {
     const { onMouseUp } = this.props
     this._selectedTool.doMouseUp(e, this.props, this)
+    this.isRotating = false;
     // Update the final state to new-generated object
     // Ignore Path object since it would be created after mouseUp
     // Assumed the last object in canvas.getObjects() in the newest object
@@ -860,6 +869,7 @@ class NvisionSketchField extends PureComponent {
       }, 10)
     }
     onMouseUp(e)
+    this.isRotating = false;
   }
 
   /**
@@ -868,6 +878,29 @@ class NvisionSketchField extends PureComponent {
   * @param e the resize event
   * @private
   */
+
+  renderRotateLabel =(ctx, canvas)=> {
+    const angleText = `${this.currentAngle.toFixed(0)}°`,
+    borderRadius = 5,
+    rectWidth = 32,
+    rectHeight = 19,
+    textWidth = 6.01 * angleText.length - 2.317;
+    const tempPoint = fabric.util.rotatePoint(new fabric.Point(40, 0),new fabric.Point(40, 0),fabric.util.degreesToRadians(30));
+    const pos = this.cursorPos.add(
+      tempPoint
+    );
+
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(37,38,39,0.9)";
+    ctx.roundRect(0, 0, rectWidth, rectHeight, borderRadius);
+    ctx.fill();
+    ctx.font = "400 13px serif";
+    ctx.fillStyle = "hsla(0,0%, 100%, 0.9)";
+    ctx.fillText(angleText, rectWidth / 2 - textWidth / 2, rectHeight / 2 + 4);
+    ctx.restore();
+  }
 
   getOverlayDimensions  = () => {
     let canvas = this._fc;
@@ -1798,6 +1831,9 @@ class NvisionSketchField extends PureComponent {
     canvas.on('object:moving', e => this.callEvent(e, this._onObjectMoving))
     canvas.on('object:scaling', e => this.callEvent(e, this._onObjectScaling))
     canvas.on('object:rotating', e => this.callEvent(e, this._onObjectRotating))
+    canvas.on("after:render", (opt) => {
+      this.isRotating && this.renderRotateLabel(opt.ctx, canvas);
+    });
     // IText Events fired on Adding Text
     // canvas.on("text:event:changed", console.log)
     // canvas.on("text:selection:changed", console.log)
