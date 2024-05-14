@@ -1843,7 +1843,7 @@ class NvisionSketchField extends PureComponent {
     canvas.on('object:scaling', e => this.callEvent(e, this._onObjectScaling))
     canvas.on('object:rotating', e => this.callEvent(e, this._onObjectRotating))
     canvas.on("after:render", (opt) => {
-      this.isRotating && this.renderRotateLabel(opt.ctx, canvas);
+      // this.isRotating && this.renderRotateLabel(opt.ctx, canvas);
     });
     // IText Events fired on Adding Text
     // canvas.on("text:event:changed", console.log)
