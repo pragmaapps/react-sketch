@@ -31,18 +31,84 @@ var svgData = '<svg xmlns="http://www.w3.org/2000/svg" class="MuiSvgIcon-root Mu
 var rotateIcon = 'data:image/svg+xml,' + encodeURIComponent(svgData);
 var img = document.createElement('img');
 img.src = rotateIcon;
+function mouseRotateIcon(angle) {
+  const relativeAngle = angle - 90;
+  const pos = {
+    '-90': '9.25 5.25',
+    '-75': '9.972 3.863',
+    '-60': '10.84 1.756',
+    '-45': '11.972 -1.716',
+    '-30': '18.83 0.17',
+    '-15': '28.49 -9.49',
+    15: '-7.985 46.77',
+    30: '-0.415 27.57',
+    45: '2.32 21.713',
+    60: '3.916 18.243',
+    75: '4.762 16.135',
+    90: '5.25 14.75',
+    105: '5.84 13.617',
+    120: '6.084 12.666',
+    135: '6.317 12.01',
+    150: '6.754 11.325',
+    165: '7.06 10.653',
+    180: '7.25 10',
+    195: '7.597 9.43',
+    210: '7.825 8.672',
+    225: '7.974 7.99',
+    240: '8.383 7.332',
+    255: '8.83 6.441',
+  }, 
+    defaultPos = '7.25 10';
+  const transform = relativeAngle === 0
+   ? 'translate(9.5 3.5)'
+   : `rotate(${relativeAngle} ${pos[relativeAngle] || defaultPos})`
+  const imgCursor = encodeURIComponent(`
+  <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='24' height='24'>
+    <defs>
+      <filter id='a' width='266.7%' height='156.2%' x='-75%' y='-21.9%' filterUnits='objectBoundingBox'>
+        <feOffset dy='1' in='SourceAlpha' result='shadowOffsetOuter1'/>
+        <feGaussianBlur in='shadowOffsetOuter1' result='shadowBlurOuter1' stdDeviation='1'/>
+        <feColorMatrix in='shadowBlurOuter1' result='shadowMatrixOuter1' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0'/>
+        <feMerge>
+          <feMergeNode in='shadowMatrixOuter1'/>
+          <feMergeNode in='SourceGraphic'/>
+        </feMerge>
+      </filter>
+      <path id='b' d='M1.67 12.67a7.7 7.7 0 0 0 0-9.34L0 5V0h5L3.24 1.76a9.9 9.9 0 0 1 0 12.48L5 16H0v-5l1.67 1.67z'/>
+    </defs>
+    <g fill='none' fill-rule='evenodd'><path d='M0 24V0h24v24z'/>
+      <g fill-rule='nonzero' filter='url(#a)' transform='${transform}'>
+        <use fill='#000' fill-rule='evenodd' xlink:href='#b'/>
+        <path stroke='#FFF' d='M1.6 11.9a7.21 7.21 0 0 0 0-7.8L-.5 6.2V-.5h6.7L3.9 1.8a10.4 10.4 0 0 1 0 12.4l2.3 2.3H-.5V9.8l2.1 2.1z'/>
+      </g>
+    </g>
+  </svg>`)
+  return `url("data:image/svg+xml;charset=utf-8,${imgCursor}") 12 12, crosshair`
+}
 
+function treatAngle(angle) {
+  return angle - angle % 15
+}
+
+function rotationStyleHandler(eventData, control, fabricObject) {
+  if (fabricObject.lockRotation) {
+    return NOT_ALLOWED_CURSOR;
+}
+const angle = treatAngle(fabricObject.angle);
+this.lastAngleRotation = angle;
+return mouseRotateIcon(angle)
+}
 // here's where your custom rotation control is defined
 // by changing the values you can customize the location, size, look, and behavior of the control
 fabric.Object.prototype.controls.mtr = new fabric.Control({
-  x: 0,
-  y: -0.5,
-  offsetY: -40,
-  cursorStyle: 'crosshair',
+  x: 0.35,
+  y: -0.45,
+  //offsetY: -40,
+  cursorStyleHandler: rotationStyleHandler,
   actionHandler: fabric.controlsUtils.rotationWithSnapping,
   actionName: 'rotate',
   render: renderIcon,
-  cornerSize: 16,
+  cornerSize: 15,
   withConnection: true
 });
 
@@ -190,6 +256,10 @@ class NvisionSketchField extends PureComponent {
   width1 = 0 ;    
   height1 = 0 ;
   angle1=0;
+  lastAngleRotation = null;
+  currentAngle = 0;
+  isRotating = false;
+  cursorPos = new fabric.Point();
 
   _initTools = fabricCanvas => {
     this._tools = {}
@@ -412,6 +482,16 @@ class NvisionSketchField extends PureComponent {
   */
   _onObjectRotating = e => {
     const { onObjectRotating } = this.props;
+    const angle = treatAngle(e.target.angle);
+    let canvas = this._fc;
+    if (this.lastAngleRotation !== angle) {
+      canvas.setCursor(mouseRotateIcon(angle));
+      this.lastAngleRotation = angle;
+    };
+    this.isRotating = true;
+    this.currentAngle = e.target.angle;
+    this.cursorPos.x = e.pointer.x;
+    this.cursorPos.y = e.pointer.y;
     let roiTypes = ["rect", "ellipse", "polygon"];
     var obj = e.target;
     obj.setCoords();
@@ -442,6 +522,7 @@ class NvisionSketchField extends PureComponent {
 
   _onObjectModified = e => {
     let obj = e.target;
+    this.isRotating = false;
     if(obj.id === "trackingArea"){
       this.trackingAreaModified(obj);
       return;
@@ -769,6 +850,7 @@ class NvisionSketchField extends PureComponent {
   _onMouseUp = e => {
     const { onMouseUp } = this.props
     this._selectedTool.doMouseUp(e, this.props, this)
+    this.isRotating = false;
     // Update the final state to new-generated object
     // Ignore Path object since it would be created after mouseUp
     // Assumed the last object in canvas.getObjects() in the newest object
@@ -787,6 +869,7 @@ class NvisionSketchField extends PureComponent {
       }, 10)
     }
     onMouseUp(e)
+    this.isRotating = false;
   }
 
   /**
@@ -795,6 +878,40 @@ class NvisionSketchField extends PureComponent {
   * @param e the resize event
   * @private
   */
+
+  renderRotateLabel =(ctx, canvas)=> {
+    const angleText = `${this.currentAngle.toFixed(0)}°`,
+    borderRadius = 5,
+    rectWidth = 32,
+    rectHeight = 19,
+    textWidth = 6.01 * angleText.length - 2.317;
+    const tempPoint = fabric.util.rotatePoint(new fabric.Point(40, 0),new fabric.Point(40, 0),fabric.util.degreesToRadians(30));
+    const pos = this.cursorPos.add(
+      tempPoint
+    );
+
+    const { tl, br } = canvas.vptCoords;
+
+    ctx.save();
+    ctx.translate(
+      Math.min(
+        Math.max(pos.x, tl.x),
+        br.x - rectWidth
+      ),
+      Math.min(
+        Math.max(pos.y, tl.y),
+        br.y - rectHeight
+      )
+    );
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(37,38,39,0.9)";
+    ctx.roundRect(0, 0, rectWidth, rectHeight, borderRadius);
+    ctx.fill();
+    ctx.font = "400 13px serif";
+    ctx.fillStyle = "hsla(0,0%, 100%, 0.9)";
+    ctx.fillText(angleText, rectWidth / 2 - textWidth / 2, rectHeight / 2 + 4);
+    ctx.restore();
+  }
 
   getOverlayDimensions  = () => {
     let canvas = this._fc;
@@ -1725,6 +1842,9 @@ class NvisionSketchField extends PureComponent {
     canvas.on('object:moving', e => this.callEvent(e, this._onObjectMoving))
     canvas.on('object:scaling', e => this.callEvent(e, this._onObjectScaling))
     canvas.on('object:rotating', e => this.callEvent(e, this._onObjectRotating))
+    canvas.on("after:render", (opt) => {
+      // this.isRotating && this.renderRotateLabel(opt.ctx, canvas);
+    });
     // IText Events fired on Adding Text
     // canvas.on("text:event:changed", console.log)
     // canvas.on("text:selection:changed", console.log)
