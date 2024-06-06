@@ -30,8 +30,10 @@ class NvistaRoiSettings extends Component {
 
     resetLandmarks() {
         var self = this;
+        console.log("reset landmarks method");
         if (this.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== this.props.oneptwop.inscopix.adapter_lsm.rotation) {
             self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, true);
+            console.log("change rotation self", self);
         }
 
         if (this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
@@ -82,6 +84,7 @@ class NvistaRoiSettings extends Component {
                 })
                 if (self.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== self.props.oneptwop.inscopix.adapter_lsm.rotation) {
                     self.props.updateSlider(self.props.oneptwop.inscopix.adapter_lsm.rotation, false);
+                    console.log("change rotation again", self);
                 }
                 if (self.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
                     self.props.applyFlip(self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);

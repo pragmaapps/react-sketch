@@ -1700,7 +1700,7 @@ class NvisionSketchField extends PureComponent {
       eventFunction(e);
   }
 
-  addLandmarks = (canvas, frontEnd) => {
+ /* addLandmarks = (canvas, frontEnd) => {
     let self = this;
 
     canvas.selection = false;
@@ -1787,7 +1787,7 @@ class NvisionSketchField extends PureComponent {
     });
 
 
-  }
+  }*/
 
   componentDidMount = () => {
     let {
@@ -1993,7 +1993,7 @@ class NvisionSketchField extends PureComponent {
     this.resizeCanvas(true);
   }
 
-  updateLandmarksPosition = () => {
+  /*updateLandmarksPosition = () => {
     var multiply = fabric.util.multiplyTransformMatrices
     var invert = fabric.util.invertTransform
     var boss = this._fc.getObjects().filter(o => o.type == 'image')[0]
@@ -2017,9 +2017,9 @@ class NvisionSketchField extends PureComponent {
       o.set(opt)
       o.setCoords()
     })
-  }
+  }*/
 
-  applyFlip = (value, updateOnepTwop) => {
+  /*applyFlip = (value, updateOnepTwop) => {
     if(this._fc.item(0)){
       this._fc.item(0).set({
         flipX: value
@@ -2027,14 +2027,14 @@ class NvisionSketchField extends PureComponent {
       this._fc.item(0).setCoords()
     }
     this.updateLandmarksPosition()
-    /*if(updateOnepTwop) {
+    if(updateOnepTwop) {
     window.updateOnepTwopData('_transform', []);
-    } */
+    } 
     this._fc.requestRenderAll()
     this._fc.renderAll()
-  }
+  }*/
 
-  rotateAndScale = (obj, angle) => {
+  /*rotateAndScale = (obj, angle) => {
     if (obj) {
       var width = this._fc.getWidth()
       var height = this._fc.getHeight()
@@ -2068,9 +2068,9 @@ class NvisionSketchField extends PureComponent {
       obj.setPositionByOrigin(newCenter, 'center', 'center')
       obj.setCoords();
     }
-  }
+  }*/
 
-  updateLandmarks = () => {
+  /*updateLandmarks = () => {
     var currentRotation = this.props.oneptwop.inscopix.adapter_lsm.rotation;
     var isFliped = this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal;
     if (isFliped) {
@@ -2094,9 +2094,9 @@ class NvisionSketchField extends PureComponent {
     if (isFliped) {
       this.applyFlip(true, true);
     }
-  }
+  }*/
 
-  updateOnepTwop = (saveAs, updateLandmarksForOtherWindow = false) => {
+  /*updateOnepTwop = (saveAs, updateLandmarksForOtherWindow = false) => {
     // if (this.sbpfApplyClick) {
     // this.oneptwop.inscopix.bpf = {
     // sigma1: $("#deltaSBFSnapSigmaOne").val() * 1,
@@ -2115,11 +2115,11 @@ class NvisionSketchField extends PureComponent {
     this.props.oneptwopFrontend(oneptwop);
     /*if (updateLandmarksForOtherWindow) {
     this.props.addLandmarks()
-    }*/
+    }
     this.setState({
       updateLandmarksForOtherWindow: updateLandmarksForOtherWindow
     })
-  }
+  }*/
 
   removeAddOrMoveMode = () => {
     let canvas = this._fc;
@@ -2211,7 +2211,7 @@ class NvisionSketchField extends PureComponent {
           </canvas>
           </div>
         {/* </ReactResizeDetector> */}
-        {this._fc !== null && this._fc.item(0) && this.props.from === undefined &&
+        {/*this._fc !== null && this._fc.item(0) && this.props.from === undefined &&
           <NvistaRoiSettings
             canvasProps={this._fc}
             landMarks={this.props.oneptwop.inscopix.frontend}
@@ -2231,7 +2231,7 @@ class NvisionSketchField extends PureComponent {
             loadFromSession={this.props.loadFromSession}
             updateSbpfTransformValues={this.props.updateSbpfTransformValues}
             handleMiraErrorPopup={this.props.handleMiraErrorPopup}
-          />}
+    />*/}
 
       </div>
     )
