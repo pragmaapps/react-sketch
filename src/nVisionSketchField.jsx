@@ -1177,6 +1177,19 @@ class NvisionSketchField extends PureComponent {
     object.top = object.top * scaleMultiplier;
     object.scaleX = object.scaleX * scaleMultiplier;
     object.scaleY = object.scaleY * scaleMultiplier;
+    if(object.type === "ellipse") {
+      let canvas = this._fc;
+      let selectedObject = canvas.getObjects().find(ob => ob.defaultName === object.defaultName);
+      if(selectedObject){
+        let centerPoint = {};
+        centerPoint = selectedObject.getCenterPoint();
+        object.centerPoint = centerPoint;
+      }else{
+        let centerPoint = {};
+        centerPoint = {x: object.centerPoint.x * scaleMultiplier, y: object.centerPoint.y * scaleMultiplier};
+        object.centerPoint = centerPoint;
+      }
+    }
     if(object.type === "polygon"){
       let canvas = this._fc;
       let selectedObject = canvas.getObjects().find(ob => ob.defaultName === object.defaultName);
