@@ -1190,7 +1190,7 @@ class NvisionSketchField extends PureComponent {
         object.centerPoint = centerPoint;
       }
     }
-    if(object.type === "polygon"){
+    if(object.type === "polygon" || (object.type === "rect" && object.angle > 0)){
       let canvas = this._fc;
       let selectedObject = canvas.getObjects().find(ob => ob.defaultName === object.defaultName);
       if(selectedObject){
