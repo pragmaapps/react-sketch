@@ -31,7 +31,7 @@ class NvistaRoiSettings extends Component {
     resetLandmarks() {
         var self = this;
         if (this.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== this.props.oneptwop.inscopix.adapter_lsm.rotation) {
-            self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, true);
+            // self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, true);
         }
 
         if (this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
