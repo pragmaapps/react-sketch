@@ -81,7 +81,7 @@ class NvistaRoiSettings extends Component {
                     })
                 })
                 if (self.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== self.props.oneptwop.inscopix.adapter_lsm.rotation) {
-                    self.props.updateSlider(self.props.oneptwop.inscopix.adapter_lsm.rotation, false);
+                    // self.props.updateSlider(self.props.oneptwop.inscopix.adapter_lsm.rotation, false);
                 }
                 if (self.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
                     self.props.applyFlip(self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
