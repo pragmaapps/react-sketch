@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import History from './history'
 import { uuid4 } from './utils'
@@ -12,12 +12,36 @@ import Pan from './pan'
 import Tool from './tools'
 import RectangleLabel from './rectangle-label'
 import DefaultTool from './defaul-tool'
-import ReactResizeDetector from 'react-resize-detector'
+import { useResizeDetector } from 'react-resize-detector'
 import NvistaRoiSettings from './NvistaRoiSettingsPanel'
 import Ellipse from './ellipse'
 import Polygon from './polygon'
 import FreeDrawLine from './freedrawline';
 import { isInside, getOverlapPoints, getOverlapSize, getOverlapAreas } from "overlap-area";
+
+// Wrapper component to use the useResizeDetector hook
+const ResizeWrapper = ({ onResize, refCallback, children }) => {
+  const ref = useRef();
+
+  const { width, height } = useResizeDetector({
+    targetRef: ref,
+    handleHeight: true,
+    handleWidth: true,
+    skipOnMount: true,
+  });
+
+  useEffect(() => {
+    if (refCallback) refCallback(ref);
+  }, [refCallback, ref]);
+
+  useEffect(() => {
+    if (width && height) {
+      onResize(width, height);
+    }
+  }, [width, height, onResize]);
+
+  return React.cloneElement(children, { ref });
+};
 
 let fabric = require('fabric').fabric;
 let controlsVisible = {
@@ -2184,7 +2208,7 @@ class NvisionSketchField extends PureComponent {
   render = () => {
     let { className, style, width, height } = this.props
 
-    
+
 
     let canvasDivStyle = Object.assign(
       {},
@@ -2195,58 +2219,57 @@ class NvisionSketchField extends PureComponent {
     )
 
     return (
-      <div
-        className={className}
-        ref={c => (this._container = c)}
-        style={canvasDivStyle}
-        id="onep-twop-container-2"
-      >
-        <ReactResizeDetector handleWidth handleHeight skipOnMount ={true} onResize={this.onChangeSize.bind(this)} />
-        <div style={{ position: 'absolute' }}>
-          <canvas
-            //id={uuid4()}
-            id="tracking-canvas"
-            // style={{
-            // margin: "0 auto",
-            // position: "absolute",
-            // opacity: 1,
-            // width: "100%",
-            // height: "100%",
-            // maxHeight: 800,
-            // maxWidth: 1280,
-            // backgroundRepeat: "no-repeat",
-            // backgroundPosition: "center",
-            // backgroundSize: "contain",
-            // zIndex: 1
-            // }}
-            ref={c => (this._canvas = c)}
-          >
-          </canvas>
-          </div>
-        {/* </ReactResizeDetector> */}
-        {this._fc !== null && this._fc.item(0) && this.props.from === undefined &&
-          <NvistaRoiSettings
-            canvasProps={this._fc}
-            landMarks={this.props.oneptwop.inscopix.frontend}
-            imageData={this.props.oneptwop}
-            oneptwop={this.props.oneptwop}
-            rotateAndScale={this.rotateAndScale}
-            crosshairMode={this.state.crosshairMode}
-            crosshairMoveMode={this.state.crosshairMoveMode}
-            crosshairDeleteMode={this.state.crosshairDeleteMode}
-            deleteAllLandmarks={this.state.deleteAllLandmarks}
-            oneptwopCompare={this.props.oneptwopCompare}
-            oneptwopDefault={this.props.oneptwopDefault}
-            updateSlider={this.props.updateSlider}
-            applyFlip={this.applyFlip}
-            resetAllLandmarks={this.state.resetAllLandmarks}
-            updateOnepTwop={this.updateOnepTwop}
-            loadFromSession={this.props.loadFromSession}
-            updateSbpfTransformValues={this.props.updateSbpfTransformValues}
-            handleMiraErrorPopup={this.props.handleMiraErrorPopup}
-          />}
+      <ResizeWrapper onResize={this.onChangeSize.bind(this)} refCallback={(ref) => this._container = ref.current} >
+        <div
+          className={className}
+          style={canvasDivStyle}
+          id="onep-twop-container-2"
+        >
+          <div style={{ position: 'absolute' }}>
+            <canvas
+              //id={uuid4()}
+              id="tracking-canvas"
+              // style={{
+              // margin: "0 auto",
+              // position: "absolute",
+              // opacity: 1,
+              // width: "100%",
+              // height: "100%",
+              // maxHeight: 800,
+              // maxWidth: 1280,
+              // backgroundRepeat: "no-repeat",
+              // backgroundPosition: "center",
+              // backgroundSize: "contain",
+              // zIndex: 1
+              // }}
+              ref={c => (this._canvas = c)}
+            >
+            </canvas>
+            </div>
+          {this._fc !== null && this._fc.item(0) && this.props.from === undefined &&
+            <NvistaRoiSettings
+              canvasProps={this._fc}
+              landMarks={this.props.oneptwop.inscopix.frontend}
+              imageData={this.props.oneptwop}
+              oneptwop={this.props.oneptwop}
+              rotateAndScale={this.rotateAndScale}
+              crosshairMode={this.state.crosshairMode}
+              crosshairMoveMode={this.state.crosshairMoveMode}
+              crosshairDeleteMode={this.state.crosshairDeleteMode}
+              deleteAllLandmarks={this.state.deleteAllLandmarks}
+              oneptwopCompare={this.props.oneptwopCompare}
+              oneptwopDefault={this.props.oneptwopDefault}
+              updateSlider={this.props.updateSlider}
+              applyFlip={this.applyFlip}
+              resetAllLandmarks={this.state.resetAllLandmarks}
+              updateOnepTwop={this.updateOnepTwop}
+              loadFromSession={this.props.loadFromSession}
+              updateSbpfTransformValues={this.props.updateSbpfTransformValues}
+              handleMiraErrorPopup={this.props.handleMiraErrorPopup}
+            />}
 
-      </div>
+        </div>
+      </ResizeWrapper>
     )
   }
 }
