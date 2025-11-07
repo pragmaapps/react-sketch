@@ -19,29 +19,29 @@ import Polygon from './polygon'
 import FreeDrawLine from './freedrawline';
 import { isInside, getOverlapPoints, getOverlapSize, getOverlapAreas } from "overlap-area";
 
-// Wrapper component to use the useResizeDetector hook
-const ResizeWrapper = ({ onResize, refCallback, children }) => {
-  const ref = useRef();
+// Class-based wrapper using ResizeObserver, compatible without hooks
+class RefWrapper extends React.Component {
+  constructor(props) {
+    super(props);
+    this.ref = React.createRef();
+  }
 
-  const { width, height } = useResizeDetector({
-    targetRef: ref,
-    handleHeight: true,
-    handleWidth: true,
-    skipOnMount: true,
-  });
-
-  useEffect(() => {
-    if (refCallback) refCallback(ref);
-  }, [refCallback, ref]);
-
-  useEffect(() => {
-    if (width && height) {
-      onResize(width, height);
+  componentDidMount() {
+    if (this.props.refCallback) {
+      this.props.refCallback(this.ref);
     }
-  }, [width, height, onResize]);
+  }
 
-  return React.cloneElement(children, { ref });
-};
+  componentDidUpdate(prevProps) {
+    if (prevProps.refCallback !== this.props.refCallback && this.props.refCallback) {
+      this.props.refCallback(this.ref);
+    }
+  }
+
+  render() {
+    return React.cloneElement(this.props.children, { ref: this.ref });
+  }
+}
 
 let fabric = require('fabric').fabric;
 let controlsVisible = {
@@ -389,6 +389,7 @@ class NvisionSketchField extends PureComponent {
       return
     }
     let obj = e.target;
+    console.log("TRACKING SETTING NVISION SKETCH FIELD _onObjectAdded : ",obj)
     if(obj.id === "trackingArea"){
       this.left1 =obj.left;
       this.top1 =obj.top;
@@ -413,6 +414,7 @@ class NvisionSketchField extends PureComponent {
   _onObjectMoving = e => {
     const { onObjectMoving } = this.props;
     let obj = e.target;
+    console.log("TRACKING SETTING NVISION SKETCH FIELD _onObjectMoving : ",obj)
     let roiTypes = ["rect", "ellipse", "polygon"];
     let boundary = this.props.getboudaryCoords();
     var brNew = obj.getBoundingRect();
@@ -434,6 +436,7 @@ class NvisionSketchField extends PureComponent {
   _onObjectScaling = e => {
     const { onObjectScaling } = this.props;
     var obj = e.target;
+    console.log("TRACKING SETTING NVISION SKETCH FIELD _ONOBJECTSCALING : ",obj)
     obj.setCoords();
     var brNew = obj.getBoundingRect();
     let canvas = this._fc;
@@ -546,6 +549,7 @@ class NvisionSketchField extends PureComponent {
 
   _onObjectModified = e => {
     let obj = e.target;
+    console.log("TRACKING SETTING NVISION SKETCH FIELD _onObjectModified : ",obj)
     this.isRotating = false;
     if(obj.id === "trackingArea"){
       this.trackingAreaModified(obj);
@@ -629,6 +633,7 @@ class NvisionSketchField extends PureComponent {
     let canvas = this._fc;
     var canvasTL = new fabric.Point(0, 0);
     var canvasBR = new fabric.Point(canvas.getWidth() -1, canvas.getHeight() -1);
+    console.log("TRACKING SETTING NVISION SKETCH FIELD trackingAreaModified : ",obj)
     if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
       console.log("%c[Animal Tracking]%c [Traking Area] Modified outside the canvas","color:blue; font-weight: bold;",
       "color: black;",obj);
@@ -2027,6 +2032,7 @@ class NvisionSketchField extends PureComponent {
     // }
 
     // this._resize();
+    console.log("[TRACKING SETTINGS][NVISION SKETCH FIELD][onChangeSize]: Resized to:", width, height);
     this.resizeCanvas(true);
   }
 
@@ -2217,9 +2223,9 @@ class NvisionSketchField extends PureComponent {
       //width ? { width: this.state.canvasWidth } : { width: this.state.canvasWidth },
       height ? { height: this.state.canvasHeight } : { height: this.state.canvasHeight }
     )
-
+// console.log("TRACKLING SETTINGS NVISION SKETCH FIELD LINK");
     return (
-      <ResizeWrapper onResize={this.onChangeSize.bind(this)} refCallback={(ref) => this._container = ref.current} >
+      <RefWrapper refCallback={(ref) => this._container = ref.current} >
         <div
           className={className}
           style={canvasDivStyle}
@@ -2269,7 +2275,7 @@ class NvisionSketchField extends PureComponent {
             />}
 
         </div>
-      </ResizeWrapper>
+      </RefWrapper>
     )
   }
 }

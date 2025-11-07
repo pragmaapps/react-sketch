@@ -7,12 +7,12 @@
 		var a = factory();
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(self, () => {
-return /******/ (() => { // webpackBootstrap
+})(self, function() {
+return /******/ (function() { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 44:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
@@ -35,7 +35,7 @@ module.exports = _createClass;
 /***/ }),
 
 /***/ 56:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 var arrayWithHoles = __webpack_require__(394);
 
@@ -52,7 +52,7 @@ module.exports = _slicedToArray;
 /***/ }),
 
 /***/ 92:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
   try {
@@ -95,7 +95,7 @@ module.exports = _asyncToGenerator;
 /***/ }),
 
 /***/ 185:
-/***/ ((module) => {
+/***/ (function(module) {
 
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -823,7 +823,7 @@ module.exports = _asyncToGenerator;
 /***/ }),
 
 /***/ 197:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function _setPrototypeOf(o, p) {
   module.exports = _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
@@ -839,7 +839,7 @@ module.exports = _setPrototypeOf;
 /***/ }),
 
 /***/ 207:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 module.exports = __webpack_require__(266);
 
@@ -847,14 +847,14 @@ module.exports = __webpack_require__(266);
 /***/ }),
 
 /***/ 246:
-/***/ (() => {
+/***/ (function() {
 
 /* (ignored) */
 
 /***/ }),
 
 /***/ 266:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -897,8 +897,558 @@ if (hadRuntime) {
 
 /***/ }),
 
+/***/ 268:
+/***/ (function(__unused_webpack_module, exports) {
+
+"use strict";
+/**
+ * @license React
+ * react.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+
+var REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element"),
+  REACT_PORTAL_TYPE = Symbol.for("react.portal"),
+  REACT_FRAGMENT_TYPE = Symbol.for("react.fragment"),
+  REACT_STRICT_MODE_TYPE = Symbol.for("react.strict_mode"),
+  REACT_PROFILER_TYPE = Symbol.for("react.profiler"),
+  REACT_CONSUMER_TYPE = Symbol.for("react.consumer"),
+  REACT_CONTEXT_TYPE = Symbol.for("react.context"),
+  REACT_FORWARD_REF_TYPE = Symbol.for("react.forward_ref"),
+  REACT_SUSPENSE_TYPE = Symbol.for("react.suspense"),
+  REACT_MEMO_TYPE = Symbol.for("react.memo"),
+  REACT_LAZY_TYPE = Symbol.for("react.lazy"),
+  REACT_ACTIVITY_TYPE = Symbol.for("react.activity"),
+  MAYBE_ITERATOR_SYMBOL = Symbol.iterator;
+function getIteratorFn(maybeIterable) {
+  if (null === maybeIterable || "object" !== typeof maybeIterable) return null;
+  maybeIterable =
+    (MAYBE_ITERATOR_SYMBOL && maybeIterable[MAYBE_ITERATOR_SYMBOL]) ||
+    maybeIterable["@@iterator"];
+  return "function" === typeof maybeIterable ? maybeIterable : null;
+}
+var ReactNoopUpdateQueue = {
+    isMounted: function () {
+      return !1;
+    },
+    enqueueForceUpdate: function () {},
+    enqueueReplaceState: function () {},
+    enqueueSetState: function () {}
+  },
+  assign = Object.assign,
+  emptyObject = {};
+function Component(props, context, updater) {
+  this.props = props;
+  this.context = context;
+  this.refs = emptyObject;
+  this.updater = updater || ReactNoopUpdateQueue;
+}
+Component.prototype.isReactComponent = {};
+Component.prototype.setState = function (partialState, callback) {
+  if (
+    "object" !== typeof partialState &&
+    "function" !== typeof partialState &&
+    null != partialState
+  )
+    throw Error(
+      "takes an object of state variables to update or a function which returns an object of state variables."
+    );
+  this.updater.enqueueSetState(this, partialState, callback, "setState");
+};
+Component.prototype.forceUpdate = function (callback) {
+  this.updater.enqueueForceUpdate(this, callback, "forceUpdate");
+};
+function ComponentDummy() {}
+ComponentDummy.prototype = Component.prototype;
+function PureComponent(props, context, updater) {
+  this.props = props;
+  this.context = context;
+  this.refs = emptyObject;
+  this.updater = updater || ReactNoopUpdateQueue;
+}
+var pureComponentPrototype = (PureComponent.prototype = new ComponentDummy());
+pureComponentPrototype.constructor = PureComponent;
+assign(pureComponentPrototype, Component.prototype);
+pureComponentPrototype.isPureReactComponent = !0;
+var isArrayImpl = Array.isArray;
+function noop() {}
+var ReactSharedInternals = { H: null, A: null, T: null, S: null },
+  hasOwnProperty = Object.prototype.hasOwnProperty;
+function ReactElement(type, key, props) {
+  var refProp = props.ref;
+  return {
+    $$typeof: REACT_ELEMENT_TYPE,
+    type: type,
+    key: key,
+    ref: void 0 !== refProp ? refProp : null,
+    props: props
+  };
+}
+function cloneAndReplaceKey(oldElement, newKey) {
+  return ReactElement(oldElement.type, newKey, oldElement.props);
+}
+function isValidElement(object) {
+  return (
+    "object" === typeof object &&
+    null !== object &&
+    object.$$typeof === REACT_ELEMENT_TYPE
+  );
+}
+function escape(key) {
+  var escaperLookup = { "=": "=0", ":": "=2" };
+  return (
+    "$" +
+    key.replace(/[=:]/g, function (match) {
+      return escaperLookup[match];
+    })
+  );
+}
+var userProvidedKeyEscapeRegex = /\/+/g;
+function getElementKey(element, index) {
+  return "object" === typeof element && null !== element && null != element.key
+    ? escape("" + element.key)
+    : index.toString(36);
+}
+function resolveThenable(thenable) {
+  switch (thenable.status) {
+    case "fulfilled":
+      return thenable.value;
+    case "rejected":
+      throw thenable.reason;
+    default:
+      switch (
+        ("string" === typeof thenable.status
+          ? thenable.then(noop, noop)
+          : ((thenable.status = "pending"),
+            thenable.then(
+              function (fulfilledValue) {
+                "pending" === thenable.status &&
+                  ((thenable.status = "fulfilled"),
+                  (thenable.value = fulfilledValue));
+              },
+              function (error) {
+                "pending" === thenable.status &&
+                  ((thenable.status = "rejected"), (thenable.reason = error));
+              }
+            )),
+        thenable.status)
+      ) {
+        case "fulfilled":
+          return thenable.value;
+        case "rejected":
+          throw thenable.reason;
+      }
+  }
+  throw thenable;
+}
+function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
+  var type = typeof children;
+  if ("undefined" === type || "boolean" === type) children = null;
+  var invokeCallback = !1;
+  if (null === children) invokeCallback = !0;
+  else
+    switch (type) {
+      case "bigint":
+      case "string":
+      case "number":
+        invokeCallback = !0;
+        break;
+      case "object":
+        switch (children.$$typeof) {
+          case REACT_ELEMENT_TYPE:
+          case REACT_PORTAL_TYPE:
+            invokeCallback = !0;
+            break;
+          case REACT_LAZY_TYPE:
+            return (
+              (invokeCallback = children._init),
+              mapIntoArray(
+                invokeCallback(children._payload),
+                array,
+                escapedPrefix,
+                nameSoFar,
+                callback
+              )
+            );
+        }
+    }
+  if (invokeCallback)
+    return (
+      (callback = callback(children)),
+      (invokeCallback =
+        "" === nameSoFar ? "." + getElementKey(children, 0) : nameSoFar),
+      isArrayImpl(callback)
+        ? ((escapedPrefix = ""),
+          null != invokeCallback &&
+            (escapedPrefix =
+              invokeCallback.replace(userProvidedKeyEscapeRegex, "$&/") + "/"),
+          mapIntoArray(callback, array, escapedPrefix, "", function (c) {
+            return c;
+          }))
+        : null != callback &&
+          (isValidElement(callback) &&
+            (callback = cloneAndReplaceKey(
+              callback,
+              escapedPrefix +
+                (null == callback.key ||
+                (children && children.key === callback.key)
+                  ? ""
+                  : ("" + callback.key).replace(
+                      userProvidedKeyEscapeRegex,
+                      "$&/"
+                    ) + "/") +
+                invokeCallback
+            )),
+          array.push(callback)),
+      1
+    );
+  invokeCallback = 0;
+  var nextNamePrefix = "" === nameSoFar ? "." : nameSoFar + ":";
+  if (isArrayImpl(children))
+    for (var i = 0; i < children.length; i++)
+      (nameSoFar = children[i]),
+        (type = nextNamePrefix + getElementKey(nameSoFar, i)),
+        (invokeCallback += mapIntoArray(
+          nameSoFar,
+          array,
+          escapedPrefix,
+          type,
+          callback
+        ));
+  else if (((i = getIteratorFn(children)), "function" === typeof i))
+    for (
+      children = i.call(children), i = 0;
+      !(nameSoFar = children.next()).done;
+
+    )
+      (nameSoFar = nameSoFar.value),
+        (type = nextNamePrefix + getElementKey(nameSoFar, i++)),
+        (invokeCallback += mapIntoArray(
+          nameSoFar,
+          array,
+          escapedPrefix,
+          type,
+          callback
+        ));
+  else if ("object" === type) {
+    if ("function" === typeof children.then)
+      return mapIntoArray(
+        resolveThenable(children),
+        array,
+        escapedPrefix,
+        nameSoFar,
+        callback
+      );
+    array = String(children);
+    throw Error(
+      "Objects are not valid as a React child (found: " +
+        ("[object Object]" === array
+          ? "object with keys {" + Object.keys(children).join(", ") + "}"
+          : array) +
+        "). If you meant to render a collection of children, use an array instead."
+    );
+  }
+  return invokeCallback;
+}
+function mapChildren(children, func, context) {
+  if (null == children) return children;
+  var result = [],
+    count = 0;
+  mapIntoArray(children, result, "", "", function (child) {
+    return func.call(context, child, count++);
+  });
+  return result;
+}
+function lazyInitializer(payload) {
+  if (-1 === payload._status) {
+    var ctor = payload._result;
+    ctor = ctor();
+    ctor.then(
+      function (moduleObject) {
+        if (0 === payload._status || -1 === payload._status)
+          (payload._status = 1), (payload._result = moduleObject);
+      },
+      function (error) {
+        if (0 === payload._status || -1 === payload._status)
+          (payload._status = 2), (payload._result = error);
+      }
+    );
+    -1 === payload._status && ((payload._status = 0), (payload._result = ctor));
+  }
+  if (1 === payload._status) return payload._result.default;
+  throw payload._result;
+}
+var reportGlobalError =
+    "function" === typeof reportError
+      ? reportError
+      : function (error) {
+          if (
+            "object" === typeof window &&
+            "function" === typeof window.ErrorEvent
+          ) {
+            var event = new window.ErrorEvent("error", {
+              bubbles: !0,
+              cancelable: !0,
+              message:
+                "object" === typeof error &&
+                null !== error &&
+                "string" === typeof error.message
+                  ? String(error.message)
+                  : String(error),
+              error: error
+            });
+            if (!window.dispatchEvent(event)) return;
+          } else if (
+            "object" === typeof process &&
+            "function" === typeof process.emit
+          ) {
+            process.emit("uncaughtException", error);
+            return;
+          }
+          console.error(error);
+        },
+  Children = {
+    map: mapChildren,
+    forEach: function (children, forEachFunc, forEachContext) {
+      mapChildren(
+        children,
+        function () {
+          forEachFunc.apply(this, arguments);
+        },
+        forEachContext
+      );
+    },
+    count: function (children) {
+      var n = 0;
+      mapChildren(children, function () {
+        n++;
+      });
+      return n;
+    },
+    toArray: function (children) {
+      return (
+        mapChildren(children, function (child) {
+          return child;
+        }) || []
+      );
+    },
+    only: function (children) {
+      if (!isValidElement(children))
+        throw Error(
+          "React.Children.only expected to receive a single React element child."
+        );
+      return children;
+    }
+  };
+exports.Activity = REACT_ACTIVITY_TYPE;
+exports.Children = Children;
+exports.Component = Component;
+exports.Fragment = REACT_FRAGMENT_TYPE;
+exports.Profiler = REACT_PROFILER_TYPE;
+exports.PureComponent = PureComponent;
+exports.StrictMode = REACT_STRICT_MODE_TYPE;
+exports.Suspense = REACT_SUSPENSE_TYPE;
+exports.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE =
+  ReactSharedInternals;
+exports.__COMPILER_RUNTIME = {
+  __proto__: null,
+  c: function (size) {
+    return ReactSharedInternals.H.useMemoCache(size);
+  }
+};
+exports.cache = function (fn) {
+  return function () {
+    return fn.apply(null, arguments);
+  };
+};
+exports.cacheSignal = function () {
+  return null;
+};
+exports.cloneElement = function (element, config, children) {
+  if (null === element || void 0 === element)
+    throw Error(
+      "The argument must be a React element, but you passed " + element + "."
+    );
+  var props = assign({}, element.props),
+    key = element.key;
+  if (null != config)
+    for (propName in (void 0 !== config.key && (key = "" + config.key), config))
+      !hasOwnProperty.call(config, propName) ||
+        "key" === propName ||
+        "__self" === propName ||
+        "__source" === propName ||
+        ("ref" === propName && void 0 === config.ref) ||
+        (props[propName] = config[propName]);
+  var propName = arguments.length - 2;
+  if (1 === propName) props.children = children;
+  else if (1 < propName) {
+    for (var childArray = Array(propName), i = 0; i < propName; i++)
+      childArray[i] = arguments[i + 2];
+    props.children = childArray;
+  }
+  return ReactElement(element.type, key, props);
+};
+exports.createContext = function (defaultValue) {
+  defaultValue = {
+    $$typeof: REACT_CONTEXT_TYPE,
+    _currentValue: defaultValue,
+    _currentValue2: defaultValue,
+    _threadCount: 0,
+    Provider: null,
+    Consumer: null
+  };
+  defaultValue.Provider = defaultValue;
+  defaultValue.Consumer = {
+    $$typeof: REACT_CONSUMER_TYPE,
+    _context: defaultValue
+  };
+  return defaultValue;
+};
+exports.createElement = function (type, config, children) {
+  var propName,
+    props = {},
+    key = null;
+  if (null != config)
+    for (propName in (void 0 !== config.key && (key = "" + config.key), config))
+      hasOwnProperty.call(config, propName) &&
+        "key" !== propName &&
+        "__self" !== propName &&
+        "__source" !== propName &&
+        (props[propName] = config[propName]);
+  var childrenLength = arguments.length - 2;
+  if (1 === childrenLength) props.children = children;
+  else if (1 < childrenLength) {
+    for (var childArray = Array(childrenLength), i = 0; i < childrenLength; i++)
+      childArray[i] = arguments[i + 2];
+    props.children = childArray;
+  }
+  if (type && type.defaultProps)
+    for (propName in ((childrenLength = type.defaultProps), childrenLength))
+      void 0 === props[propName] &&
+        (props[propName] = childrenLength[propName]);
+  return ReactElement(type, key, props);
+};
+exports.createRef = function () {
+  return { current: null };
+};
+exports.forwardRef = function (render) {
+  return { $$typeof: REACT_FORWARD_REF_TYPE, render: render };
+};
+exports.isValidElement = isValidElement;
+exports.lazy = function (ctor) {
+  return {
+    $$typeof: REACT_LAZY_TYPE,
+    _payload: { _status: -1, _result: ctor },
+    _init: lazyInitializer
+  };
+};
+exports.memo = function (type, compare) {
+  return {
+    $$typeof: REACT_MEMO_TYPE,
+    type: type,
+    compare: void 0 === compare ? null : compare
+  };
+};
+exports.startTransition = function (scope) {
+  var prevTransition = ReactSharedInternals.T,
+    currentTransition = {};
+  ReactSharedInternals.T = currentTransition;
+  try {
+    var returnValue = scope(),
+      onStartTransitionFinish = ReactSharedInternals.S;
+    null !== onStartTransitionFinish &&
+      onStartTransitionFinish(currentTransition, returnValue);
+    "object" === typeof returnValue &&
+      null !== returnValue &&
+      "function" === typeof returnValue.then &&
+      returnValue.then(noop, reportGlobalError);
+  } catch (error) {
+    reportGlobalError(error);
+  } finally {
+    null !== prevTransition &&
+      null !== currentTransition.types &&
+      (prevTransition.types = currentTransition.types),
+      (ReactSharedInternals.T = prevTransition);
+  }
+};
+exports.unstable_useCacheRefresh = function () {
+  return ReactSharedInternals.H.useCacheRefresh();
+};
+exports.use = function (usable) {
+  return ReactSharedInternals.H.use(usable);
+};
+exports.useActionState = function (action, initialState, permalink) {
+  return ReactSharedInternals.H.useActionState(action, initialState, permalink);
+};
+exports.useCallback = function (callback, deps) {
+  return ReactSharedInternals.H.useCallback(callback, deps);
+};
+exports.useContext = function (Context) {
+  return ReactSharedInternals.H.useContext(Context);
+};
+exports.useDebugValue = function () {};
+exports.useDeferredValue = function (value, initialValue) {
+  return ReactSharedInternals.H.useDeferredValue(value, initialValue);
+};
+exports.useEffect = function (create, deps) {
+  return ReactSharedInternals.H.useEffect(create, deps);
+};
+exports.useEffectEvent = function (callback) {
+  return ReactSharedInternals.H.useEffectEvent(callback);
+};
+exports.useId = function () {
+  return ReactSharedInternals.H.useId();
+};
+exports.useImperativeHandle = function (ref, create, deps) {
+  return ReactSharedInternals.H.useImperativeHandle(ref, create, deps);
+};
+exports.useInsertionEffect = function (create, deps) {
+  return ReactSharedInternals.H.useInsertionEffect(create, deps);
+};
+exports.useLayoutEffect = function (create, deps) {
+  return ReactSharedInternals.H.useLayoutEffect(create, deps);
+};
+exports.useMemo = function (create, deps) {
+  return ReactSharedInternals.H.useMemo(create, deps);
+};
+exports.useOptimistic = function (passthrough, reducer) {
+  return ReactSharedInternals.H.useOptimistic(passthrough, reducer);
+};
+exports.useReducer = function (reducer, initialArg, init) {
+  return ReactSharedInternals.H.useReducer(reducer, initialArg, init);
+};
+exports.useRef = function (initialValue) {
+  return ReactSharedInternals.H.useRef(initialValue);
+};
+exports.useState = function (initialState) {
+  return ReactSharedInternals.H.useState(initialState);
+};
+exports.useSyncExternalStore = function (
+  subscribe,
+  getSnapshot,
+  getServerSnapshot
+) {
+  return ReactSharedInternals.H.useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot
+  );
+};
+exports.useTransition = function () {
+  return ReactSharedInternals.H.useTransition();
+};
+exports.version = "19.2.0";
+
+
+/***/ }),
+
 /***/ 274:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -911,7 +1461,7 @@ module.exports = _classCallCheck;
 /***/ }),
 
 /***/ 337:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function _getPrototypeOf(o) {
   module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
@@ -925,7 +1475,7 @@ module.exports = _getPrototypeOf;
 /***/ }),
 
 /***/ 394:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function _arrayWithHoles(arr) {
   if (Array.isArray(arr)) return arr;
@@ -936,7 +1486,7 @@ module.exports = _arrayWithHoles;
 /***/ }),
 
 /***/ 396:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function _defineProperty(obj, key, value) {
   if (key in obj) {
@@ -957,8 +1507,22 @@ module.exports = _defineProperty;
 
 /***/ }),
 
+/***/ 431:
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+
+if (true) {
+  module.exports = __webpack_require__(268);
+} else // removed by dead control flow
+{}
+
+
+/***/ }),
+
 /***/ 453:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function _iterableToArrayLimit(arr, i) {
   var _arr = [];
@@ -990,22 +1554,8 @@ module.exports = _iterableToArrayLimit;
 
 /***/ }),
 
-/***/ 540:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-
-
-if (true) {
-  module.exports = __webpack_require__(869);
-} else // removed by dead control flow
-{}
-
-
-/***/ }),
-
 /***/ 556:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
@@ -1025,14 +1575,14 @@ if (false) // removed by dead control flow
 /***/ }),
 
 /***/ 574:
-/***/ (() => {
+/***/ (function() {
 
 /* (ignored) */
 
 /***/ }),
 
 /***/ 611:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 var _typeof = __webpack_require__(735);
 
@@ -1051,7 +1601,7 @@ module.exports = _possibleConstructorReturn;
 /***/ }),
 
 /***/ 676:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 /* build: `node build.js modules=ALL exclude=gestures,accessors,erasing requirejs minifier=uglifyjs` */
 /*! Fabric.js Copyright 2008-2015, Printio (Juriy Zaytsev, Maxim Chernyak) */
@@ -31842,7 +32392,7 @@ fabric.util.object.extend(fabric.IText.prototype, /** @lends fabric.IText.protot
 /***/ }),
 
 /***/ 694:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 "use strict";
 /**
@@ -31915,7 +32465,7 @@ module.exports = function() {
 /***/ }),
 
 /***/ 735:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function _typeof2(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
@@ -31938,14 +32488,14 @@ module.exports = _typeof;
 /***/ }),
 
 /***/ 748:
-/***/ (() => {
+/***/ (function() {
 
 /* (ignored) */
 
 /***/ }),
 
 /***/ 778:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 var defineProperty = __webpack_require__(396);
 
@@ -31973,7 +32523,7 @@ module.exports = _objectSpread;
 /***/ }),
 
 /***/ 779:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 // ESM COMPAT FLAG
@@ -31981,45 +32531,45 @@ __webpack_require__.r(__webpack_exports__);
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
-  angleReflect: () => (/* reexport */ angleReflect),
-  angleToDegrees: () => (/* reexport */ angleToDegrees),
-  angleToRadians: () => (/* reexport */ angleToRadians),
-  lineAngle: () => (/* reexport */ lineAngle),
-  lineInterpolate: () => (/* reexport */ lineInterpolate),
-  lineIntersectsLine: () => (/* reexport */ lineIntersectsLine),
-  lineIntersectsPolygon: () => (/* reexport */ lineIntersectsPolygon),
-  lineLength: () => (/* reexport */ lineLength),
-  lineMidpoint: () => (/* reexport */ lineMidpoint),
-  lineRotate: () => (/* reexport */ lineRotate),
-  lineTranslate: () => (/* reexport */ lineTranslate),
-  pointInPolygon: () => (/* reexport */ pointInPolygon),
-  pointLeftofLine: () => (/* reexport */ pointLeftofLine),
-  pointOnLine: () => (/* reexport */ pointOnLine),
-  pointOnPolygon: () => (/* reexport */ pointOnPolygon),
-  pointRightofLine: () => (/* reexport */ pointRightofLine),
-  pointRotate: () => (/* reexport */ pointRotate),
-  pointTranslate: () => (/* reexport */ pointTranslate),
-  pointWithLine: () => (/* reexport */ pointWithLine),
-  polygonArea: () => (/* reexport */ polygonArea),
-  polygonBounds: () => (/* reexport */ polygonBounds),
-  polygonCentroid: () => (/* reexport */ polygonCentroid),
-  polygonHull: () => (/* reexport */ polygonHull),
-  polygonInPolygon: () => (/* reexport */ polygonInPolygon),
-  polygonInterpolate: () => (/* reexport */ polygonInterpolate),
-  polygonIntersectsPolygon: () => (/* reexport */ polygonIntersectsPolygon),
-  polygonLength: () => (/* reexport */ polygonLength),
-  polygonMean: () => (/* reexport */ polygonMean),
-  polygonRandom: () => (/* reexport */ polygonRandom),
-  polygonReflectX: () => (/* reexport */ polygonReflectX),
-  polygonReflectY: () => (/* reexport */ polygonReflectY),
-  polygonRegular: () => (/* reexport */ polygonRegular),
-  polygonRotate: () => (/* reexport */ polygonRotate),
-  polygonScale: () => (/* reexport */ polygonScale),
-  polygonScaleArea: () => (/* reexport */ polygonScaleArea),
-  polygonScaleX: () => (/* reexport */ polygonScaleX),
-  polygonScaleY: () => (/* reexport */ polygonScaleY),
-  polygonTranslate: () => (/* reexport */ polygonTranslate),
-  polygonWind: () => (/* reexport */ polygonWind)
+  angleReflect: function() { return /* reexport */ angleReflect; },
+  angleToDegrees: function() { return /* reexport */ angleToDegrees; },
+  angleToRadians: function() { return /* reexport */ angleToRadians; },
+  lineAngle: function() { return /* reexport */ lineAngle; },
+  lineInterpolate: function() { return /* reexport */ lineInterpolate; },
+  lineIntersectsLine: function() { return /* reexport */ lineIntersectsLine; },
+  lineIntersectsPolygon: function() { return /* reexport */ lineIntersectsPolygon; },
+  lineLength: function() { return /* reexport */ lineLength; },
+  lineMidpoint: function() { return /* reexport */ lineMidpoint; },
+  lineRotate: function() { return /* reexport */ lineRotate; },
+  lineTranslate: function() { return /* reexport */ lineTranslate; },
+  pointInPolygon: function() { return /* reexport */ pointInPolygon; },
+  pointLeftofLine: function() { return /* reexport */ pointLeftofLine; },
+  pointOnLine: function() { return /* reexport */ pointOnLine; },
+  pointOnPolygon: function() { return /* reexport */ pointOnPolygon; },
+  pointRightofLine: function() { return /* reexport */ pointRightofLine; },
+  pointRotate: function() { return /* reexport */ pointRotate; },
+  pointTranslate: function() { return /* reexport */ pointTranslate; },
+  pointWithLine: function() { return /* reexport */ pointWithLine; },
+  polygonArea: function() { return /* reexport */ polygonArea; },
+  polygonBounds: function() { return /* reexport */ polygonBounds; },
+  polygonCentroid: function() { return /* reexport */ polygonCentroid; },
+  polygonHull: function() { return /* reexport */ polygonHull; },
+  polygonInPolygon: function() { return /* reexport */ polygonInPolygon; },
+  polygonInterpolate: function() { return /* reexport */ polygonInterpolate; },
+  polygonIntersectsPolygon: function() { return /* reexport */ polygonIntersectsPolygon; },
+  polygonLength: function() { return /* reexport */ polygonLength; },
+  polygonMean: function() { return /* reexport */ polygonMean; },
+  polygonRandom: function() { return /* reexport */ polygonRandom; },
+  polygonReflectX: function() { return /* reexport */ polygonReflectX; },
+  polygonReflectY: function() { return /* reexport */ polygonReflectY; },
+  polygonRegular: function() { return /* reexport */ polygonRegular; },
+  polygonRotate: function() { return /* reexport */ polygonRotate; },
+  polygonScale: function() { return /* reexport */ polygonScale; },
+  polygonScaleArea: function() { return /* reexport */ polygonScaleArea; },
+  polygonScaleX: function() { return /* reexport */ polygonScaleX; },
+  polygonScaleY: function() { return /* reexport */ polygonScaleY; },
+  polygonTranslate: function() { return /* reexport */ polygonTranslate; },
+  polygonWind: function() { return /* reexport */ polygonWind; }
 });
 
 ;// ./node_modules/geometric/src/angles/angleToDegrees.js
@@ -32850,568 +33400,14 @@ function angleReflect(incidenceAngle, surfaceAngle) {
 /***/ }),
 
 /***/ 854:
-/***/ ((module) => {
+/***/ (function(module) {
 
 module.exports = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 15 15' shape-rendering='crispEdges'%3e %3ctitle%3eplus%3c/title%3e %3cpath fill='%23fff' d='M3.125 8.125h3.75v3.75c0 0.345 0.28 0.625 0.625 0.625s0.625-0.28 0.625-0.625v-3.75h3.75c0.345 0 0.625-0.28 0.625-0.625s-0.28-0.625-0.625-0.625h-3.75v-3.75c0-0.345-0.28-0.625-0.625-0.625s-0.625 0.28-0.625 0.625v3.75h-3.75c-0.345 0-0.625 0.28-0.625 0.625s0.28 0.625 0.625 0.625z'%3e%3c/path%3e %3c/svg%3e"
 
 /***/ }),
 
-/***/ 869:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-/**
- * @license React
- * react.production.js
- *
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-
-var REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element"),
-  REACT_PORTAL_TYPE = Symbol.for("react.portal"),
-  REACT_FRAGMENT_TYPE = Symbol.for("react.fragment"),
-  REACT_STRICT_MODE_TYPE = Symbol.for("react.strict_mode"),
-  REACT_PROFILER_TYPE = Symbol.for("react.profiler"),
-  REACT_CONSUMER_TYPE = Symbol.for("react.consumer"),
-  REACT_CONTEXT_TYPE = Symbol.for("react.context"),
-  REACT_FORWARD_REF_TYPE = Symbol.for("react.forward_ref"),
-  REACT_SUSPENSE_TYPE = Symbol.for("react.suspense"),
-  REACT_MEMO_TYPE = Symbol.for("react.memo"),
-  REACT_LAZY_TYPE = Symbol.for("react.lazy"),
-  MAYBE_ITERATOR_SYMBOL = Symbol.iterator;
-function getIteratorFn(maybeIterable) {
-  if (null === maybeIterable || "object" !== typeof maybeIterable) return null;
-  maybeIterable =
-    (MAYBE_ITERATOR_SYMBOL && maybeIterable[MAYBE_ITERATOR_SYMBOL]) ||
-    maybeIterable["@@iterator"];
-  return "function" === typeof maybeIterable ? maybeIterable : null;
-}
-var ReactNoopUpdateQueue = {
-    isMounted: function () {
-      return !1;
-    },
-    enqueueForceUpdate: function () {},
-    enqueueReplaceState: function () {},
-    enqueueSetState: function () {}
-  },
-  assign = Object.assign,
-  emptyObject = {};
-function Component(props, context, updater) {
-  this.props = props;
-  this.context = context;
-  this.refs = emptyObject;
-  this.updater = updater || ReactNoopUpdateQueue;
-}
-Component.prototype.isReactComponent = {};
-Component.prototype.setState = function (partialState, callback) {
-  if (
-    "object" !== typeof partialState &&
-    "function" !== typeof partialState &&
-    null != partialState
-  )
-    throw Error(
-      "takes an object of state variables to update or a function which returns an object of state variables."
-    );
-  this.updater.enqueueSetState(this, partialState, callback, "setState");
-};
-Component.prototype.forceUpdate = function (callback) {
-  this.updater.enqueueForceUpdate(this, callback, "forceUpdate");
-};
-function ComponentDummy() {}
-ComponentDummy.prototype = Component.prototype;
-function PureComponent(props, context, updater) {
-  this.props = props;
-  this.context = context;
-  this.refs = emptyObject;
-  this.updater = updater || ReactNoopUpdateQueue;
-}
-var pureComponentPrototype = (PureComponent.prototype = new ComponentDummy());
-pureComponentPrototype.constructor = PureComponent;
-assign(pureComponentPrototype, Component.prototype);
-pureComponentPrototype.isPureReactComponent = !0;
-var isArrayImpl = Array.isArray,
-  ReactSharedInternals = { H: null, A: null, T: null, S: null, V: null },
-  hasOwnProperty = Object.prototype.hasOwnProperty;
-function ReactElement(type, key, self, source, owner, props) {
-  self = props.ref;
-  return {
-    $$typeof: REACT_ELEMENT_TYPE,
-    type: type,
-    key: key,
-    ref: void 0 !== self ? self : null,
-    props: props
-  };
-}
-function cloneAndReplaceKey(oldElement, newKey) {
-  return ReactElement(
-    oldElement.type,
-    newKey,
-    void 0,
-    void 0,
-    void 0,
-    oldElement.props
-  );
-}
-function isValidElement(object) {
-  return (
-    "object" === typeof object &&
-    null !== object &&
-    object.$$typeof === REACT_ELEMENT_TYPE
-  );
-}
-function escape(key) {
-  var escaperLookup = { "=": "=0", ":": "=2" };
-  return (
-    "$" +
-    key.replace(/[=:]/g, function (match) {
-      return escaperLookup[match];
-    })
-  );
-}
-var userProvidedKeyEscapeRegex = /\/+/g;
-function getElementKey(element, index) {
-  return "object" === typeof element && null !== element && null != element.key
-    ? escape("" + element.key)
-    : index.toString(36);
-}
-function noop$1() {}
-function resolveThenable(thenable) {
-  switch (thenable.status) {
-    case "fulfilled":
-      return thenable.value;
-    case "rejected":
-      throw thenable.reason;
-    default:
-      switch (
-        ("string" === typeof thenable.status
-          ? thenable.then(noop$1, noop$1)
-          : ((thenable.status = "pending"),
-            thenable.then(
-              function (fulfilledValue) {
-                "pending" === thenable.status &&
-                  ((thenable.status = "fulfilled"),
-                  (thenable.value = fulfilledValue));
-              },
-              function (error) {
-                "pending" === thenable.status &&
-                  ((thenable.status = "rejected"), (thenable.reason = error));
-              }
-            )),
-        thenable.status)
-      ) {
-        case "fulfilled":
-          return thenable.value;
-        case "rejected":
-          throw thenable.reason;
-      }
-  }
-  throw thenable;
-}
-function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
-  var type = typeof children;
-  if ("undefined" === type || "boolean" === type) children = null;
-  var invokeCallback = !1;
-  if (null === children) invokeCallback = !0;
-  else
-    switch (type) {
-      case "bigint":
-      case "string":
-      case "number":
-        invokeCallback = !0;
-        break;
-      case "object":
-        switch (children.$$typeof) {
-          case REACT_ELEMENT_TYPE:
-          case REACT_PORTAL_TYPE:
-            invokeCallback = !0;
-            break;
-          case REACT_LAZY_TYPE:
-            return (
-              (invokeCallback = children._init),
-              mapIntoArray(
-                invokeCallback(children._payload),
-                array,
-                escapedPrefix,
-                nameSoFar,
-                callback
-              )
-            );
-        }
-    }
-  if (invokeCallback)
-    return (
-      (callback = callback(children)),
-      (invokeCallback =
-        "" === nameSoFar ? "." + getElementKey(children, 0) : nameSoFar),
-      isArrayImpl(callback)
-        ? ((escapedPrefix = ""),
-          null != invokeCallback &&
-            (escapedPrefix =
-              invokeCallback.replace(userProvidedKeyEscapeRegex, "$&/") + "/"),
-          mapIntoArray(callback, array, escapedPrefix, "", function (c) {
-            return c;
-          }))
-        : null != callback &&
-          (isValidElement(callback) &&
-            (callback = cloneAndReplaceKey(
-              callback,
-              escapedPrefix +
-                (null == callback.key ||
-                (children && children.key === callback.key)
-                  ? ""
-                  : ("" + callback.key).replace(
-                      userProvidedKeyEscapeRegex,
-                      "$&/"
-                    ) + "/") +
-                invokeCallback
-            )),
-          array.push(callback)),
-      1
-    );
-  invokeCallback = 0;
-  var nextNamePrefix = "" === nameSoFar ? "." : nameSoFar + ":";
-  if (isArrayImpl(children))
-    for (var i = 0; i < children.length; i++)
-      (nameSoFar = children[i]),
-        (type = nextNamePrefix + getElementKey(nameSoFar, i)),
-        (invokeCallback += mapIntoArray(
-          nameSoFar,
-          array,
-          escapedPrefix,
-          type,
-          callback
-        ));
-  else if (((i = getIteratorFn(children)), "function" === typeof i))
-    for (
-      children = i.call(children), i = 0;
-      !(nameSoFar = children.next()).done;
-
-    )
-      (nameSoFar = nameSoFar.value),
-        (type = nextNamePrefix + getElementKey(nameSoFar, i++)),
-        (invokeCallback += mapIntoArray(
-          nameSoFar,
-          array,
-          escapedPrefix,
-          type,
-          callback
-        ));
-  else if ("object" === type) {
-    if ("function" === typeof children.then)
-      return mapIntoArray(
-        resolveThenable(children),
-        array,
-        escapedPrefix,
-        nameSoFar,
-        callback
-      );
-    array = String(children);
-    throw Error(
-      "Objects are not valid as a React child (found: " +
-        ("[object Object]" === array
-          ? "object with keys {" + Object.keys(children).join(", ") + "}"
-          : array) +
-        "). If you meant to render a collection of children, use an array instead."
-    );
-  }
-  return invokeCallback;
-}
-function mapChildren(children, func, context) {
-  if (null == children) return children;
-  var result = [],
-    count = 0;
-  mapIntoArray(children, result, "", "", function (child) {
-    return func.call(context, child, count++);
-  });
-  return result;
-}
-function lazyInitializer(payload) {
-  if (-1 === payload._status) {
-    var ctor = payload._result;
-    ctor = ctor();
-    ctor.then(
-      function (moduleObject) {
-        if (0 === payload._status || -1 === payload._status)
-          (payload._status = 1), (payload._result = moduleObject);
-      },
-      function (error) {
-        if (0 === payload._status || -1 === payload._status)
-          (payload._status = 2), (payload._result = error);
-      }
-    );
-    -1 === payload._status && ((payload._status = 0), (payload._result = ctor));
-  }
-  if (1 === payload._status) return payload._result.default;
-  throw payload._result;
-}
-var reportGlobalError =
-  "function" === typeof reportError
-    ? reportError
-    : function (error) {
-        if (
-          "object" === typeof window &&
-          "function" === typeof window.ErrorEvent
-        ) {
-          var event = new window.ErrorEvent("error", {
-            bubbles: !0,
-            cancelable: !0,
-            message:
-              "object" === typeof error &&
-              null !== error &&
-              "string" === typeof error.message
-                ? String(error.message)
-                : String(error),
-            error: error
-          });
-          if (!window.dispatchEvent(event)) return;
-        } else if (
-          "object" === typeof process &&
-          "function" === typeof process.emit
-        ) {
-          process.emit("uncaughtException", error);
-          return;
-        }
-        console.error(error);
-      };
-function noop() {}
-exports.Children = {
-  map: mapChildren,
-  forEach: function (children, forEachFunc, forEachContext) {
-    mapChildren(
-      children,
-      function () {
-        forEachFunc.apply(this, arguments);
-      },
-      forEachContext
-    );
-  },
-  count: function (children) {
-    var n = 0;
-    mapChildren(children, function () {
-      n++;
-    });
-    return n;
-  },
-  toArray: function (children) {
-    return (
-      mapChildren(children, function (child) {
-        return child;
-      }) || []
-    );
-  },
-  only: function (children) {
-    if (!isValidElement(children))
-      throw Error(
-        "React.Children.only expected to receive a single React element child."
-      );
-    return children;
-  }
-};
-exports.Component = Component;
-exports.Fragment = REACT_FRAGMENT_TYPE;
-exports.Profiler = REACT_PROFILER_TYPE;
-exports.PureComponent = PureComponent;
-exports.StrictMode = REACT_STRICT_MODE_TYPE;
-exports.Suspense = REACT_SUSPENSE_TYPE;
-exports.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE =
-  ReactSharedInternals;
-exports.__COMPILER_RUNTIME = {
-  __proto__: null,
-  c: function (size) {
-    return ReactSharedInternals.H.useMemoCache(size);
-  }
-};
-exports.cache = function (fn) {
-  return function () {
-    return fn.apply(null, arguments);
-  };
-};
-exports.cloneElement = function (element, config, children) {
-  if (null === element || void 0 === element)
-    throw Error(
-      "The argument must be a React element, but you passed " + element + "."
-    );
-  var props = assign({}, element.props),
-    key = element.key,
-    owner = void 0;
-  if (null != config)
-    for (propName in (void 0 !== config.ref && (owner = void 0),
-    void 0 !== config.key && (key = "" + config.key),
-    config))
-      !hasOwnProperty.call(config, propName) ||
-        "key" === propName ||
-        "__self" === propName ||
-        "__source" === propName ||
-        ("ref" === propName && void 0 === config.ref) ||
-        (props[propName] = config[propName]);
-  var propName = arguments.length - 2;
-  if (1 === propName) props.children = children;
-  else if (1 < propName) {
-    for (var childArray = Array(propName), i = 0; i < propName; i++)
-      childArray[i] = arguments[i + 2];
-    props.children = childArray;
-  }
-  return ReactElement(element.type, key, void 0, void 0, owner, props);
-};
-exports.createContext = function (defaultValue) {
-  defaultValue = {
-    $$typeof: REACT_CONTEXT_TYPE,
-    _currentValue: defaultValue,
-    _currentValue2: defaultValue,
-    _threadCount: 0,
-    Provider: null,
-    Consumer: null
-  };
-  defaultValue.Provider = defaultValue;
-  defaultValue.Consumer = {
-    $$typeof: REACT_CONSUMER_TYPE,
-    _context: defaultValue
-  };
-  return defaultValue;
-};
-exports.createElement = function (type, config, children) {
-  var propName,
-    props = {},
-    key = null;
-  if (null != config)
-    for (propName in (void 0 !== config.key && (key = "" + config.key), config))
-      hasOwnProperty.call(config, propName) &&
-        "key" !== propName &&
-        "__self" !== propName &&
-        "__source" !== propName &&
-        (props[propName] = config[propName]);
-  var childrenLength = arguments.length - 2;
-  if (1 === childrenLength) props.children = children;
-  else if (1 < childrenLength) {
-    for (var childArray = Array(childrenLength), i = 0; i < childrenLength; i++)
-      childArray[i] = arguments[i + 2];
-    props.children = childArray;
-  }
-  if (type && type.defaultProps)
-    for (propName in ((childrenLength = type.defaultProps), childrenLength))
-      void 0 === props[propName] &&
-        (props[propName] = childrenLength[propName]);
-  return ReactElement(type, key, void 0, void 0, null, props);
-};
-exports.createRef = function () {
-  return { current: null };
-};
-exports.forwardRef = function (render) {
-  return { $$typeof: REACT_FORWARD_REF_TYPE, render: render };
-};
-exports.isValidElement = isValidElement;
-exports.lazy = function (ctor) {
-  return {
-    $$typeof: REACT_LAZY_TYPE,
-    _payload: { _status: -1, _result: ctor },
-    _init: lazyInitializer
-  };
-};
-exports.memo = function (type, compare) {
-  return {
-    $$typeof: REACT_MEMO_TYPE,
-    type: type,
-    compare: void 0 === compare ? null : compare
-  };
-};
-exports.startTransition = function (scope) {
-  var prevTransition = ReactSharedInternals.T,
-    currentTransition = {};
-  ReactSharedInternals.T = currentTransition;
-  try {
-    var returnValue = scope(),
-      onStartTransitionFinish = ReactSharedInternals.S;
-    null !== onStartTransitionFinish &&
-      onStartTransitionFinish(currentTransition, returnValue);
-    "object" === typeof returnValue &&
-      null !== returnValue &&
-      "function" === typeof returnValue.then &&
-      returnValue.then(noop, reportGlobalError);
-  } catch (error) {
-    reportGlobalError(error);
-  } finally {
-    ReactSharedInternals.T = prevTransition;
-  }
-};
-exports.unstable_useCacheRefresh = function () {
-  return ReactSharedInternals.H.useCacheRefresh();
-};
-exports.use = function (usable) {
-  return ReactSharedInternals.H.use(usable);
-};
-exports.useActionState = function (action, initialState, permalink) {
-  return ReactSharedInternals.H.useActionState(action, initialState, permalink);
-};
-exports.useCallback = function (callback, deps) {
-  return ReactSharedInternals.H.useCallback(callback, deps);
-};
-exports.useContext = function (Context) {
-  return ReactSharedInternals.H.useContext(Context);
-};
-exports.useDebugValue = function () {};
-exports.useDeferredValue = function (value, initialValue) {
-  return ReactSharedInternals.H.useDeferredValue(value, initialValue);
-};
-exports.useEffect = function (create, createDeps, update) {
-  var dispatcher = ReactSharedInternals.H;
-  if ("function" === typeof update)
-    throw Error(
-      "useEffect CRUD overload is not enabled in this build of React."
-    );
-  return dispatcher.useEffect(create, createDeps);
-};
-exports.useId = function () {
-  return ReactSharedInternals.H.useId();
-};
-exports.useImperativeHandle = function (ref, create, deps) {
-  return ReactSharedInternals.H.useImperativeHandle(ref, create, deps);
-};
-exports.useInsertionEffect = function (create, deps) {
-  return ReactSharedInternals.H.useInsertionEffect(create, deps);
-};
-exports.useLayoutEffect = function (create, deps) {
-  return ReactSharedInternals.H.useLayoutEffect(create, deps);
-};
-exports.useMemo = function (create, deps) {
-  return ReactSharedInternals.H.useMemo(create, deps);
-};
-exports.useOptimistic = function (passthrough, reducer) {
-  return ReactSharedInternals.H.useOptimistic(passthrough, reducer);
-};
-exports.useReducer = function (reducer, initialArg, init) {
-  return ReactSharedInternals.H.useReducer(reducer, initialArg, init);
-};
-exports.useRef = function (initialValue) {
-  return ReactSharedInternals.H.useRef(initialValue);
-};
-exports.useState = function (initialState) {
-  return ReactSharedInternals.H.useState(initialState);
-};
-exports.useSyncExternalStore = function (
-  subscribe,
-  getSnapshot,
-  getServerSnapshot
-) {
-  return ReactSharedInternals.H.useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    getServerSnapshot
-  );
-};
-exports.useTransition = function () {
-  return ReactSharedInternals.H.useTransition();
-};
-exports.version = "19.1.1";
-
-
-/***/ }),
-
 /***/ 923:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance");
@@ -33422,7 +33418,7 @@ module.exports = _nonIterableRest;
 /***/ }),
 
 /***/ 925:
-/***/ ((module) => {
+/***/ (function(module) {
 
 "use strict";
 /**
@@ -33442,7 +33438,7 @@ module.exports = ReactPropTypesSecret;
 /***/ }),
 
 /***/ 972:
-/***/ ((module) => {
+/***/ (function(module) {
 
 function _assertThisInitialized(self) {
   if (self === void 0) {
@@ -33457,7 +33453,7 @@ module.exports = _assertThisInitialized;
 /***/ }),
 
 /***/ 994:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 var setPrototypeOf = __webpack_require__(197);
 
@@ -33508,60 +33504,60 @@ module.exports = _inherits;
 /******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
+/******/ 	!function() {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
+/******/ 		__webpack_require__.n = function(module) {
 /******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
+/******/ 				function() { return module['default']; } :
+/******/ 				function() { return module; };
 /******/ 			__webpack_require__.d(getter, { a: getter });
 /******/ 			return getter;
 /******/ 		};
-/******/ 	})();
+/******/ 	}();
 /******/ 	
 /******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
+/******/ 	!function() {
 /******/ 		// define getter functions for harmony exports
-/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 		__webpack_require__.d = function(exports, definition) {
 /******/ 			for(var key in definition) {
 /******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
 /******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
 /******/ 				}
 /******/ 			}
 /******/ 		};
-/******/ 	})();
+/******/ 	}();
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
+/******/ 	!function() {
+/******/ 		__webpack_require__.o = function(obj, prop) { return Object.prototype.hasOwnProperty.call(obj, prop); }
+/******/ 	}();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
+/******/ 	!function() {
 /******/ 		// define __esModule on exports
-/******/ 		__webpack_require__.r = (exports) => {
+/******/ 		__webpack_require__.r = function(exports) {
 /******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
 /******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
 /******/ 			}
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 		};
-/******/ 	})();
+/******/ 	}();
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
-(() => {
+!function() {
 "use strict";
 // ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
-  MiraMode: () => (/* reexport */ src_MiraMode),
-  NvisionSketchField: () => (/* reexport */ nVisionSketchField),
-  SketchField: () => (/* reexport */ src_SketchField),
-  Tools: () => (/* reexport */ tools),
-  "default": () => (/* binding */ src)
+  MiraMode: function() { return /* reexport */ src_MiraMode; },
+  NvisionSketchField: function() { return /* reexport */ nVisionSketchField; },
+  SketchField: function() { return /* reexport */ src_SketchField; },
+  Tools: function() { return /* reexport */ tools; },
+  "default": function() { return /* binding */ src; }
 });
 
 // NAMESPACE OBJECT: ./node_modules/react-resize-detector/build/index.js
@@ -33586,8 +33582,8 @@ var inherits_default = /*#__PURE__*/__webpack_require__.n(inherits);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/assertThisInitialized.js
 var assertThisInitialized = __webpack_require__(972);
 var assertThisInitialized_default = /*#__PURE__*/__webpack_require__.n(assertThisInitialized);
-// EXTERNAL MODULE: ./node_modules/react/index.js
-var react = __webpack_require__(540);
+// EXTERNAL MODULE: ../../../../node_modules/react/index.js
+var react = __webpack_require__(431);
 // EXTERNAL MODULE: ./node_modules/prop-types/index.js
 var prop_types = __webpack_require__(556);
 var prop_types_default = /*#__PURE__*/__webpack_require__.n(prop_types);
@@ -33741,7 +33737,7 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
   }]);
   return History;
 }()));
-/* harmony default export */ const src_history = ((/* unused pure expression or super */ null && (History)));
+/* harmony default export */ var src_history = ((/* unused pure expression or super */ null && (History)));
 ;// ./src/utils.js
 /**
  * Determine the mouse position
@@ -33836,7 +33832,7 @@ var FabricCanvasTool = /*#__PURE__*/function () {
   }]);
   return FabricCanvasTool;
 }();
-/* harmony default export */ const fabrictool = (FabricCanvasTool);
+/* harmony default export */ var fabrictool = (FabricCanvasTool);
 ;// ./src/select.js
 
 
@@ -33865,7 +33861,7 @@ var Select = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return Select;
 }(fabrictool);
-/* harmony default export */ const src_select = (Select);
+/* harmony default export */ var src_select = (Select);
 ;// ./src/pencil.js
 
 
@@ -33889,7 +33885,7 @@ var Pencil = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return Pencil;
 }(fabrictool);
-/* harmony default export */ const pencil = (Pencil);
+/* harmony default export */ var pencil = (Pencil);
 ;// ./src/line.js
 
 
@@ -33968,7 +33964,7 @@ var Line = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return Line;
 }(fabrictool);
-/* harmony default export */ const line = (Line);
+/* harmony default export */ var line = (Line);
 ;// ./src/arrow.js
 
 
@@ -34065,7 +34061,7 @@ var Arrow = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return Arrow;
 }(fabrictool);
-/* harmony default export */ const arrow = (Arrow);
+/* harmony default export */ var arrow = (Arrow);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/regenerator/index.js
 var regenerator = __webpack_require__(207);
 var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
@@ -34424,7 +34420,7 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return Rectangle;
 }(fabrictool);
-/* harmony default export */ const rectangle = (Rectangle);
+/* harmony default export */ var rectangle = (Rectangle);
 ;// ./src/circle.js
 
 
@@ -34504,7 +34500,7 @@ var Circle = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return Circle;
 }(fabrictool);
-/* harmony default export */ const circle = (Circle);
+/* harmony default export */ var circle = (Circle);
 ;// ./src/pan.js
 
 
@@ -34561,9 +34557,9 @@ var Pan = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return Pan;
 }(fabrictool);
-/* harmony default export */ const pan = (Pan);
+/* harmony default export */ var pan = (Pan);
 ;// ./src/tools.js
-/* harmony default export */ const tools = ({
+/* harmony default export */ var tools = ({
   Circle: 'circle',
   Line: 'line',
   Arrow: 'arrow',
@@ -34622,7 +34618,7 @@ var RectangleLabelObject = /*#__PURE__*/function () {
   }]);
   return RectangleLabelObject;
 }();
-/* harmony default export */ const rectangle_label_object = (RectangleLabelObject);
+/* harmony default export */ var rectangle_label_object = (RectangleLabelObject);
 ;// ./src/rectangle-label.js
 
 
@@ -34752,7 +34748,7 @@ var RectangleLabel = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return RectangleLabel;
 }(fabrictool);
-/* harmony default export */ const rectangle_label = (RectangleLabel);
+/* harmony default export */ var rectangle_label = (RectangleLabel);
 ;// ./src/defaul-tool.js
 
 
@@ -34784,7 +34780,7 @@ var DefaultTool = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return DefaultTool;
 }(fabrictool);
-/* harmony default export */ const defaul_tool = (DefaultTool);
+/* harmony default export */ var defaul_tool = (DefaultTool);
 ;// ./node_modules/react-resize-detector/build/index.js
 
 //# sourceMappingURL=index.js.map
@@ -35240,7 +35236,7 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
   }]);
   return NvistaRoiSettings;
 }(react.Component);
-/* harmony default export */ const NvistaRoiSettingsPanel = (NvistaRoiSettings);
+/* harmony default export */ var NvistaRoiSettingsPanel = (NvistaRoiSettings);
 ;// ./src/SketchField.jsx
 
 
@@ -36657,344 +36653,10 @@ SketchField.defaultProps = {
     return null;
   }
 };
-/* harmony default export */ const src_SketchField = (SketchField);
+/* harmony default export */ var src_SketchField = (SketchField);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/objectSpread.js
 var objectSpread = __webpack_require__(778);
 var objectSpread_default = /*#__PURE__*/__webpack_require__.n(objectSpread);
-;// ./node_modules/es-toolkit/dist/function/debounce.mjs
-function debounce(func, debounceMs, { signal, edges } = {}) {
-    let pendingThis = undefined;
-    let pendingArgs = null;
-    const leading = edges != null && edges.includes('leading');
-    const trailing = edges == null || edges.includes('trailing');
-    const invoke = () => {
-        if (pendingArgs !== null) {
-            func.apply(pendingThis, pendingArgs);
-            pendingThis = undefined;
-            pendingArgs = null;
-        }
-    };
-    const onTimerEnd = () => {
-        if (trailing) {
-            invoke();
-        }
-        cancel();
-    };
-    let timeoutId = null;
-    const schedule = () => {
-        if (timeoutId != null) {
-            clearTimeout(timeoutId);
-        }
-        timeoutId = setTimeout(() => {
-            timeoutId = null;
-            onTimerEnd();
-        }, debounceMs);
-    };
-    const cancelTimer = () => {
-        if (timeoutId !== null) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
-        }
-    };
-    const cancel = () => {
-        cancelTimer();
-        pendingThis = undefined;
-        pendingArgs = null;
-    };
-    const flush = () => {
-        invoke();
-    };
-    const debounced = function (...args) {
-        if (signal?.aborted) {
-            return;
-        }
-        pendingThis = this;
-        pendingArgs = args;
-        const isFirstCall = timeoutId == null;
-        schedule();
-        if (leading && isFirstCall) {
-            invoke();
-        }
-    };
-    debounced.schedule = schedule;
-    debounced.cancel = cancel;
-    debounced.flush = flush;
-    signal?.addEventListener('abort', cancel, { once: true });
-    return debounced;
-}
-
-
-
-;// ./node_modules/es-toolkit/dist/compat/function/debounce.mjs
-
-
-function debounce_debounce(func, debounceMs = 0, options = {}) {
-    if (typeof options !== 'object') {
-        options = {};
-    }
-    const { leading = false, trailing = true, maxWait } = options;
-    const edges = Array(2);
-    if (leading) {
-        edges[0] = 'leading';
-    }
-    if (trailing) {
-        edges[1] = 'trailing';
-    }
-    let result = undefined;
-    let pendingAt = null;
-    const _debounced = debounce(function (...args) {
-        result = func.apply(this, args);
-        pendingAt = null;
-    }, debounceMs, { edges });
-    const debounced = function (...args) {
-        if (maxWait != null) {
-            if (pendingAt === null) {
-                pendingAt = Date.now();
-            }
-            if (Date.now() - pendingAt >= maxWait) {
-                result = func.apply(this, args);
-                pendingAt = Date.now();
-                _debounced.cancel();
-                _debounced.schedule();
-                return result;
-            }
-        }
-        _debounced.apply(this, args);
-        return result;
-    };
-    const flush = () => {
-        _debounced.flush();
-        return result;
-    };
-    debounced.cancel = _debounced.cancel;
-    debounced.flush = flush;
-    return debounced;
-}
-
-
-
-;// ./node_modules/es-toolkit/dist/compat/function/throttle.mjs
-
-
-function throttle(func, throttleMs = 0, options = {}) {
-    const { leading = true, trailing = true } = options;
-    return debounce_debounce(func, throttleMs, {
-        leading,
-        maxWait: throttleMs,
-        trailing,
-    });
-}
-
-
-
-;// ./node_modules/react-resize-detector/build/utils.js
-
-
-
-/**
- * Wraps the resize callback with a es-toolkit debounce / throttle based on the refresh mode
- */
-const patchResizeCallback = (resizeCallback, refreshMode, refreshRate, refreshOptions) => {
-    switch (refreshMode) {
-        case 'debounce':
-            return debounce_debounce(resizeCallback, refreshRate, refreshOptions);
-        case 'throttle':
-            return throttle(resizeCallback, refreshRate, refreshOptions);
-        default:
-            return resizeCallback;
-    }
-};
-/**
- * A custom hook that converts a callback to a ref to avoid triggering re-renders when passed as a
- * prop or avoid re-executing effects when passed as a dependency
- */
-const useCallbackRef = 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(callback) => {
-    const callbackRef = react.useRef(callback);
-    react.useEffect(() => {
-        callbackRef.current = callback;
-    });
-    return react.useMemo(() => ((...args) => { var _a; return (_a = callbackRef.current) === null || _a === void 0 ? void 0 : _a.call(callbackRef, ...args); }), []);
-};
-/** `useRef` hook doesn't handle conditional rendering or dynamic ref changes.
- * This hook creates a proxy that ensures that `refElement` is updated whenever the ref is changed. */
-const useRefProxy = 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(targetRef) => {
-    // we are going to use this ref to store the last element that was passed to the hook
-    const [refElement, setRefElement] = react.useState((targetRef === null || targetRef === void 0 ? void 0 : targetRef.current) || null);
-    // if targetRef is passed, we need to update the refElement
-    // we have to use setTimeout because ref get assigned after the hook is called
-    // in the future releases we are going to remove targetRef and force users to use ref returned by the hook
-    if (targetRef) {
-        setTimeout(() => {
-            if (targetRef.current !== refElement) {
-                setRefElement(targetRef.current);
-            }
-        }, 0);
-    }
-    // this is a memo that will be called every time the ref is changed
-    // This proxy will properly call setState either when the ref is called as a function or when `.current` is set
-    // we call setState inside to trigger rerender
-    const refProxy = react.useMemo(() => new Proxy((node) => {
-        if (node !== refElement) {
-            setRefElement(node);
-        }
-    }, {
-        get(target, prop) {
-            if (prop === 'current') {
-                return refElement;
-            }
-            return target[prop];
-        },
-        set(target, prop, value) {
-            if (prop === 'current') {
-                setRefElement(value);
-            }
-            else {
-                target[prop] = value;
-            }
-            return true;
-        },
-    }), [refElement]);
-    return { refProxy, refElement, setRefElement };
-};
-/** Calculates the dimensions of the element based on the current box model.
- * @see https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model
- */
-const getDimensions = (entry, box) => {
-    // Value	          Border	  Padding	  Inner Content
-    // ---------------------------------------------------
-    // 'border-box'	    Yes	      Yes	      Yes
-    // 'content-box'	  No	      No	      Yes
-    //  undefined       No	      No?	      Yes
-    var _a, _b;
-    const borderBox = (_a = entry.borderBoxSize) === null || _a === void 0 ? void 0 : _a[0];
-    const contentBox = (_b = entry.contentBoxSize) === null || _b === void 0 ? void 0 : _b[0];
-    if (box === 'border-box' && borderBox) {
-        return {
-            width: borderBox.inlineSize,
-            height: borderBox.blockSize,
-        };
-    }
-    if (box === 'content-box' && contentBox) {
-        return {
-            width: contentBox.inlineSize,
-            height: contentBox.blockSize,
-        };
-    }
-    return {
-        width: entry.contentRect.width,
-        height: entry.contentRect.height,
-    };
-};
-
-
-//# sourceMappingURL=utils.js.map
-
-;// ./node_modules/react-resize-detector/build/useResizeDetector.js
-
-
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function useResizeDetector({ skipOnMount = false, refreshMode, refreshRate = 1000, refreshOptions, handleWidth = true, handleHeight = true, targetRef, observerOptions, onResize, disableRerender = false, } = {}) {
-    // If `skipOnMount` is enabled, skip the first resize event
-    const skipResize = (0,react.useRef)(skipOnMount);
-    // Wrap the `onResize` callback with a ref to avoid re-renders
-    const onResizeRef = useCallbackRef(onResize);
-    const [size, setSize] = (0,react.useState)({
-        width: undefined,
-        height: undefined,
-    });
-    const sizeRef = (0,react.useRef)({
-        width: undefined,
-        height: undefined,
-    });
-    // Create a proxy ref to handle conditional rendering and dynamic ref changes of the target element
-    const { refProxy, refElement } = useRefProxy(targetRef);
-    const { box } = observerOptions || {};
-    const resizeCallback = (0,react.useCallback)((entries) => {
-        if (!handleWidth && !handleHeight)
-            return;
-        if (skipResize.current) {
-            skipResize.current = false;
-            return;
-        }
-        // Only update the size if one of the observed dimensions has changed
-        const shouldSetSize = (prevSize, nextSize) => (handleWidth && prevSize.width !== nextSize.width) || (handleHeight && prevSize.height !== nextSize.height);
-        entries.forEach((entry) => {
-            const dimensions = getDimensions(entry, box);
-            if (disableRerender) {
-                if (shouldSetSize(sizeRef.current, dimensions)) {
-                    sizeRef.current.width = dimensions.width;
-                    sizeRef.current.height = dimensions.height;
-                    onResizeRef === null || onResizeRef === void 0 ? void 0 : onResizeRef({
-                        width: dimensions.width,
-                        height: dimensions.height,
-                        entry,
-                    });
-                }
-            }
-            else {
-                setSize((prevSize) => {
-                    if (!shouldSetSize(prevSize, dimensions))
-                        return prevSize;
-                    onResizeRef === null || onResizeRef === void 0 ? void 0 : onResizeRef({
-                        width: dimensions.width,
-                        height: dimensions.height,
-                        entry,
-                    });
-                    return dimensions;
-                });
-            }
-        });
-    }, [handleWidth, handleHeight, skipResize, box, disableRerender]);
-    // Throttle/Debounce the resize event if refreshMode is configured
-    const resizeHandler = (0,react.useCallback)(patchResizeCallback(resizeCallback, refreshMode, refreshRate, refreshOptions), [
-        resizeCallback,
-        refreshMode,
-        refreshRate,
-        refreshOptions,
-    ]);
-    // Attach ResizeObserver to the element
-    (0,react.useEffect)(() => {
-        let resizeObserver;
-        if (refElement) {
-            try {
-                resizeObserver = new window.ResizeObserver(resizeHandler);
-                resizeObserver.observe(refElement, observerOptions);
-            }
-            catch (error) {
-                console.warn('ResizeObserver not supported or failed to initialize:', error);
-            }
-        }
-        // If refElement is not available, reset the size
-        else if (size.width || size.height) {
-            onResizeRef === null || onResizeRef === void 0 ? void 0 : onResizeRef({
-                width: null,
-                height: null,
-                entry: null,
-            });
-            sizeRef.current.width = undefined;
-            sizeRef.current.height = undefined;
-            if (!disableRerender) {
-                setSize({ width: undefined, height: undefined });
-            }
-        }
-        // Disconnect the ResizeObserver when the component is unmounted
-        return () => {
-            var _a, _b, _c;
-            (_a = resizeObserver === null || resizeObserver === void 0 ? void 0 : resizeObserver.disconnect) === null || _a === void 0 ? void 0 : _a.call(resizeObserver);
-            (_c = (_b = resizeHandler).cancel) === null || _c === void 0 ? void 0 : _c.call(_b);
-        };
-    }, [resizeHandler, refElement]);
-    return Object.assign({ ref: refProxy }, (disableRerender ? sizeRef.current : size));
-}
-
-
-//# sourceMappingURL=useResizeDetector.js.map
-
 ;// ./src/ellipse.js
 
 
@@ -37313,7 +36975,7 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return Ellipse;
 }(fabrictool);
-/* harmony default export */ const ellipse = (Ellipse);
+/* harmony default export */ var ellipse = (Ellipse);
 ;// ./src/polygon.js
 
 
@@ -37888,7 +37550,7 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return Polygon;
 }(fabrictool);
-/* harmony default export */ const polygon = (Polygon);
+/* harmony default export */ var polygon = (Polygon);
 ;// ./src/freedrawline.js
 
 
@@ -38040,7 +37702,7 @@ var FreeDrawLine = /*#__PURE__*/function (_FabricCanvasTool) {
   }]);
   return FreeDrawLine;
 }(fabrictool);
-/* harmony default export */ const freedrawline = (FreeDrawLine);
+/* harmony default export */ var freedrawline = (FreeDrawLine);
 ;// ./node_modules/@daybrush/utils/dist/utils.esm.js
 /*
 Copyright (c) 2018 Daybrush
@@ -38958,10 +38620,10 @@ function checkBoundSize(targetSize, compareSize, isMax, ratio) {
   if (ratio === void 0) {
     ratio = targetSize[0] / targetSize[1];
   }
-  return [[utils_esm_throttle(compareSize[0], TINY_NUM), utils_esm_throttle(compareSize[0] / ratio, TINY_NUM)], [utils_esm_throttle(compareSize[1] * ratio, TINY_NUM), utils_esm_throttle(compareSize[1], TINY_NUM)]].filter(function (size) {
+  return [[throttle(compareSize[0], TINY_NUM), throttle(compareSize[0] / ratio, TINY_NUM)], [throttle(compareSize[1] * ratio, TINY_NUM), throttle(compareSize[1], TINY_NUM)]].filter(function (size) {
     return size.every(function (value, i) {
       var defaultSize = compareSize[i];
-      var throttledSize = utils_esm_throttle(defaultSize, TINY_NUM);
+      var throttledSize = throttle(defaultSize, TINY_NUM);
       return isMax ? value <= defaultSize || value <= throttledSize : value >= defaultSize || value >= throttledSize;
     });
   })[0] || targetSize;
@@ -39069,7 +38731,7 @@ function utils_esm_getDist(a, b) {
 * @function
 * @memberof Utils
 */
-function utils_esm_throttle(num, unit) {
+function throttle(num, unit) {
   if (!unit) {
     return num;
   }
@@ -39083,7 +38745,7 @@ function utils_esm_throttle(num, unit) {
 */
 function throttleArray(nums, unit) {
   nums.forEach(function (_, i) {
-    nums[i] = utils_esm_throttle(nums[i], unit);
+    nums[i] = throttle(nums[i], unit);
   });
   return nums;
 }
@@ -39499,7 +39161,7 @@ function overlap_area_esm_spreadArrays() {
 }
 
 function tinyThrottle(num) {
-  return utils_esm_throttle(num, TINY_NUM);
+  return throttle(num, TINY_NUM);
 }
 function isSameConstants(linearConstants1, linearConstants2) {
   return linearConstants1.every(function (v, i) {
@@ -40262,32 +39924,41 @@ function getOverlapSize(points1, points2) {
 
 
 
-// Wrapper component to use the useResizeDetector hook
-var ResizeWrapper = function ResizeWrapper(_ref) {
-  var onResize = _ref.onResize,
-    refCallback = _ref.refCallback,
-    children = _ref.children;
-  var ref = (0,react.useRef)();
-  var _useResizeDetector = useResizeDetector({
-      targetRef: ref,
-      handleHeight: true,
-      handleWidth: true,
-      skipOnMount: true
-    }),
-    width = _useResizeDetector.width,
-    height = _useResizeDetector.height;
-  (0,react.useEffect)(function () {
-    if (refCallback) refCallback(ref);
-  }, [refCallback, ref]);
-  (0,react.useEffect)(function () {
-    if (width && height) {
-      onResize(width, height);
+
+// Class-based wrapper using ResizeObserver, compatible without hooks
+var RefWrapper = /*#__PURE__*/function (_React$Component) {
+  inherits_default()(RefWrapper, _React$Component);
+  function RefWrapper(props) {
+    var _this;
+    classCallCheck_default()(this, RefWrapper);
+    _this = possibleConstructorReturn_default()(this, getPrototypeOf_default()(RefWrapper).call(this, props));
+    _this.ref = react.createRef();
+    return _this;
+  }
+  createClass_default()(RefWrapper, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      if (this.props.refCallback) {
+        this.props.refCallback(this.ref);
+      }
     }
-  }, [width, height, onResize]);
-  return react.cloneElement(children, {
-    ref: ref
-  });
-};
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate(prevProps) {
+      if (prevProps.refCallback !== this.props.refCallback && this.props.refCallback) {
+        this.props.refCallback(this.ref);
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      return react.cloneElement(this.props.children, {
+        ref: this.ref
+      });
+    }
+  }]);
+  return RefWrapper;
+}(react.Component);
 var nVisionSketchField_fabric = (__webpack_require__(676).fabric);
 var controlsVisible = {
   mtr: false
@@ -40380,13 +40051,13 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
   inherits_default()(NvisionSketchField, _PureComponent);
   function NvisionSketchField() {
     var _getPrototypeOf2;
-    var _this;
+    var _this2;
     classCallCheck_default()(this, NvisionSketchField);
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
-    _this = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(NvisionSketchField)).call.apply(_getPrototypeOf2, [this].concat(args)));
-    _this.state = {
+    _this2 = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(NvisionSketchField)).call.apply(_getPrototypeOf2, [this].concat(args)));
+    _this2.state = {
       parentWidth: 550,
       action: true,
       imageUrl: null,
@@ -40407,52 +40078,52 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       scaleMultiplier: 1,
       lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000']
     };
-    _this._fc = null;
-    _this.childRef = react.createRef();
-    _this.left1 = 0;
-    _this.top1 = 0;
-    _this.scale1x = 0;
-    _this.scale1y = 0;
-    _this.width1 = 0;
-    _this.height1 = 0;
-    _this.angle1 = 0;
-    _this.lastAngleRotation = null;
-    _this.currentAngle = 0;
-    _this.isRotating = false;
-    _this.cursorPos = new nVisionSketchField_fabric.Point();
-    _this._initTools = function (fabricCanvas) {
-      _this._tools = {};
-      _this._tools[tools.Select] = new src_select(fabricCanvas);
-      _this._tools[tools.Pencil] = new pencil(fabricCanvas);
-      _this._tools[tools.Line] = new line(fabricCanvas);
-      _this._tools[tools.Arrow] = new arrow(fabricCanvas);
-      _this._tools[tools.Rectangle] = new rectangle(fabricCanvas);
-      _this._tools[tools.RectangleLabel] = new rectangle_label(fabricCanvas);
-      _this._tools[tools.Circle] = new circle(fabricCanvas);
-      _this._tools[tools.Pan] = new pan(fabricCanvas);
-      _this._tools[tools.DefaultTool] = new defaul_tool(fabricCanvas);
-      _this._tools[tools.Ellipse] = new ellipse(fabricCanvas);
-      _this._tools[tools.Polygon] = new polygon(fabricCanvas);
-      _this._tools[tools.FreeDrawLine] = new freedrawline(fabricCanvas);
+    _this2._fc = null;
+    _this2.childRef = react.createRef();
+    _this2.left1 = 0;
+    _this2.top1 = 0;
+    _this2.scale1x = 0;
+    _this2.scale1y = 0;
+    _this2.width1 = 0;
+    _this2.height1 = 0;
+    _this2.angle1 = 0;
+    _this2.lastAngleRotation = null;
+    _this2.currentAngle = 0;
+    _this2.isRotating = false;
+    _this2.cursorPos = new nVisionSketchField_fabric.Point();
+    _this2._initTools = function (fabricCanvas) {
+      _this2._tools = {};
+      _this2._tools[tools.Select] = new src_select(fabricCanvas);
+      _this2._tools[tools.Pencil] = new pencil(fabricCanvas);
+      _this2._tools[tools.Line] = new line(fabricCanvas);
+      _this2._tools[tools.Arrow] = new arrow(fabricCanvas);
+      _this2._tools[tools.Rectangle] = new rectangle(fabricCanvas);
+      _this2._tools[tools.RectangleLabel] = new rectangle_label(fabricCanvas);
+      _this2._tools[tools.Circle] = new circle(fabricCanvas);
+      _this2._tools[tools.Pan] = new pan(fabricCanvas);
+      _this2._tools[tools.DefaultTool] = new defaul_tool(fabricCanvas);
+      _this2._tools[tools.Ellipse] = new ellipse(fabricCanvas);
+      _this2._tools[tools.Polygon] = new polygon(fabricCanvas);
+      _this2._tools[tools.FreeDrawLine] = new freedrawline(fabricCanvas);
     };
-    _this.enableTouchScroll = function () {
-      var canvas = _this._fc;
+    _this2.enableTouchScroll = function () {
+      var canvas = _this2._fc;
       if (canvas.allowTouchScrolling) return;
       canvas.allowTouchScrolling = true;
     };
-    _this.disableTouchScroll = function () {
-      var canvas = _this._fc;
+    _this2.disableTouchScroll = function () {
+      var canvas = _this2._fc;
       if (canvas.allowTouchScrolling) {
         canvas.allowTouchScrolling = false;
       }
     };
-    _this.addImg = function (dataUrl) {
+    _this2.addImg = function (dataUrl) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var canvas = _this._fc;
+      var canvas = _this2._fc;
       // canvas.clear();
       // let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
       canvas.clear();
-      _this._resize();
+      _this2._resize();
       nVisionSketchField_fabric.Image.fromURL(dataUrl, function (oImg) {
         var widthFactor = canvas.getWidth() / oImg.width;
         var heightFactor = canvas.getHeight() / oImg.height;
@@ -40478,7 +40149,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         // 'top': opts.top
         // });
         canvas.add(oImg);
-        _this.setState({
+        _this2.setState({
           scaleFactor: scaleFactor
         });
         canvas.renderAll();
@@ -40490,22 +40161,23 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       // }, 100);
       // }
     };
-    _this._onObjectAdded = function (e) {
-      var onObjectAdded = _this.props.onObjectAdded;
-      if (!_this.state.action) {
-        _this.setState({
+    _this2._onObjectAdded = function (e) {
+      var onObjectAdded = _this2.props.onObjectAdded;
+      if (!_this2.state.action) {
+        _this2.setState({
           action: true
         });
         return;
       }
       var obj = e.target;
+      console.log("TRACKING SETTING NVISION SKETCH FIELD _onObjectAdded : ", obj);
       if (obj.id === "trackingArea") {
-        _this.left1 = obj.left;
-        _this.top1 = obj.top;
-        _this.scale1x = obj.scaleX;
-        _this.scale1y = obj.scaleY;
-        _this.width1 = obj.width;
-        _this.height1 = obj.height;
+        _this2.left1 = obj.left;
+        _this2.top1 = obj.top;
+        _this2.scale1x = obj.scaleX;
+        _this2.scale1y = obj.scaleY;
+        _this2.width1 = obj.width;
+        _this2.height1 = obj.height;
       }
       // obj.__version = 1
       // // record current object state as json and save as originalState
@@ -40516,131 +40188,134 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       // this._history.keep([obj, state, state])
       onObjectAdded(e);
     };
-    _this._onObjectMoving = function (e) {
-      var onObjectMoving = _this.props.onObjectMoving;
+    _this2._onObjectMoving = function (e) {
+      var onObjectMoving = _this2.props.onObjectMoving;
       var obj = e.target;
+      console.log("TRACKING SETTING NVISION SKETCH FIELD _onObjectMoving : ", obj);
       var roiTypes = ["rect", "ellipse", "polygon"];
-      var boundary = _this.props.getboudaryCoords();
+      var boundary = _this2.props.getboudaryCoords();
       var brNew = obj.getBoundingRect();
       if (boundary && (brNew.height + brNew.top > boundary.height * boundary.scaleY + boundary.top || brNew.width + brNew.left > boundary.width * boundary.scaleX + boundary.left || brNew.left < boundary.left || brNew.top < boundary.top)) return;
       if (obj.id !== "trackingArea" && roiTypes.includes(obj.type)) {
-        _this.left1 = obj.left;
-        _this.top1 = obj.top;
-        _this.scale1x = obj.scaleX;
-        _this.scale1y = obj.scaleY;
-        _this.width1 = obj.width;
-        _this.height1 = obj.height;
+        _this2.left1 = obj.left;
+        _this2.top1 = obj.top;
+        _this2.scale1x = obj.scaleX;
+        _this2.scale1y = obj.scaleY;
+        _this2.width1 = obj.width;
+        _this2.height1 = obj.height;
       }
       onObjectMoving(e);
     };
-    _this._onObjectScaling = function (e) {
-      var onObjectScaling = _this.props.onObjectScaling;
+    _this2._onObjectScaling = function (e) {
+      var onObjectScaling = _this2.props.onObjectScaling;
       var obj = e.target;
+      console.log("TRACKING SETTING NVISION SKETCH FIELD _ONOBJECTSCALING : ", obj);
       obj.setCoords();
       var brNew = obj.getBoundingRect();
-      var canvas = _this._fc;
+      var canvas = _this2._fc;
       if (obj.id !== "trackingArea") {
-        var boundary = _this.props.getboudaryCoords();
+        var boundary = _this2.props.getboudaryCoords();
         var pointer = canvas.getPointer(e.e);
         if (boundary && (brNew.height + brNew.top > boundary.height * boundary.scaleY + boundary.top || brNew.width + brNew.left > boundary.width * boundary.scaleX + boundary.left || brNew.left < boundary.left || brNew.top < boundary.top)) {
-          obj.left = _this.left1;
-          obj.top = _this.top1;
-          obj.scaleX = _this.scale1x;
-          obj.scaleY = _this.scale1y;
-          obj.width = _this.width1;
-          obj.height = _this.height1;
-        } else if (!_this.props.checkForMinTotalArea(obj, "edit")) {
+          obj.left = _this2.left1;
+          obj.top = _this2.top1;
+          obj.scaleX = _this2.scale1x;
+          obj.scaleY = _this2.scale1y;
+          obj.width = _this2.width1;
+          obj.height = _this2.height1;
+        } else if (!_this2.props.checkForMinTotalArea(obj, "edit")) {
           console.log("%c[Animal Tracking]%c [Skecth Field] [On Object Scaling] The zone size should not be less than 100px of the total area.", "color:blue; font-weight: bold;", "color: black;");
-          obj.left = _this.left1;
-          obj.top = _this.top1;
-          obj.scaleX = _this.scale1x;
-          obj.scaleY = _this.scale1y;
-          obj.width = _this.width1;
-          obj.height = _this.height1;
+          obj.left = _this2.left1;
+          obj.top = _this2.top1;
+          obj.scaleX = _this2.scale1x;
+          obj.scaleY = _this2.scale1y;
+          obj.width = _this2.width1;
+          obj.height = _this2.height1;
         } else {
-          _this.left1 = obj.left;
-          _this.top1 = obj.top;
-          _this.scale1x = obj.scaleX;
-          _this.scale1y = obj.scaleY;
-          _this.width1 = obj.width;
-          _this.height1 = obj.height;
+          _this2.left1 = obj.left;
+          _this2.top1 = obj.top;
+          _this2.scale1x = obj.scaleX;
+          _this2.scale1y = obj.scaleY;
+          _this2.width1 = obj.width;
+          _this2.height1 = obj.height;
           // this.props.onShapeAdded();
         }
         return;
       }
       brNew = obj;
       if (brNew.width * brNew.scaleX + brNew.left > canvas.getWidth() - 1 || brNew.height * brNew.scaleY + brNew.top > canvas.getHeight() - 1 || brNew.left < 0 || brNew.top < 0) {
-        obj.left = _this.left1 <= 0 ? obj.left : _this.left1;
-        obj.top = _this.top1 <= 0 ? obj.top : _this.top1;
-        obj.scaleX = _this.scale1x === 0 ? obj.scaleX : _this.scale1x;
-        obj.scaleY = _this.scale1y === 0 ? obj.scaleY : _this.scale1y;
-        obj.width = _this.width1 === 0 ? obj.width : _this.width1;
-        obj.height = _this.height1 === 0 ? obj.height : _this.height1;
+        obj.left = _this2.left1 <= 0 ? obj.left : _this2.left1;
+        obj.top = _this2.top1 <= 0 ? obj.top : _this2.top1;
+        obj.scaleX = _this2.scale1x === 0 ? obj.scaleX : _this2.scale1x;
+        obj.scaleY = _this2.scale1y === 0 ? obj.scaleY : _this2.scale1y;
+        obj.width = _this2.width1 === 0 ? obj.width : _this2.width1;
+        obj.height = _this2.height1 === 0 ? obj.height : _this2.height1;
         obj.setCoords();
-      } else if (!_this.props.checkForMinTotalArea(obj, "edit", true)) {
+      } else if (!_this2.props.checkForMinTotalArea(obj, "edit", true)) {
         console.log("%c[Animal Tracking]%c [Skecth Field] [On Object Scaling] The tracking area should not be less than 200px width and height respectively.", "color:blue; font-weight: bold;", "color: black;");
-        obj.left = _this.left1;
-        obj.top = _this.top1;
-        obj.scaleX = _this.scale1x;
-        obj.scaleY = _this.scale1y;
-        obj.width = _this.width1;
-        obj.height = _this.height1;
+        obj.left = _this2.left1;
+        obj.top = _this2.top1;
+        obj.scaleX = _this2.scale1x;
+        obj.scaleY = _this2.scale1y;
+        obj.width = _this2.width1;
+        obj.height = _this2.height1;
       } else {
-        _this.left1 = obj.left;
-        _this.top1 = obj.top;
-        _this.scale1x = obj.scaleX;
-        _this.scale1y = obj.scaleY;
-        _this.width1 = obj.width;
-        _this.height1 = obj.height;
+        _this2.left1 = obj.left;
+        _this2.top1 = obj.top;
+        _this2.scale1x = obj.scaleX;
+        _this2.scale1y = obj.scaleY;
+        _this2.width1 = obj.width;
+        _this2.height1 = obj.height;
         // this.props.onShapeAdded();
       }
       onObjectScaling(e);
     };
-    _this._onObjectRotating = function (e) {
-      var onObjectRotating = _this.props.onObjectRotating;
+    _this2._onObjectRotating = function (e) {
+      var onObjectRotating = _this2.props.onObjectRotating;
       var angle = nVisionSketchField_treatAngle(e.target.angle);
-      var canvas = _this._fc;
-      if (_this.lastAngleRotation !== angle) {
+      var canvas = _this2._fc;
+      if (_this2.lastAngleRotation !== angle) {
         canvas.setCursor(nVisionSketchField_mouseRotateIcon(angle));
-        _this.lastAngleRotation = angle;
+        _this2.lastAngleRotation = angle;
       }
       ;
-      _this.isRotating = true;
-      _this.currentAngle = e.target.angle;
-      _this.cursorPos.x = e.pointer.x;
-      _this.cursorPos.y = e.pointer.y;
+      _this2.isRotating = true;
+      _this2.currentAngle = e.target.angle;
+      _this2.cursorPos.x = e.pointer.x;
+      _this2.cursorPos.y = e.pointer.y;
       var roiTypes = ["rect", "ellipse", "polygon"];
       var obj = e.target;
       obj.setCoords();
       var brNew = obj.getBoundingRect();
       if (obj.id !== "trackingArea" && roiTypes.includes(obj.type)) {
-        var boundary = _this.props.getboudaryCoords();
+        var boundary = _this2.props.getboudaryCoords();
         if (boundary && (brNew.height + brNew.top > boundary.height * boundary.scaleY + boundary.top || brNew.width + brNew.left > boundary.width * boundary.scaleX + boundary.left || brNew.left < boundary.left || brNew.top < boundary.top)) {
-          obj.angle = _this.angle1;
-          obj.left = _this.left1;
-          obj.top = _this.top1;
-          obj.scaleX = _this.scale1x;
-          obj.scaleY = _this.scale1y;
-          obj.width = _this.width1;
-          obj.height = _this.height1;
+          obj.angle = _this2.angle1;
+          obj.left = _this2.left1;
+          obj.top = _this2.top1;
+          obj.scaleX = _this2.scale1x;
+          obj.scaleY = _this2.scale1y;
+          obj.width = _this2.width1;
+          obj.height = _this2.height1;
         } else {
-          _this.angle1 = obj.angle;
-          _this.left1 = obj.left;
-          _this.top1 = obj.top;
-          _this.scale1x = obj.scaleX;
-          _this.scale1y = obj.scaleY;
-          _this.width1 = obj.width;
-          _this.height1 = obj.height;
+          _this2.angle1 = obj.angle;
+          _this2.left1 = obj.left;
+          _this2.top1 = obj.top;
+          _this2.scale1x = obj.scaleX;
+          _this2.scale1y = obj.scaleY;
+          _this2.width1 = obj.width;
+          _this2.height1 = obj.height;
         }
         return;
       }
       onObjectRotating(e);
     };
-    _this._onObjectModified = function (e) {
+    _this2._onObjectModified = function (e) {
       var obj = e.target;
-      _this.isRotating = false;
+      console.log("TRACKING SETTING NVISION SKETCH FIELD _onObjectModified : ", obj);
+      _this2.isRotating = false;
       if (obj.id === "trackingArea") {
-        _this.trackingAreaModified(obj);
+        _this2.trackingAreaModified(obj);
         return;
       }
       // if(obj.type === "polygon" && this.checkForMinDistance(obj)){
@@ -40648,7 +40323,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       //   this.props.onShapeAdded();
       //   return;
       // }
-      var boundaryObj = _this.props.getboudaryCoords();
+      var boundaryObj = _this2.props.getboudaryCoords();
       //FEN-413
       /*if(boundaryObj && obj.height > (boundaryObj.height * boundaryObj.scaleY) || obj.width > (boundaryObj.width * boundaryObj.scaleX) ){
       return;
@@ -40692,27 +40367,28 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           top: newTop
         });
         obj.setCoords();
-        _this._fc.renderAll();
+        _this2._fc.renderAll();
       }
       obj.setCoords();
-      _this.props.checkForOverlap(obj);
-      _this.props.onShapeAdded();
+      _this2.props.checkForOverlap(obj);
+      _this2.props.onShapeAdded();
       obj.__version += 1;
       var prevState = JSON.stringify(obj.__originalState);
       var objState = obj.toJSON();
       // record current object state as json and update to originalState
       obj.__originalState = objState;
       var currState = JSON.stringify(objState);
-      _this.props.updateIsTrackingSettingsChanged({
+      _this2.props.updateIsTrackingSettingsChanged({
         isTrackingSettingChanged: true,
         defineArenaZoneEdited: true
       });
       // this._history.keep([obj, prevState, currState]);
     };
-    _this.trackingAreaModified = function (obj) {
-      var canvas = _this._fc;
+    _this2.trackingAreaModified = function (obj) {
+      var canvas = _this2._fc;
       var canvasTL = new nVisionSketchField_fabric.Point(0, 0);
       var canvasBR = new nVisionSketchField_fabric.Point(canvas.getWidth() - 1, canvas.getHeight() - 1);
+      console.log("TRACKING SETTING NVISION SKETCH FIELD trackingAreaModified : ", obj);
       if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
         console.log("%c[Animal Tracking]%c [Traking Area] Modified outside the canvas", "color:blue; font-weight: bold;", "color: black;", obj);
         var objBounds = obj.getBoundingRect();
@@ -40728,20 +40404,20 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         if (left < 0) left = 0;
         obj.setPositionByOrigin(new nVisionSketchField_fabric.Point(left, top), "left", "top");
         obj.setCoords();
-        _this._fc.renderAll();
-        _this.checkWithInBoundary();
+        _this2._fc.renderAll();
+        _this2.checkWithInBoundary();
       } else {
         console.log("%c[Animal Tracking]%c [Traking Area] Modified with in canvas", "color:blue; font-weight: bold;", "color: black;", obj);
-        _this.checkWithInBoundary();
+        _this2.checkWithInBoundary();
       }
-      _this.props.onShapeAdded();
-      _this.props.updateIsTrackingSettingsChanged({
+      _this2.props.onShapeAdded();
+      _this2.props.updateIsTrackingSettingsChanged({
         isTrackingSettingChanged: true,
         trackingAreaEdited: true
       });
     };
-    _this.getCenterPoint = function (obj) {
-      var selectedObj = _this._fc.getObjects().find(function (ob) {
+    _this2.getCenterPoint = function (obj) {
+      var selectedObj = _this2._fc.getObjects().find(function (ob) {
         return ob.defaultName === obj.defaultName;
       });
       if (selectedObj) {
@@ -40749,14 +40425,14 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       }
       return obj.centerPoint;
     };
-    _this.areShapesOverlapping = function (obj1, obj2) {
-      var shape1Points = _this.convertShapeToPolygon(obj1);
-      var shape2Points = _this.convertShapeToPolygon(obj2);
+    _this2.areShapesOverlapping = function (obj1, obj2) {
+      var shape1Points = _this2.convertShapeToPolygon(obj1);
+      var shape2Points = _this2.convertShapeToPolygon(obj2);
       console.log(getOverlapAreas(shape1Points, shape2Points).length > 0, "isOverlap");
       var isOverlap = getOverlapAreas(shape1Points, shape2Points).length > 0 ? true : false;
       return isOverlap;
     };
-    _this.generateEllipsePoints = function (ellipse) {
+    _this2.generateEllipsePoints = function (ellipse) {
       var points = [];
       var center = ellipse.getCenterPoint();
       var radiusX = ellipse.rx * ellipse.scaleX;
@@ -40782,7 +40458,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       });
       return rotatedPoints;
     };
-    _this.convertShapeToPolygon = function (shape) {
+    _this2.convertShapeToPolygon = function (shape) {
       switch (shape.type) {
         case 'rect':
           var x1 = shape.oCoords.tl.x;
@@ -40795,7 +40471,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           var y4 = shape.oCoords.bl.y;
           return [[x1, y1], [x2, y2], [x3, y3], [x4, y4]];
         case 'ellipse':
-          return _this.generateEllipsePoints(shape);
+          return _this2.generateEllipsePoints(shape);
         case 'polygon':
           var points = [];
           Object.keys(shape.oCoords).map(function (p) {
@@ -40810,26 +40486,26 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           throw new Error("Unknown shape type: ".concat(shape.type));
       }
     };
-    _this.checkWithInBoundary = /*#__PURE__*/asyncToGenerator_default()(/*#__PURE__*/regenerator_default().mark(function _callee() {
+    _this2.checkWithInBoundary = /*#__PURE__*/asyncToGenerator_default()(/*#__PURE__*/regenerator_default().mark(function _callee() {
       var canvas, showNotification, boundary, boundryCoords;
       return regenerator_default().wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              canvas = _this._fc;
+              canvas = _this2._fc;
               showNotification = false;
               boundary = canvas.getObjects().find(function (ob) {
                 return ob.id === "trackingArea";
               });
               boundryCoords = [];
               if (boundary) {
-                boundryCoords = _this.convertShapeToPolygon(boundary);
+                boundryCoords = _this2.convertShapeToPolygon(boundary);
               }
               boundryCoords.length && canvas.getObjects().forEach(function (shape) {
                 if (shape.id === "calibratedLine") return;
                 if (shape.id !== "trackingArea") {
                   var isOutsideBoundary = false;
-                  var transformedPoints = _this.convertShapeToPolygon(shape);
+                  var transformedPoints = _this2.convertShapeToPolygon(shape);
                   transformedPoints.forEach(function (point) {
                     if (!isInside(point, boundryCoords)) {
                       isOutsideBoundary = true;
@@ -40837,13 +40513,13 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
                   });
                   if (isOutsideBoundary) {
                     showNotification = true;
-                    _this.props.addColorInDefaultShapeColors(shape.stroke);
-                    _this.props.deleteROIDefaultName(shape.defaultName);
+                    _this2.props.addColorInDefaultShapeColors(shape.stroke);
+                    _this2.props.deleteROIDefaultName(shape.defaultName);
                     canvas.remove(shape);
                   }
                 }
               });
-              showNotification && _this.props.notificationShow("Zones lying outside of tracking area were removed.");
+              showNotification && _this2.props.notificationShow("Zones lying outside of tracking area were removed.");
               canvas.renderAll();
               // this.props.onShapeAdded();
             case 8:
@@ -40853,29 +40529,29 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         }
       }, _callee);
     }));
-    _this.removeUnCompletedShapes = function () {
-      var canvas = _this._fc;
+    _this2.removeUnCompletedShapes = function () {
+      var canvas = _this2._fc;
       var roiTypes = ["rect", "ellipse", "polygon"];
       canvas.getObjects().forEach(function (shape) {
         if (shape.id !== "calibratedLine" && !roiTypes.includes(shape.type)) canvas.remove(shape);
       });
       canvas.renderAll();
     };
-    _this.checkForMinDistance = function (polygon) {
+    _this2.checkForMinDistance = function (polygon) {
       var points = polygon.points;
       var minDistance = 10;
       var distance;
       for (var i = 0; i < points.length - 1; i++) {
         distance = Math.sqrt(Math.pow(points[i + 1].x - points[i].x, 2) + Math.pow(points[i + 1].y - points[i].y, 2));
         if (distance < minDistance) {
-          _this.props.setSelected(polygon, true);
+          _this2.props.setSelected(polygon, true);
           return true;
         }
       }
       return false;
     };
-    _this._onObjectRemoved = function (e) {
-      var onObjectRemoved = _this.props.onObjectRemoved;
+    _this2._onObjectRemoved = function (e) {
+      var onObjectRemoved = _this2.props.onObjectRemoved;
       var obj = e.target;
       if (obj.__removed) {
         obj.__version += 1;
@@ -40884,59 +40560,59 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       obj.__version = 0;
       onObjectRemoved(e);
     };
-    _this._onMouseDown = function (e) {
-      var onMouseDown = _this.props.onMouseDown;
-      _this._selectedTool.doMouseDown(e, _this.props, assertThisInitialized_default()(assertThisInitialized_default()(_this)));
+    _this2._onMouseDown = function (e) {
+      var onMouseDown = _this2.props.onMouseDown;
+      _this2._selectedTool.doMouseDown(e, _this2.props, assertThisInitialized_default()(assertThisInitialized_default()(_this2)));
       onMouseDown(e);
     };
-    _this._onMouseMove = function (e) {
-      var onMouseMove = _this.props.onMouseMove;
-      _this._selectedTool.doMouseMove(e, _this.props);
+    _this2._onMouseMove = function (e) {
+      var onMouseMove = _this2.props.onMouseMove;
+      _this2._selectedTool.doMouseMove(e, _this2.props);
       onMouseMove(e);
     };
-    _this._onMouseOut = function (e) {
-      var onMouseOut = _this.props.onMouseOut;
-      _this._selectedTool.doMouseOut(e);
-      if (_this.props.onChange) {
-        var onChange = _this.props.onChange;
+    _this2._onMouseOut = function (e) {
+      var onMouseOut = _this2.props.onMouseOut;
+      _this2._selectedTool.doMouseOut(e);
+      if (_this2.props.onChange) {
+        var onChange = _this2.props.onChange;
         setTimeout(function () {
           onChange(e.e);
         }, 10);
       }
       onMouseOut(e);
     };
-    _this._onMouseUp = function (e) {
-      var onMouseUp = _this.props.onMouseUp;
-      _this._selectedTool.doMouseUp(e, _this.props, assertThisInitialized_default()(assertThisInitialized_default()(_this)));
-      _this.isRotating = false;
+    _this2._onMouseUp = function (e) {
+      var onMouseUp = _this2.props.onMouseUp;
+      _this2._selectedTool.doMouseUp(e, _this2.props, assertThisInitialized_default()(assertThisInitialized_default()(_this2)));
+      _this2.isRotating = false;
       // Update the final state to new-generated object
       // Ignore Path object since it would be created after mouseUp
       // Assumed the last object in canvas.getObjects() in the newest object
-      if (_this.props.tool !== tools.Pencil) {
-        var canvas = _this._fc;
+      if (_this2.props.tool !== tools.Pencil) {
+        var canvas = _this2._fc;
         var objects = canvas.getObjects();
         var newObj = objects[objects.length - 1];
         if (newObj && newObj.__version === 1) {
           newObj.__originalState = newObj.toJSON();
         }
       }
-      if (_this.props.onChange) {
-        var onChange = _this.props.onChange;
+      if (_this2.props.onChange) {
+        var onChange = _this2.props.onChange;
         setTimeout(function () {
           onChange(e.e);
         }, 10);
       }
       onMouseUp(e);
-      _this.isRotating = false;
+      _this2.isRotating = false;
     };
-    _this.renderRotateLabel = function (ctx, canvas) {
-      var angleText = "".concat(_this.currentAngle.toFixed(0), "\xB0"),
+    _this2.renderRotateLabel = function (ctx, canvas) {
+      var angleText = "".concat(_this2.currentAngle.toFixed(0), "\xB0"),
         borderRadius = 5,
         rectWidth = 32,
         rectHeight = 19,
         textWidth = 6.01 * angleText.length - 2.317;
       var tempPoint = nVisionSketchField_fabric.util.rotatePoint(new nVisionSketchField_fabric.Point(40, 0), new nVisionSketchField_fabric.Point(40, 0), nVisionSketchField_fabric.util.degreesToRadians(30));
-      var pos = _this.cursorPos.add(tempPoint);
+      var pos = _this2.cursorPos.add(tempPoint);
       var _canvas$vptCoords = canvas.vptCoords,
         tl = _canvas$vptCoords.tl,
         br = _canvas$vptCoords.br;
@@ -40951,21 +40627,21 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       ctx.fillText(angleText, rectWidth / 2 - textWidth / 2, rectHeight / 2 + 4);
       ctx.restore();
     };
-    _this.getOverlayDimensions = function () {
-      var canvas = _this._fc;
+    _this2.getOverlayDimensions = function () {
+      var canvas = _this2._fc;
       if (canvas && canvas.upperCanvasEl) {
         var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
       } else {
         var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
       }
-      var resolutionRatio = _this.props.resolutionWidth / _this.props.resolutionHeight;
-      if (_this.props.resolutionHeight === 1080 && _this.props.resolutionWidth === 1920) {
-        var overlayHeight = Math.ceil(_this.props.resolutionHeight / (_this.props.resolutionWidth / overlayWidth));
+      var resolutionRatio = _this2.props.resolutionWidth / _this2.props.resolutionHeight;
+      if (_this2.props.resolutionHeight === 1080 && _this2.props.resolutionWidth === 1920) {
+        var overlayHeight = Math.ceil(_this2.props.resolutionHeight / (_this2.props.resolutionWidth / overlayWidth));
       } else {
         //var overlayHeight = Math.ceil(document.getElementById("video-container-3").offsetHeight);
         //var overlayWidth = overlayHeight * resolutionRatio;
         var overlayHeight = document.getElementById("video-container-3").offsetHeight;
-        var overlayWidth = Math.ceil(_this.props.resolutionWidth / (_this.props.resolutionHeight / overlayHeight));
+        var overlayWidth = Math.ceil(_this2.props.resolutionWidth / (_this2.props.resolutionHeight / overlayHeight));
       }
       console.log('[Tracking Setting][Tracking Area] Canvas Overlay Width:', overlayWidth, overlayHeight);
       return {
@@ -40973,18 +40649,18 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         overlayHeight: overlayHeight
       };
     };
-    _this._resize = function (e) {
+    _this2._resize = function (e) {
       var canvasWidth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var canvasHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-      var _this$getOverlayDimen = _this.getOverlayDimensions(),
-        overlayWidth = _this$getOverlayDimen.overlayWidth,
-        overlayHeight = _this$getOverlayDimen.overlayHeight;
-      _this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
+      var _this2$getOverlayDime = _this2.getOverlayDimensions(),
+        overlayWidth = _this2$getOverlayDime.overlayWidth,
+        overlayHeight = _this2$getOverlayDime.overlayHeight;
+      _this2.getCanvasAtResoution(overlayWidth, overlayHeight, false);
     };
-    _this.resizeZones = function (oldWidth, oldHeight) {
+    _this2.resizeZones = function (oldWidth, oldHeight) {
       return;
       // removed by dead control flow
-{ var _this$state, scaleHeightMultiplier, scaleMultiplier; }
+{ var _this2$state, scaleHeightMultiplier, scaleMultiplier; }
       // removed by dead control flow
 { var canvas; }
       //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
@@ -41008,17 +40684,17 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       // removed by dead control flow
 { var scaleFactor, i, objects, cnHeightMultiplier, cnwidthMultiplier; }
     };
-    _this.resizeZonesOnImport = function (newWidth, newHeight) {
+    _this2.resizeZonesOnImport = function (newWidth, newHeight) {
       console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport] New width", newWidth, "NewHeight", newHeight);
-      var _this$state2 = _this.state,
-        scaleHeightMultiplier = _this$state2.scaleHeightMultiplier,
-        scaleMultiplier = _this$state2.scaleMultiplier;
-      var canvas = _this._fc;
+      var _this2$state2 = _this2.state,
+        scaleHeightMultiplier = _this2$state2.scaleHeightMultiplier,
+        scaleMultiplier = _this2$state2.scaleMultiplier;
+      var canvas = _this2._fc;
       //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
       //let cHeight = canvas.getHeight() - this.state.strokeWidth;
       var cWidth = canvas.getWidth();
       var cHeight = canvas.getHeight();
-      if (_this.props.resolutionHeight === 1080 && _this.props.resolutionWidth === 1920) {
+      if (_this2.props.resolutionHeight === 1080 && _this2.props.resolutionWidth === 1920) {
         //cHeight = canvas.getHeight() - this.state.strokeWidth;
       }
       console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Overlay container new width and new height", newWidth, newHeight);
@@ -41042,19 +40718,19 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
           objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
           objects[i].setCoords();
-          var scaleFactor = _this.state.scaleFactor * scaleMultiplier;
+          var scaleFactor = _this2.state.scaleFactor * scaleMultiplier;
           // this.setState({ scaleFactor });
           console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: object details after resizing", objects[i]);
         }
         // this.props.onShapeAdded();
-        _this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
-        _this.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
+        _this2.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
+        _this2.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
         console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas Dimensions after resize", cHeight * cnwidthMultiplier, cWidth * cnHeightMultiplier);
         canvas.discardActiveObject();
         // canvas.setWidth(cWidth * cnwidthMultiplier);
         // canvas.setHeight(cHeight * cnHeightMultiplier);
-        _this.props.trackingCanvasHeight(cHeight);
-        _this.props.trackingCanvasWidth(cWidth);
+        _this2.props.trackingCanvasHeight(cHeight);
+        _this2.props.trackingCanvasWidth(cWidth);
         canvas.renderAll();
         // canvas.calcOffset();
         // this.props.onShapeAdded();
@@ -41062,20 +40738,20 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         // });
       }
     };
-    _this.resizeOverlayAndCanvasOnCompoentMount = function (e) {
+    _this2.resizeOverlayAndCanvasOnCompoentMount = function (e) {
       var canvasWidth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var canvasHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-      var _this$getOverlayDimen2 = _this.getOverlayDimensions(),
-        overlayWidth = _this$getOverlayDimen2.overlayWidth,
-        overlayHeight = _this$getOverlayDimen2.overlayHeight;
-      _this.getCanvasAtComponentMount(overlayWidth, overlayHeight, false);
+      var _this2$getOverlayDime2 = _this2.getOverlayDimensions(),
+        overlayWidth = _this2$getOverlayDime2.overlayWidth,
+        overlayHeight = _this2$getOverlayDime2.overlayHeight;
+      _this2.getCanvasAtComponentMount(overlayWidth, overlayHeight, false);
     };
-    _this.getCanvasAtResoution = function (newWidth, newHeight) {
+    _this2.getCanvasAtResoution = function (newWidth, newHeight) {
       var scaleLandmarks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-      var canvas = _this._fc;
-      var cWidth = canvas.getWidth() - _this.state.strokeWidth;
-      var cHeight = canvas.getHeight() - _this.state.strokeWidth;
-      if (_this.props.resolutionHeight === 1080 && _this.props.resolutionWidth === 1920) {
+      var canvas = _this2._fc;
+      var cWidth = canvas.getWidth() - _this2.state.strokeWidth;
+      var cHeight = canvas.getHeight() - _this2.state.strokeWidth;
+      if (_this2.props.resolutionHeight === 1080 && _this2.props.resolutionWidth === 1920) {
         //cHeight = canvas.getHeight() - this.state.strokeWidth;
       }
       console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight);
@@ -41095,23 +40771,23 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           objects[i].cnWidth = Math.round(cWidth * scaleMultiplier);
           objects[i].cnHeight = Math.round(cHeight * scaleHeightMultiplier);
           objects[i].setCoords();
-          var scaleFactor = _this.state.scaleFactor * scaleMultiplier;
-          _this.setState({
+          var scaleFactor = _this2.state.scaleFactor * scaleMultiplier;
+          _this2.setState({
             scaleFactor: scaleFactor
           });
           console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: object details after resizing", objects[i]);
         }
-        _this.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
-        _this.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
+        _this2.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
+        _this2.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
         console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
         canvas.discardActiveObject();
         canvas.setWidth(cWidth * scaleMultiplier);
         canvas.setHeight(cHeight * scaleHeightMultiplier);
-        _this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
-        _this.props.trackingCanvasWidth(cWidth * scaleMultiplier);
+        _this2.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
+        _this2.props.trackingCanvasWidth(cWidth * scaleMultiplier);
         canvas.renderAll();
         canvas.calcOffset();
-        _this.setState({
+        _this2.setState({
           canvasHeight: canvas.height,
           canvasWidth: canvas.width,
           scaleHeightMultiplier: scaleHeightMultiplier,
@@ -41119,14 +40795,14 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         }, function () {});
       }
     };
-    _this.scaleObject = function (object, scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
+    _this2.scaleObject = function (object, scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
       var updateCanvasDimensions = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
       object.left = object.left * scaleMultiplier;
       object.top = object.top * scaleMultiplier;
       object.scaleX = object.scaleX * scaleMultiplier;
       object.scaleY = object.scaleY * scaleMultiplier;
       if (object.type === "ellipse") {
-        var canvas = _this._fc;
+        var canvas = _this2._fc;
         var selectedObject = canvas.getObjects().find(function (ob) {
           return ob.defaultName === object.defaultName;
         });
@@ -41144,7 +40820,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         }
       }
       if (object.type === "polygon" || object.type === "rect" && object.angle > 0) {
-        var _canvas = _this._fc;
+        var _canvas = _this2._fc;
         var _selectedObject = _canvas.getObjects().find(function (ob) {
           return ob.defaultName === object.defaultName;
         });
@@ -41169,50 +40845,50 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       }
       return object;
     };
-    _this.updateObjectsInReduxAnimalTrackingKey = function (scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
+    _this2.updateObjectsInReduxAnimalTrackingKey = function (scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
       var updateCanvasDimensions = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
       var scaleMultiplierForObjects = scaleMultiplier;
-      var trackingArea = _this.scaleObject(JSON.parse(JSON.stringify(_this.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
-      _this.props.saveDimesions(trackingArea);
+      var trackingArea = _this2.scaleObject(JSON.parse(JSON.stringify(_this2.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+      _this2.props.saveDimesions(trackingArea);
       var lineShape = [];
-      if (_this.props.lineShape.length) {
-        lineShape[0] = _this.scaleObject(JSON.parse(JSON.stringify(_this.props.lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+      if (_this2.props.lineShape.length) {
+        lineShape[0] = _this2.scaleObject(JSON.parse(JSON.stringify(_this2.props.lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
       }
-      _this.props.updateLineShape(lineShape);
+      _this2.props.updateLineShape(lineShape);
       var zones = [];
-      _this.props.zones.map(function (zone) {
-        var scaledObject = _this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+      _this2.props.zones.map(function (zone) {
+        var scaledObject = _this2.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
         zones.push(scaledObject);
       });
-      _this.props.updateArenaZoneShapesList(zones);
+      _this2.props.updateArenaZoneShapesList(zones);
     };
-    _this.updateObjectsInRedux = function (scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
+    _this2.updateObjectsInRedux = function (scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
       var updateCanvasDimensions = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-      var selectedCameraForTracking = _this.props.selectedCameraForTracking;
-      var nVisionSession = JSON.parse(JSON.stringify(_this.props.nVisionSession));
+      var selectedCameraForTracking = _this2.props.selectedCameraForTracking;
+      var nVisionSession = JSON.parse(JSON.stringify(_this2.props.nVisionSession));
       var trackingInterface = nVisionSession.userInterface.trackingInterface;
       var trackingArea = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].trackingArea));
       console.log("[tracking settings][Sketch Field][updateObjectsInRedux][scaling objects][object details before scaling]: ", trackingArea);
       var lineShape = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates));
       var arenaZoneShapesList = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].arenaZone.zoneList));
-      trackingArea.geometry.coordinates = _this.scaleObject(trackingArea.geometry.coordinates, scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+      trackingArea.geometry.coordinates = _this2.scaleObject(trackingArea.geometry.coordinates, scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
       if (lineShape.length) {
-        lineShape[0] = _this.scaleObject(lineShape[0], scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+        lineShape[0] = _this2.scaleObject(lineShape[0], scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
       }
       var zones = [];
       arenaZoneShapesList.map(function (zone) {
-        var scaledObject = JSON.parse(JSON.stringify(_this.scaleObject(zone, scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions)));
+        var scaledObject = JSON.parse(JSON.stringify(_this2.scaleObject(zone, scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions)));
         zones.push(scaledObject);
       });
       console.log("[Tracking Settings][Sketch Field][updateObjectsInRedux][scaling objects]: Objects details after rescaling: ", arenaZoneShapesList);
       nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].trackingArea = trackingArea;
       nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates = lineShape;
       nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].arenaZone.zoneList = zones;
-      _this.props.updateNvisionSession(nVisionSession);
+      _this2.props.updateNvisionSession(nVisionSession);
     };
-    _this.getCanvasAtComponentMount = function (newWidth, newHeight) {
+    _this2.getCanvasAtComponentMount = function (newWidth, newHeight) {
       var scaleLandmarks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-      var canvas = _this._fc;
+      var canvas = _this2._fc;
       var cWidth = canvas.getWidth();
       var cHeight = canvas.getHeight();
       var scaleMultiplier = newWidth / cWidth;
@@ -41231,50 +40907,50 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       console.log("[Tracking Settings][Sketch Field][getCanvasAtComponentMount][component mount] Resize Canvas Dimensions to: ", cHeight * scaleHeightMultiplier, cWidth * scaleMultiplier);
       canvas.setWidth(cWidth * scaleMultiplier);
       canvas.setHeight(cHeight * scaleHeightMultiplier);
-      _this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
-      _this.props.trackingCanvasWidth(cWidth * scaleMultiplier);
+      _this2.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
+      _this2.props.trackingCanvasWidth(cWidth * scaleMultiplier);
       canvas.renderAll();
       canvas.calcOffset();
-      _this.setState({
+      _this2.setState({
         canvasHeight: canvas.height,
         canvasWidth: canvas.width
       }, function () {});
-      _this.resizeCanvas(true, false);
+      _this2.resizeCanvas(true, false);
     };
-    _this.resizeCanvas = function () {
+    _this2.resizeCanvas = function () {
       var addDimension = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       var resize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-      var currCanvas = _this._fc;
-      var _this$getOverlayDimen3 = _this.getOverlayDimensions(),
-        overlayWidth = _this$getOverlayDimen3.overlayWidth,
-        overlayHeight = _this$getOverlayDimen3.overlayHeight;
+      var currCanvas = _this2._fc;
+      var _this2$getOverlayDime3 = _this2.getOverlayDimensions(),
+        overlayWidth = _this2$getOverlayDime3.overlayWidth,
+        overlayHeight = _this2$getOverlayDime3.overlayHeight;
       console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of overlay container] :", overlayWidth, overlayHeight);
       console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of canvas] :", currCanvas.getWidth(), currCanvas.getHeight());
       if (resize) {
-        _this._resize();
+        _this2._resize();
       }
       var newCanvasWidth = overlayWidth;
       var newCanvasHeight = overlayHeight;
       if (addDimension) {
-        newCanvasWidth = _this.getActualCanvasDimensions(overlayWidth, overlayHeight, true).width;
-        newCanvasHeight = _this.getActualCanvasDimensions(overlayWidth, overlayHeight, true).height;
+        newCanvasWidth = _this2.getActualCanvasDimensions(overlayWidth, overlayHeight, true).width;
+        newCanvasHeight = _this2.getActualCanvasDimensions(overlayWidth, overlayHeight, true).height;
       }
       currCanvas.setHeight(newCanvasHeight);
       currCanvas.setWidth(newCanvasWidth);
       currCanvas.requestRenderAll();
-      _this.props.trackingCanvasHeight(currCanvas.getHeight());
-      _this.props.trackingCanvasWidth(currCanvas.getWidth());
+      _this2.props.trackingCanvasHeight(currCanvas.getHeight());
+      _this2.props.trackingCanvasWidth(currCanvas.getWidth());
       console.log("[Tracking Settings][Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(), currCanvas.getHeight());
     };
-    _this.setCanvasWidthHeightInRedux = function () {
-      var currCanvas = _this._fc;
-      _this.props.trackingCanvasHeight(currCanvas.getHeight());
-      _this.props.trackingCanvasWidth(currCanvas.getWidth());
+    _this2.setCanvasWidthHeightInRedux = function () {
+      var currCanvas = _this2._fc;
+      _this2.props.trackingCanvasHeight(currCanvas.getHeight());
+      _this2.props.trackingCanvasWidth(currCanvas.getWidth());
     };
-    _this.bindLandmarks = function () {
+    _this2.bindLandmarks = function () {
       var updateLandmarks = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       var canvasData = arguments.length > 1 ? arguments[1] : undefined;
-      var canvas = canvasData ? canvasData : _this._fc;
+      var canvas = canvasData ? canvasData : _this2._fc;
       var multiply = nVisionSketchField_fabric.util.multiplyTransformMatrices;
       var invert = nVisionSketchField_fabric.util.invertTransform;
       var boss = canvas.getObjects().filter(function (o) {
@@ -41294,78 +40970,78 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         var landMarks = canvas ? JSON.parse(JSON.stringify(canvas.getObjects().filter(function (o) {
           return o.type !== "image";
         }))) : [];
-        _this.updateOnepTwop('_landmarks');
+        _this2.updateOnepTwop('_landmarks');
         console.log("[MIRA] Updated list of landmarks objects: ", JSON.stringify(landMarks));
       }
     };
-    _this.getActualCanvasDimensions = function (width, height) {
+    _this2.getActualCanvasDimensions = function (width, height) {
       var fullWidth = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-      var canvas = _this._fc;
+      var canvas = _this2._fc;
       var obj = {
         width: width,
         height: height
       };
-      obj.width = width + _this.state.strokeWidth;
-      obj.height = height + (fullWidth ? _this.state.strokeWidth : _this.state.strokeWidth + 0);
+      obj.width = width + _this2.state.strokeWidth;
+      obj.height = height + (fullWidth ? _this2.state.strokeWidth : _this2.state.strokeWidth + 0);
       return obj;
     };
-    _this.onMountUpdateObjectsInReduxAnimalTrackingKey = function (scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
+    _this2.onMountUpdateObjectsInReduxAnimalTrackingKey = function (scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
       var updateCanvasDimensions = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
       var trackingArea = arguments.length > 5 ? arguments[5] : undefined;
       var arenaZoneShapesList = arguments.length > 6 ? arguments[6] : undefined;
       var lineShape = arguments.length > 7 ? arguments[7] : undefined;
       var scaleMultiplierForObjects = scaleMultiplier;
-      var trackingObject = _this.scaleObject(JSON.parse(JSON.stringify(trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
-      _this.props.saveDimesions(trackingObject);
+      var trackingObject = _this2.scaleObject(JSON.parse(JSON.stringify(trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+      _this2.props.saveDimesions(trackingObject);
       var lineObject = [];
       if (lineShape.length) {
-        lineObject[0] = _this.scaleObject(JSON.parse(JSON.stringify(lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+        lineObject[0] = _this2.scaleObject(JSON.parse(JSON.stringify(lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
       }
-      _this.props.updateLineShape(lineObject);
+      _this2.props.updateLineShape(lineObject);
       var zones = [];
       arenaZoneShapesList.map(function (zone) {
-        var scaledObject = JSON.parse(JSON.stringify(_this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions)));
+        var scaledObject = JSON.parse(JSON.stringify(_this2.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions)));
         zones.push(scaledObject);
       });
-      _this.props.updateArenaZoneShapesList(zones);
+      _this2.props.updateArenaZoneShapesList(zones);
     };
-    _this.resizeReduxAndSessionObjectsOnMount = function (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) {
-      var canvas = _this._fc;
-      var cWidth = canvas.getWidth() - _this.state.strokeWidth;
-      var cHeight = canvas.getHeight() - _this.state.strokeWidth;
+    _this2.resizeReduxAndSessionObjectsOnMount = function (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) {
+      var canvas = _this2._fc;
+      var cWidth = canvas.getWidth() - _this2.state.strokeWidth;
+      var cHeight = canvas.getHeight() - _this2.state.strokeWidth;
       console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsOnMount]: canvas Old width and old height:", oldWidth, oldHeight);
       console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsOnMount]: Current Canvas width and height : ", cWidth, cHeight);
       if (canvas && oldWidth !== cWidth && canvas.upperCanvasEl) {
         //if (canvas && canvas.upperCanvasEl) {
         var scaleMultiplier = cWidth / oldWidth;
         var scaleHeightMultiplier = cHeight / oldHeight;
-        _this.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape);
-        _this.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true);
+        _this2.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape);
+        _this2.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true);
       }
     };
-    _this.resizeReduxAndSessionObjectsAfterPageLoad = function (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) {
-      var canvas = _this._fc;
-      var cWidth = canvas.getWidth() - _this.state.strokeWidth;
-      var cHeight = canvas.getHeight() - _this.state.strokeWidth;
+    _this2.resizeReduxAndSessionObjectsAfterPageLoad = function (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) {
+      var canvas = _this2._fc;
+      var cWidth = canvas.getWidth() - _this2.state.strokeWidth;
+      var cHeight = canvas.getHeight() - _this2.state.strokeWidth;
       console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsAfterPageLoad]: canvas Old width and old height:", oldWidth, oldHeight);
       console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsAfterPageLoad]: Current Canvas width and height : ", cWidth, cHeight);
       if (canvas && oldWidth !== cWidth && canvas.upperCanvasEl) {
         //if (canvas && canvas.upperCanvasEl) {
         var scaleMultiplier = cWidth / oldWidth;
         var scaleHeightMultiplier = cHeight / oldHeight;
-        _this.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape);
-        _this.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true);
+        _this2.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape);
+        _this2.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true);
       }
     };
-    _this._backgroundColor = function (color) {
+    _this2._backgroundColor = function (color) {
       if (!color) return;
-      var canvas = _this._fc;
+      var canvas = _this2._fc;
       canvas.setBackgroundColor(color, function () {
         return canvas.renderAll();
       });
     };
-    _this.zoom = function (factor) {
-      var canvas = _this._fc;
+    _this2.zoom = function (factor) {
+      var canvas = _this2._fc;
       var objects = canvas.getObjects();
       for (var i in objects) {
         objects[i].scaleX = objects[i].scaleX * factor;
@@ -41377,8 +41053,8 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       canvas.renderAll();
       canvas.calcOffset();
     };
-    _this.undo = function () {
-      var history = _this._history;
+    _this2.undo = function () {
+      var history = _this2._history;
       var _history$getCurrent = history.getCurrent(),
         _history$getCurrent2 = slicedToArray_default()(_history$getCurrent, 3),
         obj = _history$getCurrent2[0],
@@ -41386,29 +41062,29 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         currState = _history$getCurrent2[2];
       history.undo();
       if (obj.__removed) {
-        _this.setState({
+        _this2.setState({
           action: false
         }, function () {
-          _this._fc.add(obj);
+          _this2._fc.add(obj);
           obj.__version -= 1;
           obj.__removed = false;
         });
       } else if (obj.__version <= 1) {
-        _this._fc.remove(obj);
+        _this2._fc.remove(obj);
       } else {
         obj.__version -= 1;
         obj.setOptions(JSON.parse(prevState));
         obj.setCoords();
-        _this._fc.renderAll();
+        _this2._fc.renderAll();
       }
-      if (_this.props.onChange) {
-        _this.props.onChange();
+      if (_this2.props.onChange) {
+        _this2.props.onChange();
       }
     };
-    _this.redo = function () {
-      var history = _this._history;
+    _this2.redo = function () {
+      var history = _this2._history;
       if (history.canRedo()) {
-        var canvas = _this._fc;
+        var canvas = _this2._fc;
         //noinspection Eslint
         var _history$redo = history.redo(),
           _history$redo2 = slicedToArray_default()(_history$redo, 3),
@@ -41416,7 +41092,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           prevState = _history$redo2[1],
           currState = _history$redo2[2];
         if (obj.__version === 0) {
-          _this.setState({
+          _this2.setState({
             action: false
           }, function () {
             canvas.add(obj);
@@ -41428,49 +41104,49 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         }
         obj.setCoords();
         canvas.renderAll();
-        if (_this.props.onChange) {
-          _this.props.onChange();
+        if (_this2.props.onChange) {
+          _this2.props.onChange();
         }
       }
     };
-    _this.canUndo = function () {
-      return _this._history.canUndo();
+    _this2.canUndo = function () {
+      return _this2._history.canUndo();
     };
-    _this.canRedo = function () {
-      return _this._history.canRedo();
+    _this2.canRedo = function () {
+      return _this2._history.canRedo();
     };
-    _this.toDataURL = function (options) {
-      return _this._fc.toDataURL(options);
+    _this2.toDataURL = function (options) {
+      return _this2._fc.toDataURL(options);
     };
-    _this.toJSON = function (propertiesToInclude) {
-      return _this._fc.toJSON(propertiesToInclude);
+    _this2.toJSON = function (propertiesToInclude) {
+      return _this2._fc.toJSON(propertiesToInclude);
     };
-    _this.fromJSON = function (json) {
+    _this2.fromJSON = function (json) {
       if (!json) return;
-      var canvas = _this._fc;
+      var canvas = _this2._fc;
       setTimeout(function () {
         canvas.loadFromJSON(json, function () {
-          if (_this.props.tool === tools.DefaultTool) {
+          if (_this2.props.tool === tools.DefaultTool) {
             canvas.isDrawingMode = canvas.selection = false;
             canvas.forEachObject(function (o) {
               return o.selectable = o.evented = false;
             });
           }
           canvas.renderAll();
-          if (_this.props.onChange) {
-            _this.props.onChange();
+          if (_this2.props.onChange) {
+            _this2.props.onChange();
           }
         });
       }, 100);
     };
-    _this.clear = function (propertiesToInclude) {
-      var discarded = _this.toJSON(propertiesToInclude);
-      _this._fc.clear();
+    _this2.clear = function (propertiesToInclude) {
+      var discarded = _this2.toJSON(propertiesToInclude);
+      _this2._fc.clear();
       // this._history.clear()
       return discarded;
     };
-    _this.removeSelected = function () {
-      var canvas = _this._fc;
+    _this2.removeSelected = function () {
+      var canvas = _this2._fc;
       var activeObj = canvas.getActiveObject();
       if (activeObj) {
         var selected = [];
@@ -41493,16 +41169,16 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         canvas.requestRenderAll();
       }
     };
-    _this.copy = function () {
-      var canvas = _this._fc;
+    _this2.copy = function () {
+      var canvas = _this2._fc;
       canvas.getActiveObject().clone(function (cloned) {
-        return _this._clipboard = cloned;
+        return _this2._clipboard = cloned;
       });
     };
-    _this.paste = function () {
+    _this2.paste = function () {
       // clone again, so you can do multiple copies.
-      _this._clipboard.clone(function (clonedObj) {
-        var canvas = _this._fc;
+      _this2._clipboard.clone(function (clonedObj) {
+        var canvas = _this2._fc;
         canvas.discardActiveObject();
         clonedObj.set({
           left: clonedObj.left + 10,
@@ -41519,15 +41195,15 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         } else {
           canvas.add(clonedObj);
         }
-        _this._clipboard.top += 10;
-        _this._clipboard.left += 10;
+        _this2._clipboard.top += 10;
+        _this2._clipboard.left += 10;
         canvas.setActiveObject(clonedObj);
         canvas.requestRenderAll();
       });
     };
-    _this.setBackgroundFromDataUrl = function (dataUrl) {
+    _this2.setBackgroundFromDataUrl = function (dataUrl) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var canvas = _this._fc;
+      var canvas = _this2._fc;
       if (options.stretched) {
         delete options.stretched;
         Object.assign(options, {
@@ -41556,9 +41232,9 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       };
       img.src = dataUrl;
     };
-    _this.addText = function (text) {
+    _this2.addText = function (text) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var canvas = _this._fc;
+      var canvas = _this2._fc;
       var iText = new nVisionSketchField_fabric.IText(text, options);
       var opts = {
         left: (canvas.getWidth() - iText.width) * 0.5,
@@ -41571,12 +41247,12 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       });
       canvas.add(iText);
     };
-    _this.callEvent = function (e, eventFunction) {
+    _this2.callEvent = function (e, eventFunction) {
       // console.log("inside callEvet method");
-      if (_this._selectedTool) eventFunction(e);
+      if (_this2._selectedTool) eventFunction(e);
     };
-    _this.addLandmarks = function (canvas, frontEnd) {
-      var self = assertThisInitialized_default()(assertThisInitialized_default()(_this));
+    _this2.addLandmarks = function (canvas, frontEnd) {
+      var self = assertThisInitialized_default()(assertThisInitialized_default()(_this2));
       canvas.selection = false;
       var imageObject = JSON.parse(JSON.stringify(canvas.getObjects()));
       var landMarks = frontEnd;
@@ -41659,16 +41335,16 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         }
       });
     };
-    _this.componentDidMount = function () {
-      var _this$props = _this.props,
-        tool = _this$props.tool,
-        value = _this$props.value,
-        undoSteps = _this$props.undoSteps,
-        defaultValue = _this$props.defaultValue,
-        backgroundColor = _this$props.backgroundColor,
-        image = _this$props.image; //console.log("value is coming in component did mount before starttttt-- > ", this._fc);
+    _this2.componentDidMount = function () {
+      var _this2$props = _this2.props,
+        tool = _this2$props.tool,
+        value = _this2$props.value,
+        undoSteps = _this2$props.undoSteps,
+        defaultValue = _this2$props.defaultValue,
+        backgroundColor = _this2$props.backgroundColor,
+        image = _this2$props.image; //console.log("value is coming in component did mount before starttttt-- > ", this._fc);
       //let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
-      var canvas = _this._fc = new nVisionSketchField_fabric.Canvas(_this._canvas, {
+      var canvas = _this2._fc = new nVisionSketchField_fabric.Canvas(_this2._canvas, {
         centeredRotation: true,
         centeredScaling: false
         //id: "roi-canvas"
@@ -41678,13 +41354,13 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         skipTargetFind: true
         }*/);
       canvas.centeredScaling = false;
-      _this._initTools(canvas);
+      _this2._initTools(canvas);
 
       // set initial backgroundColor
-      _this._backgroundColor(backgroundColor);
-      var selectedTool = _this._tools[tool];
-      if (selectedTool) selectedTool.configureCanvas(_this.props);
-      _this._selectedTool = selectedTool;
+      _this2._backgroundColor(backgroundColor);
+      var selectedTool = _this2._tools[tool];
+      if (selectedTool) selectedTool.configureCanvas(_this2.props);
+      _this2._selectedTool = selectedTool;
 
       // Control resize
 
@@ -41695,34 +41371,34 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
 
       // Events binding
       canvas.on('object:added', function (e) {
-        return _this.callEvent(e, _this._onObjectAdded);
+        return _this2.callEvent(e, _this2._onObjectAdded);
       });
       canvas.on('object:modified', function (e) {
-        return _this.callEvent(e, _this._onObjectModified);
+        return _this2.callEvent(e, _this2._onObjectModified);
       });
       canvas.on('object:removed', function (e) {
-        return _this.callEvent(e, _this._onObjectRemoved);
+        return _this2.callEvent(e, _this2._onObjectRemoved);
       });
       canvas.on('mouse:down', function (e) {
-        return _this.callEvent(e, _this._onMouseDown);
+        return _this2.callEvent(e, _this2._onMouseDown);
       });
       canvas.on('mouse:move', function (e) {
-        return _this.callEvent(e, _this._onMouseMove);
+        return _this2.callEvent(e, _this2._onMouseMove);
       });
       canvas.on('mouse:up', function (e) {
-        return _this.callEvent(e, _this._onMouseUp);
+        return _this2.callEvent(e, _this2._onMouseUp);
       });
       canvas.on('mouse:out', function (e) {
-        return _this.callEvent(e, _this._onMouseOut);
+        return _this2.callEvent(e, _this2._onMouseOut);
       });
       canvas.on('object:moving', function (e) {
-        return _this.callEvent(e, _this._onObjectMoving);
+        return _this2.callEvent(e, _this2._onObjectMoving);
       });
       canvas.on('object:scaling', function (e) {
-        return _this.callEvent(e, _this._onObjectScaling);
+        return _this2.callEvent(e, _this2._onObjectScaling);
       });
       canvas.on('object:rotating', function (e) {
-        return _this.callEvent(e, _this._onObjectRotating);
+        return _this2.callEvent(e, _this2._onObjectRotating);
       });
       canvas.on("after:render", function (opt) {
         // this.isRotating && this.renderRotateLabel(opt.ctx, canvas);
@@ -41733,11 +41409,11 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       // canvas.on("text:editing:entered", console.log)
       // canvas.on("text:editing:exited", console.log)
 
-      _this.disableTouchScroll();
+      _this2.disableTouchScroll();
 
       // setTimeout(() => {
       //this._resize()
-      _this.resizeOverlayAndCanvasOnCompoentMount();
+      _this2.resizeOverlayAndCanvasOnCompoentMount();
       // }, 3000);
 
       // if (image !== null) {
@@ -41745,41 +41421,41 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       // }
       // initialize canvas with controlled value if exists
       ;
-      (value || defaultValue) && _this.fromJSON(value || defaultValue);
+      (value || defaultValue) && _this2.fromJSON(value || defaultValue);
     };
-    _this.componentWillUnmount = function () {
-      window.removeEventListener('resize', _this._resize);
+    _this2.componentWillUnmount = function () {
+      window.removeEventListener('resize', _this2._resize);
       executeCanvasResize = false;
     };
-    _this.componentDidUpdate = function (prevProps, prevState) {
+    _this2.componentDidUpdate = function (prevProps, prevState) {
       // console.log(this.props, "props");
-      var canvas = _this._fc;
-      if (_this.state.parentWidth !== prevState.parentWidth || _this.props.width !== prevProps.width || _this.props.height !== prevProps.height) {
+      var canvas = _this2._fc;
+      if (_this2.state.parentWidth !== prevState.parentWidth || _this2.props.width !== prevProps.width || _this2.props.height !== prevProps.height) {
         //   this._resize();
         // this.resizeCanvas(true);
       }
-      if (_this.props.tool !== prevProps.tool) {
-        _this._selectedTool = _this._tools[_this.props.tool];
+      if (_this2.props.tool !== prevProps.tool) {
+        _this2._selectedTool = _this2._tools[_this2.props.tool];
         //Bring the cursor back to default if it is changed by a tool
-        _this._fc.defaultCursor = 'default';
-        if (_this._selectedTool) {
-          _this._selectedTool.configureCanvas(_this.props);
+        _this2._fc.defaultCursor = 'default';
+        if (_this2._selectedTool) {
+          _this2._selectedTool.configureCanvas(_this2.props);
         }
       }
-      if (_this.props.backgroundColor !== prevProps.backgroundColor) {
-        _this._backgroundColor(_this.props.backgroundColor);
+      if (_this2.props.backgroundColor !== prevProps.backgroundColor) {
+        _this2._backgroundColor(_this2.props.backgroundColor);
       }
-      if (_this.props.image !== _this.state.imageUrl) {
-        _this.addImg(_this.props.image);
-        _this.setState({
-          imageUrl: _this.props.image,
-          scaleFactor: _this.state.scaleFactor,
-          rotation: _this.props.oneptwop.inscopix.adapter_lsm.rotation,
-          flipApplied: _this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
+      if (_this2.props.image !== _this2.state.imageUrl) {
+        _this2.addImg(_this2.props.image);
+        _this2.setState({
+          imageUrl: _this2.props.image,
+          scaleFactor: _this2.state.scaleFactor,
+          rotation: _this2.props.oneptwop.inscopix.adapter_lsm.rotation,
+          flipApplied: _this2.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
         });
       }
-      if (_this.props.value !== prevProps.value || _this.props.value && _this.props.forceValue) {
-        _this.fromJSON(_this.props.value);
+      if (_this2.props.value !== prevProps.value || _this2.props.value && _this2.props.forceValue) {
+        _this2.fromJSON(_this2.props.value);
       }
 
       // if (this.props.callResize !== this.state.callResize) {
@@ -41787,57 +41463,57 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       // this.setState({ callResize: this.props.callResize });
       // }
 
-      if (_this.props.oneptwop) {
-        if (_this.props.oneptwop.inscopix.adapter_lsm.rotation !== _this.state.rotation && _this._fc.item(0)) {
-          _this.rotateAndScale(_this._fc.item(0), -_this.props.oneptwop.inscopix.adapter_lsm.rotation);
-          _this.updateLandmarksPosition();
-          _this._fc.renderAll();
-          _this.setState({
-            rotation: _this.props.oneptwop.inscopix.adapter_lsm.rotation
+      if (_this2.props.oneptwop) {
+        if (_this2.props.oneptwop.inscopix.adapter_lsm.rotation !== _this2.state.rotation && _this2._fc.item(0)) {
+          _this2.rotateAndScale(_this2._fc.item(0), -_this2.props.oneptwop.inscopix.adapter_lsm.rotation);
+          _this2.updateLandmarksPosition();
+          _this2._fc.renderAll();
+          _this2.setState({
+            rotation: _this2.props.oneptwop.inscopix.adapter_lsm.rotation
           });
         }
-        if (_this.props.oneptwop.inscopix.frontend !== _this.state.frontEnd && _this.state.updateLandmarksForOtherWindow && _this._fc) {
-          _this.setState({
-            frontEnd: _this.props.oneptwop.inscopix.frontend,
+        if (_this2.props.oneptwop.inscopix.frontend !== _this2.state.frontEnd && _this2.state.updateLandmarksForOtherWindow && _this2._fc) {
+          _this2.setState({
+            frontEnd: _this2.props.oneptwop.inscopix.frontend,
             updateLandmarksForOtherWindow: false
           });
-          _this.props.addLandmarks(_this._fc, _this.props.oneptwop.inscopix.frontend);
-          _this._fc.renderAll();
+          _this2.props.addLandmarks(_this2._fc, _this2.props.oneptwop.inscopix.frontend);
+          _this2._fc.renderAll();
         }
-        if (_this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal !== _this.state.flipApplied) {
-          _this.applyFlip(_this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
-          _this.setState({
-            flipApplied: _this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
+        if (_this2.props.oneptwop.inscopix.adapter_lsm.flip_horizontal !== _this2.state.flipApplied) {
+          _this2.applyFlip(_this2.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
+          _this2.setState({
+            flipApplied: _this2.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
           });
         }
       }
-      if (_this.props.crosshairMode !== _this.state.crosshairMode) {
-        _this.setState({
-          crosshairMode: _this.props.crosshairMode
+      if (_this2.props.crosshairMode !== _this2.state.crosshairMode) {
+        _this2.setState({
+          crosshairMode: _this2.props.crosshairMode
         });
       }
-      if (_this.props.crosshairMoveMode !== _this.state.crosshairMoveMode) {
-        _this.setState({
-          crosshairMoveMode: _this.props.crosshairMoveMode
+      if (_this2.props.crosshairMoveMode !== _this2.state.crosshairMoveMode) {
+        _this2.setState({
+          crosshairMoveMode: _this2.props.crosshairMoveMode
         });
       }
-      if (_this.props.crosshairDeleteMode !== _this.state.crosshairDeleteMode) {
-        _this.setState({
-          crosshairDeleteMode: _this.props.crosshairDeleteMode
+      if (_this2.props.crosshairDeleteMode !== _this2.state.crosshairDeleteMode) {
+        _this2.setState({
+          crosshairDeleteMode: _this2.props.crosshairDeleteMode
         });
       }
-      if (_this.props.deleteAllLandmarks !== _this.state.deleteAllLandmarks) {
-        _this.setState({
-          deleteAllLandmarks: _this.props.deleteAllLandmarks
+      if (_this2.props.deleteAllLandmarks !== _this2.state.deleteAllLandmarks) {
+        _this2.setState({
+          deleteAllLandmarks: _this2.props.deleteAllLandmarks
         });
       }
-      if (_this.props.resetAllLandmarks !== _this.state.resetAllLandmarks) {
-        _this.setState({
-          resetAllLandmarks: _this.props.resetAllLandmarks
+      if (_this2.props.resetAllLandmarks !== _this2.state.resetAllLandmarks) {
+        _this2.setState({
+          resetAllLandmarks: _this2.props.resetAllLandmarks
         });
       }
     };
-    _this.onChangeSize = function (width, height) {
+    _this2.onChangeSize = function (width, height) {
       // if (this.state.imageUrl !== null) {
       // this.addImg(this.state.imageUrl);
       // // if (this.state.rotation !== 0 && this._fc.item(0)) {
@@ -41847,15 +41523,16 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       // }
 
       // this._resize();
-      _this.resizeCanvas(true);
+      console.log("[TRACKING SETTINGS][NVISION SKETCH FIELD][onChangeSize]: Resized to:", width, height);
+      _this2.resizeCanvas(true);
     };
-    _this.updateLandmarksPosition = function () {
+    _this2.updateLandmarksPosition = function () {
       var multiply = nVisionSketchField_fabric.util.multiplyTransformMatrices;
       var invert = nVisionSketchField_fabric.util.invertTransform;
-      var boss = _this._fc.getObjects().filter(function (o) {
+      var boss = _this2._fc.getObjects().filter(function (o) {
         return o.type == 'image';
       })[0];
-      var minions = _this._fc.getObjects().filter(function (o) {
+      var minions = _this2._fc.getObjects().filter(function (o) {
         return o !== boss;
       });
       minions.forEach(function (o) {
@@ -41877,30 +41554,30 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         o.setCoords();
       });
     };
-    _this.applyFlip = function (value, updateOnepTwop) {
-      if (_this._fc.item(0)) {
-        _this._fc.item(0).set({
+    _this2.applyFlip = function (value, updateOnepTwop) {
+      if (_this2._fc.item(0)) {
+        _this2._fc.item(0).set({
           flipX: value
         });
-        _this._fc.item(0).setCoords();
+        _this2._fc.item(0).setCoords();
       }
-      _this.updateLandmarksPosition();
+      _this2.updateLandmarksPosition();
       /*if(updateOnepTwop) {
       window.updateOnepTwopData('_transform', []);
       } */
-      _this._fc.requestRenderAll();
-      _this._fc.renderAll();
+      _this2._fc.requestRenderAll();
+      _this2._fc.renderAll();
     };
-    _this.rotateAndScale = function (obj, angle) {
+    _this2.rotateAndScale = function (obj, angle) {
       if (obj) {
-        var width = _this._fc.getWidth();
-        var height = _this._fc.getHeight();
+        var width = _this2._fc.getWidth();
+        var height = _this2._fc.getHeight();
         var cos_theta = Math.cos(angle * Math.PI / 180);
         var sin_theta = Math.sin(angle * Math.PI / 180);
         var x_scale = width / (Math.abs(width * cos_theta) + Math.abs(height * sin_theta));
         var y_scale = height / (Math.abs(width * sin_theta) + Math.abs(height * cos_theta));
         var scale = Math.min(x_scale, y_scale);
-        var actScale = _this.state.scaleFactor * scale;
+        var actScale = _this2.state.scaleFactor * scale;
         // get the transformMatrix array
         var rotateMatrix = [cos_theta, -sin_theta, sin_theta, cos_theta, 0, 0];
         var scaleMatrix = [actScale, 0, 0, actScale, 0, 0];
@@ -41913,8 +41590,8 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         var options = nVisionSketchField_fabric.util.qrDecompose(rsT);
         // console.log(options, "options");
         var newCenter = {
-          x: _this._fc.getWidth() / 2,
-          y: _this._fc.getHeight() / 2
+          x: _this2._fc.getWidth() / 2,
+          y: _this2._fc.getHeight() / 2
         };
 
         // reset transformMatrix to identity and resets flips since negative scale resulting from decompose, will automatically set them.
@@ -41927,19 +41604,19 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         obj.setCoords();
       }
     };
-    _this.updateLandmarks = function () {
-      var currentRotation = _this.props.oneptwop.inscopix.adapter_lsm.rotation;
-      var isFliped = _this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal;
+    _this2.updateLandmarks = function () {
+      var currentRotation = _this2.props.oneptwop.inscopix.adapter_lsm.rotation;
+      var isFliped = _this2.props.oneptwop.inscopix.adapter_lsm.flip_horizontal;
       if (isFliped) {
-        _this.applyFlip(false, true);
+        _this2.applyFlip(false, true);
       }
-      _this.props.updateSlider(0);
+      _this2.props.updateSlider(0);
       var points = [];
-      if (_this.props.oneptwop.inscopix.frontend.length > 0) {
-        _this.props.oneptwop.inscopix.frontend = _this.props.oneptwop.inscopix.frontend.filter(function (o) {
+      if (_this2.props.oneptwop.inscopix.frontend.length > 0) {
+        _this2.props.oneptwop.inscopix.frontend = _this2.props.oneptwop.inscopix.frontend.filter(function (o) {
           return o.type !== "image";
         });
-        _this.props.oneptwop.inscopix.frontend.map(function (item, key) {
+        _this2.props.oneptwop.inscopix.frontend.map(function (item, key) {
           var x, y;
           x = item.left + item.width / 2;
           y = item.top + item.height / 2;
@@ -41948,20 +41625,20 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
             y: y
           });
         });
-        _this.props.oneptwop.inscopix.landmarks = {
+        _this2.props.oneptwop.inscopix.landmarks = {
           points: points
         };
       } else {
-        _this.props.oneptwop.inscopix.landmarks = {
+        _this2.props.oneptwop.inscopix.landmarks = {
           points: []
         };
       }
-      _this.props.updateSlider(currentRotation);
+      _this2.props.updateSlider(currentRotation);
       if (isFliped) {
-        _this.applyFlip(true, true);
+        _this2.applyFlip(true, true);
       }
     };
-    _this.updateOnepTwop = function (saveAs) {
+    _this2.updateOnepTwop = function (saveAs) {
       var updateLandmarksForOtherWindow = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       // if (this.sbpfApplyClick) {
       // this.oneptwop.inscopix.bpf = {
@@ -41975,21 +41652,21 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       // rotation: parseInt($(".transforms-rotate-data").val()),
       // flip_horizontal: $("#flip-horizontal").hasClass("active")
       // };
-      var landMarks = _this._fc ? JSON.parse(JSON.stringify(_this._fc.toJSON(['cnWidth', 'cnHeight']))) : [];
-      var oneptwop = _this.props.oneptwop;
+      var landMarks = _this2._fc ? JSON.parse(JSON.stringify(_this2._fc.toJSON(['cnWidth', 'cnHeight']))) : [];
+      var oneptwop = _this2.props.oneptwop;
       oneptwop.inscopix.frontend = landMarks.objects.filter(function (o) {
         return o.type !== "image";
       });
-      _this.props.oneptwopFrontend(oneptwop);
+      _this2.props.oneptwopFrontend(oneptwop);
       /*if (updateLandmarksForOtherWindow) {
       this.props.addLandmarks()
       }*/
-      _this.setState({
+      _this2.setState({
         updateLandmarksForOtherWindow: updateLandmarksForOtherWindow
       });
     };
-    _this.removeAddOrMoveMode = function () {
-      var canvas = _this._fc;
+    _this2.removeAddOrMoveMode = function () {
+      var canvas = _this2._fc;
       if (canvas.upperCanvasEl) {
         canvas.discardActiveObject();
         canvas.forEachObject(function (o) {
@@ -42000,8 +41677,8 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         canvas.renderAll();
       }
     };
-    _this.createRect = function () {
-      var canvas = _this._fc;
+    _this2.createRect = function () {
+      var canvas = _this2._fc;
       var updatedheight = canvas.getHeight();
       var updatedWidth = canvas.getWidth();
       // let updatedTop = obj.y * canvas.getHeight() / fov.height;
@@ -42013,7 +41690,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         top: 0,
         originX: "left",
         originY: "top",
-        strokeWidth: _this.state.strokeWidth,
+        strokeWidth: _this2.state.strokeWidth,
         transparentCorners: false,
         name: "trackingArea",
         defaultName: "trackingArea",
@@ -42031,14 +41708,14 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         angle: 0
       });
       canvas.add(rect);
-      _this.props.onShapeAdded();
+      _this2.props.onShapeAdded();
     };
-    _this.render = function () {
-      var _this$props2 = _this.props,
-        className = _this$props2.className,
-        style = _this$props2.style,
-        width = _this$props2.width,
-        height = _this$props2.height;
+    _this2.render = function () {
+      var _this2$props2 = _this2.props,
+        className = _this2$props2.className,
+        style = _this2$props2.style,
+        width = _this2$props2.width,
+        height = _this2$props2.height;
       var canvasDivStyle = Object.assign({}, style ? style : {}, width ? {
         width: '100%'
       } : {
@@ -42046,14 +41723,14 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       },
       //width ? { width: this.state.canvasWidth } : { width: this.state.canvasWidth },
       height ? {
-        height: _this.state.canvasHeight
+        height: _this2.state.canvasHeight
       } : {
-        height: _this.state.canvasHeight
+        height: _this2.state.canvasHeight
       });
-      return react.createElement(ResizeWrapper, {
-        onResize: _this.onChangeSize.bind(assertThisInitialized_default()(assertThisInitialized_default()(_this))),
+      // console.log("TRACKLING SETTINGS NVISION SKETCH FIELD LINK");
+      return react.createElement(RefWrapper, {
         refCallback: function refCallback(ref) {
-          return _this._container = ref.current;
+          return _this2._container = ref.current;
         }
       }, react.createElement("div", {
         className: className,
@@ -42081,30 +41758,30 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         // }}
         ,
         ref: function ref(c) {
-          return _this._canvas = c;
+          return _this2._canvas = c;
         }
-      })), _this._fc !== null && _this._fc.item(0) && _this.props.from === undefined && react.createElement(NvistaRoiSettingsPanel, {
-        canvasProps: _this._fc,
-        landMarks: _this.props.oneptwop.inscopix.frontend,
-        imageData: _this.props.oneptwop,
-        oneptwop: _this.props.oneptwop,
-        rotateAndScale: _this.rotateAndScale,
-        crosshairMode: _this.state.crosshairMode,
-        crosshairMoveMode: _this.state.crosshairMoveMode,
-        crosshairDeleteMode: _this.state.crosshairDeleteMode,
-        deleteAllLandmarks: _this.state.deleteAllLandmarks,
-        oneptwopCompare: _this.props.oneptwopCompare,
-        oneptwopDefault: _this.props.oneptwopDefault,
-        updateSlider: _this.props.updateSlider,
-        applyFlip: _this.applyFlip,
-        resetAllLandmarks: _this.state.resetAllLandmarks,
-        updateOnepTwop: _this.updateOnepTwop,
-        loadFromSession: _this.props.loadFromSession,
-        updateSbpfTransformValues: _this.props.updateSbpfTransformValues,
-        handleMiraErrorPopup: _this.props.handleMiraErrorPopup
+      })), _this2._fc !== null && _this2._fc.item(0) && _this2.props.from === undefined && react.createElement(NvistaRoiSettingsPanel, {
+        canvasProps: _this2._fc,
+        landMarks: _this2.props.oneptwop.inscopix.frontend,
+        imageData: _this2.props.oneptwop,
+        oneptwop: _this2.props.oneptwop,
+        rotateAndScale: _this2.rotateAndScale,
+        crosshairMode: _this2.state.crosshairMode,
+        crosshairMoveMode: _this2.state.crosshairMoveMode,
+        crosshairDeleteMode: _this2.state.crosshairDeleteMode,
+        deleteAllLandmarks: _this2.state.deleteAllLandmarks,
+        oneptwopCompare: _this2.props.oneptwopCompare,
+        oneptwopDefault: _this2.props.oneptwopDefault,
+        updateSlider: _this2.props.updateSlider,
+        applyFlip: _this2.applyFlip,
+        resetAllLandmarks: _this2.state.resetAllLandmarks,
+        updateOnepTwop: _this2.updateOnepTwop,
+        loadFromSession: _this2.props.loadFromSession,
+        updateSbpfTransformValues: _this2.props.updateSbpfTransformValues,
+        handleMiraErrorPopup: _this2.props.handleMiraErrorPopup
       })));
     };
-    return _this;
+    return _this2;
   }
   /**
   * Enable touch Scrolling on Canvas
@@ -42471,7 +42148,7 @@ NvisionSketchField.defaultProps = {
     return null;
   }
 };
-/* harmony default export */ const nVisionSketchField = (NvisionSketchField);
+/* harmony default export */ var nVisionSketchField = (NvisionSketchField);
 ;// ./src/MiraMode.js
 
 
@@ -42967,7 +42644,7 @@ MiraMode.defaultProps = {
   image: null,
   callResize: false
 };
-/* harmony default export */ const src_MiraMode = (MiraMode);
+/* harmony default export */ var src_MiraMode = (MiraMode);
 ;// ./src/index.js
 
 
@@ -42977,14 +42654,13 @@ MiraMode.defaultProps = {
 
 
 
-/* harmony default export */ const src = ({
+/* harmony default export */ var src = ({
   SketchField: src_SketchField,
   Tools: tools,
   MiraMode: src_MiraMode,
   NvisionSketchField: nVisionSketchField
 });
-})();
-
+}();
 /******/ 	return __webpack_exports__;
 /******/ })()
 ;
