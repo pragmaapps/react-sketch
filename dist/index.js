@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();
+		module.exports = factory(require("react"));
 	else if(typeof define === 'function' && define.amd)
-		define([], factory);
+		define(["react"], factory);
 	else {
-		var a = factory();
+		var a = typeof exports === 'object' ? factory(require("react")) : factory(root["react"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(self, function() {
+})(self, function(__WEBPACK_EXTERNAL_MODULE__155__) {
 return /******/ (function() { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
@@ -91,6 +91,14 @@ function _asyncToGenerator(fn) {
 }
 
 module.exports = _asyncToGenerator;
+
+/***/ }),
+
+/***/ 155:
+/***/ (function(module) {
+
+"use strict";
+module.exports = __WEBPACK_EXTERNAL_MODULE__155__;
 
 /***/ }),
 
@@ -897,556 +905,6 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ 268:
-/***/ (function(__unused_webpack_module, exports) {
-
-"use strict";
-/**
- * @license React
- * react.production.js
- *
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-
-var REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element"),
-  REACT_PORTAL_TYPE = Symbol.for("react.portal"),
-  REACT_FRAGMENT_TYPE = Symbol.for("react.fragment"),
-  REACT_STRICT_MODE_TYPE = Symbol.for("react.strict_mode"),
-  REACT_PROFILER_TYPE = Symbol.for("react.profiler"),
-  REACT_CONSUMER_TYPE = Symbol.for("react.consumer"),
-  REACT_CONTEXT_TYPE = Symbol.for("react.context"),
-  REACT_FORWARD_REF_TYPE = Symbol.for("react.forward_ref"),
-  REACT_SUSPENSE_TYPE = Symbol.for("react.suspense"),
-  REACT_MEMO_TYPE = Symbol.for("react.memo"),
-  REACT_LAZY_TYPE = Symbol.for("react.lazy"),
-  REACT_ACTIVITY_TYPE = Symbol.for("react.activity"),
-  MAYBE_ITERATOR_SYMBOL = Symbol.iterator;
-function getIteratorFn(maybeIterable) {
-  if (null === maybeIterable || "object" !== typeof maybeIterable) return null;
-  maybeIterable =
-    (MAYBE_ITERATOR_SYMBOL && maybeIterable[MAYBE_ITERATOR_SYMBOL]) ||
-    maybeIterable["@@iterator"];
-  return "function" === typeof maybeIterable ? maybeIterable : null;
-}
-var ReactNoopUpdateQueue = {
-    isMounted: function () {
-      return !1;
-    },
-    enqueueForceUpdate: function () {},
-    enqueueReplaceState: function () {},
-    enqueueSetState: function () {}
-  },
-  assign = Object.assign,
-  emptyObject = {};
-function Component(props, context, updater) {
-  this.props = props;
-  this.context = context;
-  this.refs = emptyObject;
-  this.updater = updater || ReactNoopUpdateQueue;
-}
-Component.prototype.isReactComponent = {};
-Component.prototype.setState = function (partialState, callback) {
-  if (
-    "object" !== typeof partialState &&
-    "function" !== typeof partialState &&
-    null != partialState
-  )
-    throw Error(
-      "takes an object of state variables to update or a function which returns an object of state variables."
-    );
-  this.updater.enqueueSetState(this, partialState, callback, "setState");
-};
-Component.prototype.forceUpdate = function (callback) {
-  this.updater.enqueueForceUpdate(this, callback, "forceUpdate");
-};
-function ComponentDummy() {}
-ComponentDummy.prototype = Component.prototype;
-function PureComponent(props, context, updater) {
-  this.props = props;
-  this.context = context;
-  this.refs = emptyObject;
-  this.updater = updater || ReactNoopUpdateQueue;
-}
-var pureComponentPrototype = (PureComponent.prototype = new ComponentDummy());
-pureComponentPrototype.constructor = PureComponent;
-assign(pureComponentPrototype, Component.prototype);
-pureComponentPrototype.isPureReactComponent = !0;
-var isArrayImpl = Array.isArray;
-function noop() {}
-var ReactSharedInternals = { H: null, A: null, T: null, S: null },
-  hasOwnProperty = Object.prototype.hasOwnProperty;
-function ReactElement(type, key, props) {
-  var refProp = props.ref;
-  return {
-    $$typeof: REACT_ELEMENT_TYPE,
-    type: type,
-    key: key,
-    ref: void 0 !== refProp ? refProp : null,
-    props: props
-  };
-}
-function cloneAndReplaceKey(oldElement, newKey) {
-  return ReactElement(oldElement.type, newKey, oldElement.props);
-}
-function isValidElement(object) {
-  return (
-    "object" === typeof object &&
-    null !== object &&
-    object.$$typeof === REACT_ELEMENT_TYPE
-  );
-}
-function escape(key) {
-  var escaperLookup = { "=": "=0", ":": "=2" };
-  return (
-    "$" +
-    key.replace(/[=:]/g, function (match) {
-      return escaperLookup[match];
-    })
-  );
-}
-var userProvidedKeyEscapeRegex = /\/+/g;
-function getElementKey(element, index) {
-  return "object" === typeof element && null !== element && null != element.key
-    ? escape("" + element.key)
-    : index.toString(36);
-}
-function resolveThenable(thenable) {
-  switch (thenable.status) {
-    case "fulfilled":
-      return thenable.value;
-    case "rejected":
-      throw thenable.reason;
-    default:
-      switch (
-        ("string" === typeof thenable.status
-          ? thenable.then(noop, noop)
-          : ((thenable.status = "pending"),
-            thenable.then(
-              function (fulfilledValue) {
-                "pending" === thenable.status &&
-                  ((thenable.status = "fulfilled"),
-                  (thenable.value = fulfilledValue));
-              },
-              function (error) {
-                "pending" === thenable.status &&
-                  ((thenable.status = "rejected"), (thenable.reason = error));
-              }
-            )),
-        thenable.status)
-      ) {
-        case "fulfilled":
-          return thenable.value;
-        case "rejected":
-          throw thenable.reason;
-      }
-  }
-  throw thenable;
-}
-function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
-  var type = typeof children;
-  if ("undefined" === type || "boolean" === type) children = null;
-  var invokeCallback = !1;
-  if (null === children) invokeCallback = !0;
-  else
-    switch (type) {
-      case "bigint":
-      case "string":
-      case "number":
-        invokeCallback = !0;
-        break;
-      case "object":
-        switch (children.$$typeof) {
-          case REACT_ELEMENT_TYPE:
-          case REACT_PORTAL_TYPE:
-            invokeCallback = !0;
-            break;
-          case REACT_LAZY_TYPE:
-            return (
-              (invokeCallback = children._init),
-              mapIntoArray(
-                invokeCallback(children._payload),
-                array,
-                escapedPrefix,
-                nameSoFar,
-                callback
-              )
-            );
-        }
-    }
-  if (invokeCallback)
-    return (
-      (callback = callback(children)),
-      (invokeCallback =
-        "" === nameSoFar ? "." + getElementKey(children, 0) : nameSoFar),
-      isArrayImpl(callback)
-        ? ((escapedPrefix = ""),
-          null != invokeCallback &&
-            (escapedPrefix =
-              invokeCallback.replace(userProvidedKeyEscapeRegex, "$&/") + "/"),
-          mapIntoArray(callback, array, escapedPrefix, "", function (c) {
-            return c;
-          }))
-        : null != callback &&
-          (isValidElement(callback) &&
-            (callback = cloneAndReplaceKey(
-              callback,
-              escapedPrefix +
-                (null == callback.key ||
-                (children && children.key === callback.key)
-                  ? ""
-                  : ("" + callback.key).replace(
-                      userProvidedKeyEscapeRegex,
-                      "$&/"
-                    ) + "/") +
-                invokeCallback
-            )),
-          array.push(callback)),
-      1
-    );
-  invokeCallback = 0;
-  var nextNamePrefix = "" === nameSoFar ? "." : nameSoFar + ":";
-  if (isArrayImpl(children))
-    for (var i = 0; i < children.length; i++)
-      (nameSoFar = children[i]),
-        (type = nextNamePrefix + getElementKey(nameSoFar, i)),
-        (invokeCallback += mapIntoArray(
-          nameSoFar,
-          array,
-          escapedPrefix,
-          type,
-          callback
-        ));
-  else if (((i = getIteratorFn(children)), "function" === typeof i))
-    for (
-      children = i.call(children), i = 0;
-      !(nameSoFar = children.next()).done;
-
-    )
-      (nameSoFar = nameSoFar.value),
-        (type = nextNamePrefix + getElementKey(nameSoFar, i++)),
-        (invokeCallback += mapIntoArray(
-          nameSoFar,
-          array,
-          escapedPrefix,
-          type,
-          callback
-        ));
-  else if ("object" === type) {
-    if ("function" === typeof children.then)
-      return mapIntoArray(
-        resolveThenable(children),
-        array,
-        escapedPrefix,
-        nameSoFar,
-        callback
-      );
-    array = String(children);
-    throw Error(
-      "Objects are not valid as a React child (found: " +
-        ("[object Object]" === array
-          ? "object with keys {" + Object.keys(children).join(", ") + "}"
-          : array) +
-        "). If you meant to render a collection of children, use an array instead."
-    );
-  }
-  return invokeCallback;
-}
-function mapChildren(children, func, context) {
-  if (null == children) return children;
-  var result = [],
-    count = 0;
-  mapIntoArray(children, result, "", "", function (child) {
-    return func.call(context, child, count++);
-  });
-  return result;
-}
-function lazyInitializer(payload) {
-  if (-1 === payload._status) {
-    var ctor = payload._result;
-    ctor = ctor();
-    ctor.then(
-      function (moduleObject) {
-        if (0 === payload._status || -1 === payload._status)
-          (payload._status = 1), (payload._result = moduleObject);
-      },
-      function (error) {
-        if (0 === payload._status || -1 === payload._status)
-          (payload._status = 2), (payload._result = error);
-      }
-    );
-    -1 === payload._status && ((payload._status = 0), (payload._result = ctor));
-  }
-  if (1 === payload._status) return payload._result.default;
-  throw payload._result;
-}
-var reportGlobalError =
-    "function" === typeof reportError
-      ? reportError
-      : function (error) {
-          if (
-            "object" === typeof window &&
-            "function" === typeof window.ErrorEvent
-          ) {
-            var event = new window.ErrorEvent("error", {
-              bubbles: !0,
-              cancelable: !0,
-              message:
-                "object" === typeof error &&
-                null !== error &&
-                "string" === typeof error.message
-                  ? String(error.message)
-                  : String(error),
-              error: error
-            });
-            if (!window.dispatchEvent(event)) return;
-          } else if (
-            "object" === typeof process &&
-            "function" === typeof process.emit
-          ) {
-            process.emit("uncaughtException", error);
-            return;
-          }
-          console.error(error);
-        },
-  Children = {
-    map: mapChildren,
-    forEach: function (children, forEachFunc, forEachContext) {
-      mapChildren(
-        children,
-        function () {
-          forEachFunc.apply(this, arguments);
-        },
-        forEachContext
-      );
-    },
-    count: function (children) {
-      var n = 0;
-      mapChildren(children, function () {
-        n++;
-      });
-      return n;
-    },
-    toArray: function (children) {
-      return (
-        mapChildren(children, function (child) {
-          return child;
-        }) || []
-      );
-    },
-    only: function (children) {
-      if (!isValidElement(children))
-        throw Error(
-          "React.Children.only expected to receive a single React element child."
-        );
-      return children;
-    }
-  };
-exports.Activity = REACT_ACTIVITY_TYPE;
-exports.Children = Children;
-exports.Component = Component;
-exports.Fragment = REACT_FRAGMENT_TYPE;
-exports.Profiler = REACT_PROFILER_TYPE;
-exports.PureComponent = PureComponent;
-exports.StrictMode = REACT_STRICT_MODE_TYPE;
-exports.Suspense = REACT_SUSPENSE_TYPE;
-exports.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE =
-  ReactSharedInternals;
-exports.__COMPILER_RUNTIME = {
-  __proto__: null,
-  c: function (size) {
-    return ReactSharedInternals.H.useMemoCache(size);
-  }
-};
-exports.cache = function (fn) {
-  return function () {
-    return fn.apply(null, arguments);
-  };
-};
-exports.cacheSignal = function () {
-  return null;
-};
-exports.cloneElement = function (element, config, children) {
-  if (null === element || void 0 === element)
-    throw Error(
-      "The argument must be a React element, but you passed " + element + "."
-    );
-  var props = assign({}, element.props),
-    key = element.key;
-  if (null != config)
-    for (propName in (void 0 !== config.key && (key = "" + config.key), config))
-      !hasOwnProperty.call(config, propName) ||
-        "key" === propName ||
-        "__self" === propName ||
-        "__source" === propName ||
-        ("ref" === propName && void 0 === config.ref) ||
-        (props[propName] = config[propName]);
-  var propName = arguments.length - 2;
-  if (1 === propName) props.children = children;
-  else if (1 < propName) {
-    for (var childArray = Array(propName), i = 0; i < propName; i++)
-      childArray[i] = arguments[i + 2];
-    props.children = childArray;
-  }
-  return ReactElement(element.type, key, props);
-};
-exports.createContext = function (defaultValue) {
-  defaultValue = {
-    $$typeof: REACT_CONTEXT_TYPE,
-    _currentValue: defaultValue,
-    _currentValue2: defaultValue,
-    _threadCount: 0,
-    Provider: null,
-    Consumer: null
-  };
-  defaultValue.Provider = defaultValue;
-  defaultValue.Consumer = {
-    $$typeof: REACT_CONSUMER_TYPE,
-    _context: defaultValue
-  };
-  return defaultValue;
-};
-exports.createElement = function (type, config, children) {
-  var propName,
-    props = {},
-    key = null;
-  if (null != config)
-    for (propName in (void 0 !== config.key && (key = "" + config.key), config))
-      hasOwnProperty.call(config, propName) &&
-        "key" !== propName &&
-        "__self" !== propName &&
-        "__source" !== propName &&
-        (props[propName] = config[propName]);
-  var childrenLength = arguments.length - 2;
-  if (1 === childrenLength) props.children = children;
-  else if (1 < childrenLength) {
-    for (var childArray = Array(childrenLength), i = 0; i < childrenLength; i++)
-      childArray[i] = arguments[i + 2];
-    props.children = childArray;
-  }
-  if (type && type.defaultProps)
-    for (propName in ((childrenLength = type.defaultProps), childrenLength))
-      void 0 === props[propName] &&
-        (props[propName] = childrenLength[propName]);
-  return ReactElement(type, key, props);
-};
-exports.createRef = function () {
-  return { current: null };
-};
-exports.forwardRef = function (render) {
-  return { $$typeof: REACT_FORWARD_REF_TYPE, render: render };
-};
-exports.isValidElement = isValidElement;
-exports.lazy = function (ctor) {
-  return {
-    $$typeof: REACT_LAZY_TYPE,
-    _payload: { _status: -1, _result: ctor },
-    _init: lazyInitializer
-  };
-};
-exports.memo = function (type, compare) {
-  return {
-    $$typeof: REACT_MEMO_TYPE,
-    type: type,
-    compare: void 0 === compare ? null : compare
-  };
-};
-exports.startTransition = function (scope) {
-  var prevTransition = ReactSharedInternals.T,
-    currentTransition = {};
-  ReactSharedInternals.T = currentTransition;
-  try {
-    var returnValue = scope(),
-      onStartTransitionFinish = ReactSharedInternals.S;
-    null !== onStartTransitionFinish &&
-      onStartTransitionFinish(currentTransition, returnValue);
-    "object" === typeof returnValue &&
-      null !== returnValue &&
-      "function" === typeof returnValue.then &&
-      returnValue.then(noop, reportGlobalError);
-  } catch (error) {
-    reportGlobalError(error);
-  } finally {
-    null !== prevTransition &&
-      null !== currentTransition.types &&
-      (prevTransition.types = currentTransition.types),
-      (ReactSharedInternals.T = prevTransition);
-  }
-};
-exports.unstable_useCacheRefresh = function () {
-  return ReactSharedInternals.H.useCacheRefresh();
-};
-exports.use = function (usable) {
-  return ReactSharedInternals.H.use(usable);
-};
-exports.useActionState = function (action, initialState, permalink) {
-  return ReactSharedInternals.H.useActionState(action, initialState, permalink);
-};
-exports.useCallback = function (callback, deps) {
-  return ReactSharedInternals.H.useCallback(callback, deps);
-};
-exports.useContext = function (Context) {
-  return ReactSharedInternals.H.useContext(Context);
-};
-exports.useDebugValue = function () {};
-exports.useDeferredValue = function (value, initialValue) {
-  return ReactSharedInternals.H.useDeferredValue(value, initialValue);
-};
-exports.useEffect = function (create, deps) {
-  return ReactSharedInternals.H.useEffect(create, deps);
-};
-exports.useEffectEvent = function (callback) {
-  return ReactSharedInternals.H.useEffectEvent(callback);
-};
-exports.useId = function () {
-  return ReactSharedInternals.H.useId();
-};
-exports.useImperativeHandle = function (ref, create, deps) {
-  return ReactSharedInternals.H.useImperativeHandle(ref, create, deps);
-};
-exports.useInsertionEffect = function (create, deps) {
-  return ReactSharedInternals.H.useInsertionEffect(create, deps);
-};
-exports.useLayoutEffect = function (create, deps) {
-  return ReactSharedInternals.H.useLayoutEffect(create, deps);
-};
-exports.useMemo = function (create, deps) {
-  return ReactSharedInternals.H.useMemo(create, deps);
-};
-exports.useOptimistic = function (passthrough, reducer) {
-  return ReactSharedInternals.H.useOptimistic(passthrough, reducer);
-};
-exports.useReducer = function (reducer, initialArg, init) {
-  return ReactSharedInternals.H.useReducer(reducer, initialArg, init);
-};
-exports.useRef = function (initialValue) {
-  return ReactSharedInternals.H.useRef(initialValue);
-};
-exports.useState = function (initialState) {
-  return ReactSharedInternals.H.useState(initialState);
-};
-exports.useSyncExternalStore = function (
-  subscribe,
-  getSnapshot,
-  getServerSnapshot
-) {
-  return ReactSharedInternals.H.useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    getServerSnapshot
-  );
-};
-exports.useTransition = function () {
-  return ReactSharedInternals.H.useTransition();
-};
-exports.version = "19.2.0";
-
-
-/***/ }),
-
 /***/ 274:
 /***/ (function(module) {
 
@@ -1504,20 +962,6 @@ function _defineProperty(obj, key, value) {
 }
 
 module.exports = _defineProperty;
-
-/***/ }),
-
-/***/ 431:
-/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
-
-"use strict";
-
-
-if (true) {
-  module.exports = __webpack_require__(268);
-} else // removed by dead control flow
-{}
-
 
 /***/ }),
 
@@ -33582,8 +33026,9 @@ var inherits_default = /*#__PURE__*/__webpack_require__.n(inherits);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/assertThisInitialized.js
 var assertThisInitialized = __webpack_require__(972);
 var assertThisInitialized_default = /*#__PURE__*/__webpack_require__.n(assertThisInitialized);
-// EXTERNAL MODULE: ../../../../node_modules/react/index.js
-var react = __webpack_require__(431);
+// EXTERNAL MODULE: external "react"
+var external_react_ = __webpack_require__(155);
+var external_react_default = /*#__PURE__*/__webpack_require__.n(external_react_);
 // EXTERNAL MODULE: ./node_modules/prop-types/index.js
 var prop_types = __webpack_require__(556);
 var prop_types_default = /*#__PURE__*/__webpack_require__.n(prop_types);
@@ -33593,26 +33038,32 @@ var createClass_default = /*#__PURE__*/__webpack_require__.n(createClass);
 ;// ./src/history.js
 
 
+
 /**
  * Maintains the history of an object
  */
-var History = /*#__PURE__*/(/* unused pure expression or super */ null && (function () {
+var History =
+/*#__PURE__*/
+(/* unused pure expression or super */ null && (function () {
   function History() {
     var undoLimit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
     var debug = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
     _classCallCheck(this, History);
+
     this.undoLimit = undoLimit;
     this.undoList = [];
     this.redoList = [];
     this.current = null;
     this.debug = debug;
   }
-
   /**
    * Get the limit of undo/redo actions
    *
    * @returns {number|*} the undo limit, as it is configured when constructing the history instance
    */
+
+
   _createClass(History, [{
     key: "getUndoLimit",
     value: function getUndoLimit() {
@@ -33623,6 +33074,7 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
      *
      * @returns {null|*}
      */
+
   }, {
     key: "getCurrent",
     value: function getCurrent() {
@@ -33635,17 +33087,21 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
      *
      * @param obj
      */
+
   }, {
     key: "keep",
     value: function keep(obj) {
       try {
         this.redoList = [];
+
         if (this.current) {
           this.undoList.push(this.current);
         }
+
         if (this.undoList.length > this.undoLimit) {
           this.undoList.shift();
         }
+
         this.current = obj;
       } finally {
         this.print();
@@ -33656,21 +33112,26 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
      *
      * @returns the new current value after the undo operation, else null if no undo operation was possible
      */
+
   }, {
     key: "undo",
     value: function undo() {
       try {
         if (this.current) {
           this.redoList.push(this.current);
+
           if (this.redoList.length > this.undoLimit) {
             this.redoList.shift();
           }
+
           if (this.undoList.length === 0) this.current = null;
         }
+
         if (this.undoList.length > 0) {
           this.current = this.undoList.pop();
           return this.current;
         }
+
         return null;
       } finally {
         this.print();
@@ -33681,6 +33142,7 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
      *
      * @returns the new current value after the redo operation, or null if no redo operation was possible
      */
+
   }, {
     key: "redo",
     value: function redo() {
@@ -33690,6 +33152,7 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
           this.current = this.redoList.pop();
           return this.current;
         }
+
         return null;
       } finally {
         this.print();
@@ -33700,6 +33163,7 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
      *
      * @returns {boolean}
      */
+
   }, {
     key: "canRedo",
     value: function canRedo() {
@@ -33710,6 +33174,7 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
      *
      * @returns {boolean}
      */
+
   }, {
     key: "canUndo",
     value: function canUndo() {
@@ -33718,6 +33183,7 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
     /**
      * Clears the history maintained, can be undone
      */
+
   }, {
     key: "clear",
     value: function clear() {
@@ -33735,8 +33201,10 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
       }
     }
   }]);
+
   return History;
 }()));
+
 /* harmony default export */ var src_history = ((/* unused pure expression or super */ null && (History)));
 ;// ./src/utils.js
 /**
@@ -33748,18 +33216,19 @@ var History = /*#__PURE__*/(/* unused pure expression or super */ null && (funct
  */
 var pointerPosition = function pointerPosition(event) {
   event = event || window.event;
+
   var target = event.target || event.srcElement,
-    style = target.currentStyle || window.getComputedStyle(target, null),
-    borderLeftWidth = parseInt(style['borderLeftWidth'], 10),
-    borderTopWidth = parseInt(style['borderTopWidth'], 10),
-    rect = target.getBoundingClientRect(),
-    _x = event.clientX - borderLeftWidth - rect.left,
-    _y = event.clientY - borderTopWidth - rect.top,
-    _touchX = event.changedTouches ? event.changedTouches[0].clientX - borderLeftWidth - rect.left : null,
-    _touchY = event.changedTouches ? event.changedTouches[0].clientY - borderTopWidth - rect.top : null;
+      style = target.currentStyle || window.getComputedStyle(target, null),
+      borderLeftWidth = parseInt(style['borderLeftWidth'], 10),
+      borderTopWidth = parseInt(style['borderTopWidth'], 10),
+      rect = target.getBoundingClientRect(),
+      _x = event.clientX - borderLeftWidth - rect.left,
+      _y = event.clientY - borderTopWidth - rect.top,
+      _touchX = event.changedTouches ? event.changedTouches[0].clientX - borderLeftWidth - rect.left : null,
+      _touchY = event.changedTouches ? event.changedTouches[0].clientY - borderTopWidth - rect.top : null;
+
   return [_x || _touchX, _y || _touchY];
 };
-
 /**
  * Calculate the distance of two x,y points
  *
@@ -33768,19 +33237,21 @@ var pointerPosition = function pointerPosition(event) {
  *
  * @returns {number}
  */
+
 var linearDistance = function linearDistance(point1, point2) {
   var xs = point2.x - point1.x;
   var ys = point2.y - point1.y;
   return Math.sqrt(xs * xs + ys * ys);
 };
-
 /**
  * Return a random uuid of the form xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
  * @returns {string}
  */
+
 var uuid4 = function uuid4() {
   var uuid = '',
-    ii;
+      ii;
+
   for (ii = 0; ii < 32; ii += 1) {
     switch (ii) {
       case 8:
@@ -33788,32 +33259,42 @@ var uuid4 = function uuid4() {
         uuid += '-';
         uuid += (Math.random() * 16 | 0).toString(16);
         break;
+
       case 12:
         uuid += '-';
         uuid += '4';
         break;
+
       case 16:
         uuid += '-';
         uuid += (Math.random() * 4 | 8).toString(16);
         break;
+
       default:
         uuid += (Math.random() * 16 | 0).toString(16);
     }
   }
+
   return uuid;
 };
 ;// ./src/fabrictool.js
 
 
+
 /* eslint no-unused-vars: 0 */
+
 /**
  * "Abstract" like base class for a Canvas tool
  */
-var FabricCanvasTool = /*#__PURE__*/function () {
+var FabricCanvasTool =
+/*#__PURE__*/
+function () {
   function FabricCanvasTool(canvas) {
     classCallCheck_default()(this, FabricCanvasTool);
+
     this._canvas = canvas;
   }
+
   createClass_default()(FabricCanvasTool, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {}
@@ -33830,10 +33311,13 @@ var FabricCanvasTool = /*#__PURE__*/function () {
     key: "doMouseOut",
     value: function doMouseOut(event) {}
   }]);
+
   return FabricCanvasTool;
 }();
+
 /* harmony default export */ var fabrictool = (FabricCanvasTool);
 ;// ./src/select.js
+
 
 
 
@@ -33842,12 +33326,17 @@ var FabricCanvasTool = /*#__PURE__*/function () {
 /*eslint no-unused-vars: 0*/
 
 
-var Select = /*#__PURE__*/function (_FabricCanvasTool) {
+var Select =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(Select, _FabricCanvasTool);
+
   function Select() {
     classCallCheck_default()(this, Select);
+
     return possibleConstructorReturn_default()(this, getPrototypeOf_default()(Select).apply(this, arguments));
   }
+
   createClass_default()(Select, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
@@ -33859,8 +33348,10 @@ var Select = /*#__PURE__*/function (_FabricCanvasTool) {
       });
     }
   }]);
+
   return Select;
 }(fabrictool);
+
 /* harmony default export */ var src_select = (Select);
 ;// ./src/pencil.js
 
@@ -33869,12 +33360,18 @@ var Select = /*#__PURE__*/function (_FabricCanvasTool) {
 
 
 
-var Pencil = /*#__PURE__*/function (_FabricCanvasTool) {
+
+var Pencil =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(Pencil, _FabricCanvasTool);
+
   function Pencil() {
     classCallCheck_default()(this, Pencil);
+
     return possibleConstructorReturn_default()(this, getPrototypeOf_default()(Pencil).apply(this, arguments));
   }
+
   createClass_default()(Pencil, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
@@ -33883,10 +33380,13 @@ var Pencil = /*#__PURE__*/function (_FabricCanvasTool) {
       this._canvas.freeDrawingBrush.color = props.lineColor;
     }
   }]);
+
   return Pencil;
 }(fabrictool);
+
 /* harmony default export */ var pencil = (Pencil);
 ;// ./src/line.js
+
 
 
 
@@ -33896,12 +33396,18 @@ var Pencil = /*#__PURE__*/function (_FabricCanvasTool) {
 
 
 var fabric = (__webpack_require__(676).fabric);
-var Line = /*#__PURE__*/function (_FabricCanvasTool) {
+
+var Line =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(Line, _FabricCanvasTool);
+
   function Line() {
     classCallCheck_default()(this, Line);
+
     return possibleConstructorReturn_default()(this, getPrototypeOf_default()(Line).apply(this, arguments));
   }
+
   createClass_default()(Line, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
@@ -33962,10 +33468,13 @@ var Line = /*#__PURE__*/function (_FabricCanvasTool) {
       this.isDown = false;
     }
   }]);
+
   return Line;
 }(fabrictool);
+
 /* harmony default export */ var line = (Line);
 ;// ./src/arrow.js
+
 
 
 
@@ -33975,12 +33484,18 @@ var Line = /*#__PURE__*/function (_FabricCanvasTool) {
 
 
 var arrow_fabric = (__webpack_require__(676).fabric);
-var Arrow = /*#__PURE__*/function (_FabricCanvasTool) {
+
+var Arrow =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(Arrow, _FabricCanvasTool);
+
   function Arrow() {
     classCallCheck_default()(this, Arrow);
+
     return possibleConstructorReturn_default()(this, getPrototypeOf_default()(Arrow).apply(this, arguments));
   }
+
   createClass_default()(Arrow, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
@@ -34059,8 +33574,10 @@ var Arrow = /*#__PURE__*/function (_FabricCanvasTool) {
       this.isDown = false;
     }
   }]);
+
   return Arrow;
 }(fabrictool);
+
 /* harmony default export */ var arrow = (Arrow);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/regenerator/index.js
 var regenerator = __webpack_require__(207);
@@ -34076,30 +33593,42 @@ var asyncToGenerator_default = /*#__PURE__*/__webpack_require__.n(asyncToGenerat
 
 
 
+
 /*eslint no-unused-vars: 0*/
 
 
 var rectangle_fabric = (__webpack_require__(676).fabric);
-var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
+
+var Rectangle =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(Rectangle, _FabricCanvasTool);
+
   function Rectangle() {
     var _getPrototypeOf2;
+
     var _this;
+
     classCallCheck_default()(this, Rectangle);
+
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
+
     _this = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(Rectangle)).call.apply(_getPrototypeOf2, [this].concat(args)));
+
     _this.genrateRect = function (options, props) {
       var addROIDefaultName = props.addROIDefaultName,
-        removeColorInDefaultShapeColors = props.removeColorInDefaultShapeColors;
+          removeColorInDefaultShapeColors = props.removeColorInDefaultShapeColors;
       var canvas = _this._canvas;
       _this.isDown = true;
       var pointer = canvas.getPointer(options.e);
       var boundary = props.getboudaryCoords();
+
       if (boundary && (pointer.y > boundary.height * boundary.scaleY + boundary.top || pointer.x > boundary.width * boundary.scaleX + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
         return false;
       }
+
       var objects = canvas.getObjects();
       var name = props.roiDefaultNames[0];
       var defaultName = props.roiDefaultNames[0];
@@ -34128,22 +33657,29 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
         description: "",
         strokeUniform: true
       });
+
       _this.addEventTriggerKeys();
+
       canvas.add(_this.rect);
-      _this.rect.setCoords();
-      // this.containInsideBoundary(options);
+
+      _this.rect.setCoords(); // this.containInsideBoundary(options);
+
+
       _this.isDragging = true;
       _this.rect.edit = true;
       removeColorInDefaultShapeColors(props.defaultShapeColors);
       addROIDefaultName(props.roiDefaultNames);
     };
+
     _this.addEventTriggerKeys = function () {
       _this.rect.triggerEvent = "none";
       _this.rect.triggerType = "none";
     };
+
     _this.checkWithInTrackingArea = function (obj, boundaryObj) {
       var canvasTL = new rectangle_fabric.Point(boundaryObj.left, boundaryObj.top);
       var canvasBR = new rectangle_fabric.Point(boundaryObj.left + boundaryObj.width * boundaryObj.scaleX, boundaryObj.height * boundaryObj.scaleY + boundaryObj.top);
+
       if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
         var objBounds = obj.getBoundingRect();
         obj.setCoords();
@@ -34156,12 +33692,18 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
         if (objBounds.left + objBounds.width > canvasBR.x) left = canvasBR.x - objBounds.width;
         obj.setPositionByOrigin(new rectangle_fabric.Point(left, top), "left", "top");
         obj.setCoords();
-        _this._canvas.renderAll();
-        // this.props.checkForOverlap(obj);
+
+        _this._canvas.renderAll(); // this.props.checkForOverlap(obj);
+
       }
     };
-    _this.checkWithInBoundary = /*#__PURE__*/function () {
-      var _ref = asyncToGenerator_default()(/*#__PURE__*/regenerator_default().mark(function _callee(props) {
+
+    _this.checkWithInBoundary =
+    /*#__PURE__*/
+    function () {
+      var _ref = asyncToGenerator_default()(
+      /*#__PURE__*/
+      regenerator_default().mark(function _callee(props) {
         var canvas, isObjectOutSideBoundary, roiTypes;
         return regenerator_default().wrap(function _callee$(_context) {
           while (1) {
@@ -34174,6 +33716,7 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
                   if (shape.id === "calibratedLine" || !roiTypes.includes(shape.type)) return;
                   var boundaryObj = props.getboudaryCoords();
                   if (!boundaryObj) return;
+
                   if ((shape.left < boundaryObj.left || shape.top < boundaryObj.top || shape.left + shape.width * shape.scaleX > boundaryObj.left + boundaryObj.width * boundaryObj.scaleX || shape.top + shape.height * shape.scaleY > boundaryObj.top + boundaryObj.height * boundaryObj.scaleY) && shape.id !== "trackingArea") {
                     props.addColorInDefaultShapeColors(shape.stroke);
                     props.deleteROIDefaultName(shape.defaultName);
@@ -34182,62 +33725,78 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
                   }
                 });
                 return _context.abrupt("return", isObjectOutSideBoundary);
+
               case 5:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee);
+        }, _callee, this);
       }));
+
       return function (_x) {
         return _ref.apply(this, arguments);
       };
     }();
+
     _this.containInsideBoundary = function (o) {
       var canvas = _this._canvas;
       var canvasTL = new rectangle_fabric.Point(0, 0);
       var canvasBR = new rectangle_fabric.Point(canvas.getWidth(), canvas.getHeight());
       var pointer = canvas.getPointer(o.e);
+
       if (_this.startX > pointer.x) {
         _this.rect.set({
           left: Math.abs(pointer.x)
         });
       }
+
       if (_this.startY > pointer.y) {
         _this.rect.set({
           top: Math.abs(pointer.y)
         });
       }
+
       if (!_this.rect.isContainedWithinRect(canvasTL, canvasBR)) {
         var objBounds = _this.rect.getBoundingRect();
+
         _this.rect.setCoords();
+
         var objTL = _this.rect.getPointByOrigin("left", "top");
+
         var left = objTL.x;
         var top = objTL.y;
         if (objBounds.left < canvasTL.x) left = 0;
         if (objBounds.top < canvasTL.y) top = 0;
         if (objBounds.top + objBounds.height > canvasBR.y) top = canvasBR.y - objBounds.height;
         if (objBounds.left + objBounds.width > canvasBR.x) left = canvasBR.x - objBounds.width;
+
         _this.rect.setPositionByOrigin(new rectangle_fabric.Point(left, top), "left", "top");
+
         _this.rect.setCoords();
+
         canvas.renderAll();
       }
     };
+
     _this.genrateTrackingArea = function () {
       var fullWidth = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
       var canvas = _this._canvas;
-      _this.isDown = true;
-      //let width = Math.ceil(canvas.getWidth());
+      _this.isDown = true; //let width = Math.ceil(canvas.getWidth());
       //let height = Math.ceil(canvas.getHeight());
+
       var width = canvas.getWidth() - _this.strokeWidth;
+
       var height;
+
       if (fullWidth) {
         height = canvas.getHeight() - _this.strokeWidth;
       } else {
         height = canvas.getHeight() - (_this.strokeWidth + 0);
-      }
-      //let height = canvas.getHeight();
-      console.log("[Tracking Settings][Sketch Field][Rectangle][genrateTrackingArea]: Width and Height of canvas after removing stroke width", width, height);
+      } //let height = canvas.getHeight();
+
+
+      console.log("[Rectangle] [Tracking Area] [Tracking Settings][Sketch Field][Rectangle][genrateTrackingArea]: Width and Height of canvas after removing stroke width", width, height);
       var name = "trackingArea";
       var defaultName = "trackingArea";
       var rect = new rectangle_fabric.Rect({
@@ -34268,18 +33827,20 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
       rect.setControlsVisibility({
         mtr: false
       });
-      canvas.add(rect).setActiveObject(rect);
-      // this.containInsideBoundary(options);
+      canvas.add(rect).setActiveObject(rect); // this.containInsideBoundary(options);
+
       rect.edit = true;
     };
+
     return _this;
   }
+
   createClass_default()(Rectangle, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
       var canvas = this._canvas;
-      canvas.isDrawingMode = canvas.selection = false;
-      // canvas.forEachObject((o) => o.selectable = o.evented = false);
+      canvas.isDrawingMode = canvas.selection = false; // canvas.forEachObject((o) => o.selectable = o.evented = false);
+
       this._width = props.lineWidth;
       this._color = props.lineColor;
       this._fill = props.fillColor;
@@ -34292,29 +33853,38 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
     key: "doMouseDown",
     value: function doMouseDown(options, props, sketch) {
       var _this2 = this;
+
       if (this.objectAdd) {
         // console.log("[Animal Tracking][Rectangle] Object has not removed and do not called mouse up function.");
         this._canvas.off("mouse:up");
+
         this._canvas.on("mouse:up", function () {});
+
         return;
-      }
-      // console.log("[Animal Tracking][Rectangle] Object has added and called mouse up function.");
+      } // console.log("[Animal Tracking][Rectangle] Object has added and called mouse up function.");
+
+
       this._canvas.off("mouse:up");
+
       this._canvas.on("mouse:up", function (e) {
         return _this2.doMouseUp(e, props, sketch);
       });
+
       if (!this.isDown) return;
       var notificationShow = props.notificationShow,
-        roiDefaultNames = props.roiDefaultNames;
+          roiDefaultNames = props.roiDefaultNames;
+
       var objects = this._canvas.getObjects().filter(function (obj) {
         return obj.id !== "trackingArea" && obj.id !== "calibratedLine";
       });
+
       if (objects.length >= 5 && roiDefaultNames.length === 0) {
         notificationShow();
         console.log("Maximum five shapes allowed ", "color:blue; font-weight:bold;", "color:black;");
         this.objectAdd = false;
         return;
       }
+
       this.objectAdd = true;
       this.genrateRect(options, props);
     }
@@ -34323,22 +33893,27 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
     value: function doMouseMove(o, props) {
       if (!this.isDown) return;
       var canvas = this._canvas;
+
       if (this.isDragging) {
         var pointer = canvas.getPointer(o.e);
         var boundary = props.getboudaryCoords();
+
         if (boundary && (pointer.y > boundary.height * boundary.scaleY + boundary.top || pointer.x > boundary.width * boundary.scaleX + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
           return false;
         }
+
         if (this.startX > pointer.x) {
           this.rect.set({
             left: Math.abs(pointer.x)
           });
         }
+
         if (this.startY > pointer.y) {
           this.rect.set({
             top: Math.abs(pointer.y)
           });
         }
+
         this.rect.set({
           width: Math.abs(this.startX - pointer.x)
         });
@@ -34353,8 +33928,11 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
   }, {
     key: "doMouseUp",
     value: function () {
-      var _doMouseUp = asyncToGenerator_default()(/*#__PURE__*/regenerator_default().mark(function _callee2(o, props, sketch) {
+      var _doMouseUp = asyncToGenerator_default()(
+      /*#__PURE__*/
+      regenerator_default().mark(function _callee2(o, props, sketch) {
         var _this3 = this;
+
         var onShapeAdded, checkForOverlap, isOverlap, rectSmall, outsideZone;
         return regenerator_default().wrap(function _callee2$(_context2) {
           while (1) {
@@ -34365,47 +33943,60 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
                 this.isDragging = false;
                 onShapeAdded = props.onShapeAdded, checkForOverlap = props.checkForOverlap;
                 isOverlap = false;
+
                 if (!this.objectAdd) {
                   _context2.next = 27;
                   break;
                 }
+
                 _context2.next = 7;
                 return props.checkForMinTotalArea();
+
               case 7:
                 rectSmall = _context2.sent;
                 _context2.next = 10;
                 return this.checkWithInBoundary(props);
+
               case 10:
                 outsideZone = _context2.sent;
+
                 if (!outsideZone) {
                   _context2.next = 16;
                   break;
                 }
+
                 console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] Rectangle is created outside the tracking area.", "color:blue; font-weight: bold;", "color: black;");
                 props.notificationShow("Zone should not be created outside tracking area.");
                 _context2.next = 24;
                 break;
+
               case 16:
                 if (rectSmall) {
                   _context2.next = 21;
                   break;
                 }
+
                 console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] The zone size should not be less than 100px of the total area.", "color:blue; font-weight: bold;", "color: black;");
                 props.notificationShow("Zone size should be bigger than 100px.");
                 _context2.next = 24;
                 break;
+
               case 21:
                 _context2.next = 23;
                 return checkForOverlap();
+
               case 23:
                 isOverlap = _context2.sent;
+
               case 24:
                 _context2.next = 26;
                 return onShapeAdded();
+
               case 26:
                 setTimeout(function () {
                   _this3.objectAdd = false;
                 }, isOverlap ? 500 : 0);
+
               case 27:
               case "end":
                 return _context2.stop();
@@ -34413,15 +34004,19 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
           }
         }, _callee2, this);
       }));
+
       return function doMouseUp(_x2, _x3, _x4) {
         return _doMouseUp.apply(this, arguments);
       };
     }()
   }]);
+
   return Rectangle;
 }(fabrictool);
+
 /* harmony default export */ var rectangle = (Rectangle);
 ;// ./src/circle.js
+
 
 
 
@@ -34432,12 +34027,18 @@ var Rectangle = /*#__PURE__*/function (_FabricCanvasTool) {
 
 
 var circle_fabric = (__webpack_require__(676).fabric);
-var Circle = /*#__PURE__*/function (_FabricCanvasTool) {
+
+var Circle =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(Circle, _FabricCanvasTool);
+
   function Circle() {
     classCallCheck_default()(this, Circle);
+
     return possibleConstructorReturn_default()(this, getPrototypeOf_default()(Circle).apply(this, arguments));
   }
+
   createClass_default()(Circle, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
@@ -34498,10 +34099,13 @@ var Circle = /*#__PURE__*/function (_FabricCanvasTool) {
       this.isDown = false;
     }
   }]);
+
   return Circle;
 }(fabrictool);
+
 /* harmony default export */ var circle = (Circle);
 ;// ./src/pan.js
+
 
 
 
@@ -34511,12 +34115,18 @@ var Circle = /*#__PURE__*/function (_FabricCanvasTool) {
 
 
 var pan_fabric = (__webpack_require__(676).fabric);
-var Pan = /*#__PURE__*/function (_FabricCanvasTool) {
+
+var Pan =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(Pan, _FabricCanvasTool);
+
   function Pan() {
     classCallCheck_default()(this, Pan);
+
     return possibleConstructorReturn_default()(this, getPrototypeOf_default()(Pan).apply(this, arguments));
   }
+
   createClass_default()(Pan, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
@@ -34524,8 +34134,8 @@ var Pan = /*#__PURE__*/function (_FabricCanvasTool) {
       canvas.isDrawingMode = canvas.selection = false;
       canvas.forEachObject(function (o) {
         return o.selectable = o.evented = false;
-      });
-      //Change the cursor to the move grabber
+      }); //Change the cursor to the move grabber
+
       canvas.defaultCursor = 'move';
     }
   }, {
@@ -34555,8 +34165,10 @@ var Pan = /*#__PURE__*/function (_FabricCanvasTool) {
       this.isDown = false;
     }
   }]);
+
   return Pan;
 }(fabrictool);
+
 /* harmony default export */ var pan = (Pan);
 ;// ./src/tools.js
 /* harmony default export */ var tools = ({
@@ -34576,16 +34188,22 @@ var Pan = /*#__PURE__*/function (_FabricCanvasTool) {
 ;// ./src/rectangle-label-object.js
 
 
-/* eslint no-unused-vars: 0 */
 
+/* eslint no-unused-vars: 0 */
 var rectangle_label_object_fabric = (__webpack_require__(676).fabric);
-var RectangleLabelObject = /*#__PURE__*/function () {
+
+var RectangleLabelObject =
+/*#__PURE__*/
+function () {
   function RectangleLabelObject(canvas, text, rectProps, textProps) {
     var _this = this;
+
     classCallCheck_default()(this, RectangleLabelObject);
+
     this.update = function (e) {
       //e.target.set({scaleX:1, scaleY:1})
       if (!_this._textObj || !_this._rectObj) return;
+
       if (e.target === _this._rectObj) {
         _this._textObj.set({
           'width': _this._rectObj.getScaledWidth(),
@@ -34596,6 +34214,7 @@ var RectangleLabelObject = /*#__PURE__*/function () {
         });
       }
     };
+
     this._canvas = canvas;
     this._text = text;
     this._rectObj = new rectangle_label_object_fabric.Rect(rectProps);
@@ -34607,19 +34226,24 @@ var RectangleLabelObject = /*#__PURE__*/function () {
       'object:moving': this.update
     });
   }
+
   createClass_default()(RectangleLabelObject, [{
     key: "setText",
     value: function setText(text) {
       this._text = text;
+
       this._textObj.set({
         text: text
       });
     }
   }]);
+
   return RectangleLabelObject;
 }();
+
 /* harmony default export */ var rectangle_label_object = (RectangleLabelObject);
 ;// ./src/rectangle-label.js
+
 
 
 
@@ -34629,12 +34253,17 @@ var RectangleLabelObject = /*#__PURE__*/function () {
 
 
 
-var RectangleLabel = /*#__PURE__*/function (_FabricCanvasTool) {
+var RectangleLabel =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(RectangleLabel, _FabricCanvasTool);
+
   function RectangleLabel() {
     classCallCheck_default()(this, RectangleLabel);
+
     return possibleConstructorReturn_default()(this, getPrototypeOf_default()(RectangleLabel).apply(this, arguments));
   }
+
   createClass_default()(RectangleLabel, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
@@ -34688,12 +34317,14 @@ var RectangleLabel = /*#__PURE__*/function (_FabricCanvasTool) {
         angle: 0
       });
       if (this._objects && this._objects.length > 0) this._objects.push(this.rectangleLabel);else this._objects = [this.rectangleLabel];
+
       while (this.rectangleLabel._textObj.height > canvas.height / 3) {
         this.rectangleLabel._textObj.set({
           fontSize: this.rectangleLabel._textObj.fontSize - 1,
           top: this.startY - this.rectangleLabel._textObj.fontSize - 12
         });
       }
+
       canvas.add(this.rectangleLabel._rectObj);
       canvas.add(this.rectangleLabel._textObj);
       canvas.renderAll();
@@ -34704,52 +34335,64 @@ var RectangleLabel = /*#__PURE__*/function (_FabricCanvasTool) {
       if (!this.isDown) return;
       var canvas = this._canvas;
       var pointer = canvas.getPointer(o.e);
+
       if (this.startX > pointer.x) {
         this.rectangleLabel._rectObj.set({
           left: Math.abs(pointer.x)
         });
+
         this.rectangleLabel._textObj.set({
           left: Math.abs(pointer.x)
         });
       }
+
       if (this.startY > pointer.y) {
         this.rectangleLabel._rectObj.set({
           left: Math.abs(pointer.x)
         });
+
         this.rectangleLabel._textObj.set({
           top: Math.abs(pointer.y)
         });
       }
+
       this.rectangleLabel._textObj.setCoords();
+
       this.rectangleLabel._rectObj.set({
         width: Math.abs(this.startX - pointer.x)
       });
+
       this.rectangleLabel._textObj.set({
         width: this.rectangleLabel._rectObj.getScaledWidth()
       });
+
       this.rectangleLabel._rectObj.set({
         height: Math.abs(this.startY - pointer.y)
       });
+
       this.rectangleLabel._rectObj.setCoords();
+
       canvas.renderAll();
     }
   }, {
     key: "doMouseUp",
     value: function doMouseUp(o) {
       this.isDown = false;
-      var canvas = this._canvas;
-
-      // var group = new fabric.Group([this.rectangleLabel._rectObj,this.rectangleLabel._textObj]);
+      var canvas = this._canvas; // var group = new fabric.Group([this.rectangleLabel._rectObj,this.rectangleLabel._textObj]);
       // canvas.remove(this.rectangleLabel._rectObj);
       // canvas.remove(this.rectangleLabel._textObj);
       // canvas.add(group);
+
       canvas.renderAll();
     }
   }]);
+
   return RectangleLabel;
 }(fabrictool);
+
 /* harmony default export */ var rectangle_label = (RectangleLabel);
 ;// ./src/defaul-tool.js
+
 
 
 
@@ -34759,12 +34402,18 @@ var RectangleLabel = /*#__PURE__*/function (_FabricCanvasTool) {
 
 
 var defaul_tool_fabric = (__webpack_require__(676).fabric);
-var DefaultTool = /*#__PURE__*/function (_FabricCanvasTool) {
+
+var DefaultTool =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(DefaultTool, _FabricCanvasTool);
+
   function DefaultTool() {
     classCallCheck_default()(this, DefaultTool);
+
     return possibleConstructorReturn_default()(this, getPrototypeOf_default()(DefaultTool).apply(this, arguments));
   }
+
   createClass_default()(DefaultTool, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
@@ -34778,8 +34427,10 @@ var DefaultTool = /*#__PURE__*/function (_FabricCanvasTool) {
       canvas.renderAll();
     }
   }]);
+
   return DefaultTool;
 }(fabrictool);
+
 /* harmony default export */ var defaul_tool = (DefaultTool);
 ;// ./node_modules/react-resize-detector/build/index.js
 
@@ -34798,14 +34449,20 @@ var plus_default = /*#__PURE__*/__webpack_require__.n(plus);
 
 
 
+ // import RoiShapes from './RoiShapes';
 
-// import RoiShapes from './RoiShapes';
 
-var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
+
+var NvistaRoiSettings =
+/*#__PURE__*/
+function (_Component) {
   inherits_default()(NvistaRoiSettings, _Component);
+
   function NvistaRoiSettings(props) {
     var _this;
+
     classCallCheck_default()(this, NvistaRoiSettings);
+
     _this = possibleConstructorReturn_default()(this, getPrototypeOf_default()(NvistaRoiSettings).call(this, props));
     _this.state = {
       canvas: null,
@@ -34828,20 +34485,25 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
     _this.resetLandmarks = _this.resetLandmarks.bind(assertThisInitialized_default()(assertThisInitialized_default()(_this)));
     return _this;
   }
+
   createClass_default()(NvistaRoiSettings, [{
     key: "resetLandmarks",
     value: function resetLandmarks() {
       var self = this;
-      if (this.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== this.props.oneptwop.inscopix.adapter_lsm.rotation) {
-        // self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, true);
+
+      if (this.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== this.props.oneptwop.inscopix.adapter_lsm.rotation) {// self.props.updateSlider(this.props.oneptwopCompare.inscopix.adapter_lsm.rotation, true);
       }
+
       if (this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
         self.props.applyFlip(this.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal, false);
       }
+
       var objects = this.props.canvasProps.getObjects('path');
+
       for (var i in objects) {
         this.props.canvasProps.remove(objects[i]);
       }
+
       var defaultColors = ['#ff0000', '#0000ff', '#ffff00', '#ff00ff', '#00ff00', '#00ffff', '#ffa500', '#ffffff', '#008000', '#800080'];
       dist_fabric.fabric.util.enlivenObjects(this.props.oneptwopCompare.inscopix.frontend, function (objects) {
         var origRenderOnAddRemove = self.props.canvasProps.renderOnAddRemove;
@@ -34850,9 +34512,11 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
           self.props.canvasProps.add(o);
         });
         self.props.canvasProps.renderOnAddRemove = origRenderOnAddRemove;
+
         if (self.props.canvasProps.item(1) && self.props.canvasProps.item(1).cnWidth !== self.props.canvasProps.getWidth()) {
           var scaleMultiplier = self.props.canvasProps.getWidth() / self.props.canvasProps.item(1).cnWidth;
           var objects = self.props.canvasProps.getObjects();
+
           for (var i in objects) {
             if (objects[i].type !== "image") {
               objects[i].left = objects[i].left * scaleMultiplier;
@@ -34863,6 +34527,7 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
             }
           }
         }
+
         self.bindLandmarks(true, true);
         self.props.canvasProps.renderAll();
         self.setState({
@@ -34879,12 +34544,14 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
               }
             });
           });
-          if (self.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== self.props.oneptwop.inscopix.adapter_lsm.rotation) {
-            // self.props.updateSlider(self.props.oneptwop.inscopix.adapter_lsm.rotation, false);
+
+          if (self.props.oneptwopCompare.inscopix.adapter_lsm.rotation !== self.props.oneptwop.inscopix.adapter_lsm.rotation) {// self.props.updateSlider(self.props.oneptwop.inscopix.adapter_lsm.rotation, false);
           }
+
           if (self.props.oneptwopCompare.inscopix.adapter_lsm.flip_horizontal !== self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal) {
             self.props.applyFlip(self.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
           }
+
           self.props.oneptwop.inscopix.frontend = JSON.parse(JSON.stringify(self.props.oneptwopCompare.inscopix.frontend));
         });
       });
@@ -34893,23 +34560,26 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
     key: "deleteAll",
     value: function deleteAll() {
       var objects = this.props.canvasProps.getObjects('path');
+
       for (var i in objects) {
         this.props.canvasProps.remove(objects[i]);
       }
+
       this.props.canvasProps.renderAll();
-      var defaultColors = ['#ff0000', '#0000ff', '#ffff00', '#ff00ff', '#00ff00', '#00ffff', '#ffa500', '#ffffff', '#008000', '#800080'];
-      // document.getElementById("clearAllLandmark").classList.add("active");
+      var defaultColors = ['#ff0000', '#0000ff', '#ffff00', '#ff00ff', '#00ff00', '#00ffff', '#ffa500', '#ffffff', '#008000', '#800080']; // document.getElementById("clearAllLandmark").classList.add("active");
+
       /*document.getElementById("addLandmark").classList.remove("active");
       document.getElementById("moveLandmark").classList.remove("active");
       document.getElementById("deleteLandmark").classList.remove("active");*/
+
       this.setState({
         canvas: this.props.canvasProps,
         lmColorIndex: 0,
         lmColorUsed: defaultColors
-      });
-      // setTimeout(() => {
+      }); // setTimeout(() => {
       //     document.getElementById("clearAllLandmark").classList.remove("active");
       // }, 1000)
+
       var landMarks = this.props.canvasProps ? JSON.parse(JSON.stringify(this.props.canvasProps.getObjects().filter(function (o) {
         return o.type !== "image";
       }))) : [];
@@ -34927,13 +34597,16 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
       self.props.canvasProps.off('mouse:up');
       self.props.canvasProps.on('mouse:up', function (event) {
         var landmarkList = JSON.parse(JSON.stringify(self.props.canvasProps.getObjects()));
+
         if (landmarkList && landmarkList.length > 10) {
           self.props.handleMiraErrorPopup("Only 10 landmarks are allowed. Please remove a landmark before adding additional landmarks.", "Warning");
           return false;
         }
+
         if (!event.target || event.target.type !== 'image') {
           return false;
         }
+
         var pointer = self.props.canvasProps.getPointer(event.e, true);
         dist_fabric.fabric.loadSVGFromURL((plus_default()), function (objects, options) {
           var obj = dist_fabric.fabric.util.groupSVGElements(objects, options);
@@ -34945,6 +34618,7 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
                 });
               };
           })(obj.toObject);*/
+
           obj.set({
             fill: self.state.lmColorUsed[0],
             left: Math.round(pointer.x),
@@ -34983,13 +34657,13 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
       var sin_theta = Math.sin(angle * Math.PI / 180);
       var x_scale = width / (Math.abs(width * cos_theta) + Math.abs(height * sin_theta));
       var y_scale = height / (Math.abs(width * sin_theta) + Math.abs(height * cos_theta));
-      var scale = Math.min(x_scale, y_scale);
-      // get the transformMatrix array
+      var scale = Math.min(x_scale, y_scale); // get the transformMatrix array
+
       var rotateMatrix = [cos_theta, -sin_theta, sin_theta, cos_theta, 0, 0];
-      var scaleMatrix = [scale, 0, 0, scale, 0, 0];
-      //var scaleMatrix = [scale, 0 , 0, scale, 0, 0];
-      var rsT = dist_fabric.fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix);
-      // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
+      var scaleMatrix = [scale, 0, 0, scale, 0, 0]; //var scaleMatrix = [scale, 0 , 0, scale, 0, 0];
+
+      var rsT = dist_fabric.fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix); // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
+
       var options = dist_fabric.fabric.util.qrDecompose(rsT);
       obj.set(options);
       obj.setCoords();
@@ -34998,11 +34672,11 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
     key: "exitCrosshairMode",
     value: function exitCrosshairMode(event) {
       console.log("[MIRA] landmarks mode: move landmarks");
-      var self = this;
-      // document.getElementById("clearAllLandmark").classList.remove("active");
+      var self = this; // document.getElementById("clearAllLandmark").classList.remove("active");
       // document.getElementById("deleteLandmark").classList.remove("active");
       // document.getElementById("addLandmark").classList.remove("active");
       // document.getElementById("moveLandmark").classList.add("active");
+
       self.props.canvasProps.forEachObject(function (o) {
         if (o.type !== "image") {
           o.selectable = true;
@@ -35019,11 +34693,11 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
     key: "deleteCrosshairMode",
     value: function deleteCrosshairMode(event) {
       console.log("[MIRA] Landmarks mode: delete landmarks");
-      var self = this;
-      // document.getElementById("clearAllLandmark").classList.remove("active");
+      var self = this; // document.getElementById("clearAllLandmark").classList.remove("active");
       // document.getElementById("addLandmark").classList.remove("active");
       // document.getElementById("moveLandmark").classList.remove("active");
       // document.getElementById("deleteLandmark").classList.add("active");
+
       self.props.canvasProps.defaultCursor = 'default';
       self.props.canvasProps.forEachObject(function (o) {
         o.selectable = false;
@@ -35035,6 +34709,7 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
           self.state.lmColorUsed.push(options.target.fill);
           self.props.canvasProps.remove(options.target);
         }
+
         var landMarks = self.props.canvasProps ? JSON.parse(JSON.stringify(self.props.canvasProps.getObjects().filter(function (o) {
           return o.type !== "image";
         }))) : [];
@@ -35056,14 +34731,16 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
       var minions = self.props.canvasProps.getObjects().filter(function (o) {
         return o.type !== "image";
       });
+
       if (boss && boss[0]) {
         var bossTransform = boss[0].calcTransformMatrix();
         var invertedBossTransform = invert(bossTransform);
         minions.forEach(function (o) {
-          var desiredTransform = multiply(invertedBossTransform, o.calcTransformMatrix());
-          // save the desired relation here.
+          var desiredTransform = multiply(invertedBossTransform, o.calcTransformMatrix()); // save the desired relation here.
+
           o.relationship = desiredTransform;
         });
+
         if (updateLandmarks) {
           var landMarks = self.props.canvasProps ? JSON.parse(JSON.stringify(self.props.canvasProps.getObjects().filter(function (o) {
             return o.type !== "image";
@@ -35077,26 +34754,31 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
     key: "componentDidMount",
     value: function componentDidMount() {
       var _this2 = this;
+
       var self = this;
       dist_fabric.fabric.Object.prototype.objectCaching = false;
       window.canvas = self.props.canvasProps;
       self.props.canvasProps.selection = false;
       var imageObject = JSON.parse(JSON.stringify(self.props.canvasProps.getObjects()));
       var landMarks = this.props.landMarks;
+
       if (landMarks.length > 0) {
         landMarks.splice(0, 0, imageObject[0]);
       } else {
         landMarks = imageObject;
       }
+
       self.props.canvasProps.loadFromJSON("{\"objects\":".concat(JSON.stringify(landMarks), "}"), function () {
         if (self.props.imageData) {
           self.props.updateSbpfTransformValues(self.props.imageData, self.props.loadFromSession);
         } else {
           self.props.rotateAndScale(self.props.canvasProps.item(0), -0);
         }
+
         if (self.props.canvasProps.item(1) && self.props.canvasProps.item(1).cnWidth !== self.props.canvasProps.getWidth()) {
           var scaleMultiplier = self.props.canvasProps.getWidth() / self.props.canvasProps.item(1).cnWidth;
           var objects = self.props.canvasProps.getObjects();
+
           for (var i in objects) {
             if (objects[i].type !== "image") {
               objects[i].left = objects[i].left * scaleMultiplier;
@@ -35107,6 +34789,7 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
             }
           }
         }
+
         if (self.props.canvasProps) {
           var fabricList = JSON.parse(JSON.stringify(self.props.canvasProps.getObjects().filter(function (o) {
             return o.type !== "image";
@@ -35123,6 +34806,7 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
             o.selectable = false;
           });
         }
+
         self.bindLandmarks(true, false);
         self.props.canvasProps.renderAll();
       });
@@ -35143,12 +34827,14 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
       self.props.canvasProps.on('object:modified', function (options) {
         try {
           var obj = options.target;
+
           if (obj.type == "image") {
             return;
           }
+
           var canvasTL = new dist_fabric.fabric.Point(0, 0);
-          var canvasBR = new dist_fabric.fabric.Point(self.props.canvasProps.getWidth(), self.props.canvasProps.getHeight());
-          //if object not totally contained in canvas, adjust position
+          var canvasBR = new dist_fabric.fabric.Point(self.props.canvasProps.getWidth(), self.props.canvasProps.getHeight()); //if object not totally contained in canvas, adjust position
+
           if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
             var objBounds = obj.getBoundingRect();
             obj.setCoords();
@@ -35163,6 +34849,7 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
             obj.setCoords();
             self.props.canvasProps.renderAll();
           }
+
           self.bindLandmarks(true, true);
         } catch (err) {
           alert("exception in keepObjectInBounds\n\n" + err.message + "\n\n" + err.stack);
@@ -35184,24 +34871,28 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
           crosshairMode: this.props.crosshairMode
         });
       }
+
       if (this.props.crosshairMoveMode !== this.state.crosshairMoveMode) {
         this.exitCrosshairMode();
         this.setState({
           crosshairMoveMode: this.props.crosshairMoveMode
         });
       }
+
       if (this.props.crosshairDeleteMode !== this.state.crosshairDeleteMode) {
         this.deleteCrosshairMode();
         this.setState({
           crosshairDeleteMode: this.props.crosshairDeleteMode
         });
       }
+
       if (this.props.deleteAllLandmarks !== this.state.deleteAllLandmarks) {
         this.deleteAll();
         this.setState({
           deleteAllLandmarks: this.props.deleteAllLandmarks
         });
       }
+
       if (this.props.resetAllLandmarks !== this.state.resetAllLandmarks) {
         this.resetLandmarks();
         this.setState({
@@ -35223,8 +34914,7 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
   }, {
     key: "render",
     value: function render() {
-      return react.createElement("div", null)
-      // <RoiShapes
+      return external_react_default().createElement("div", null) // <RoiShapes
       //     deleteAll={this.deleteAll}
       //     enterCrosshairMode={this.enterCrosshairMode}
       //     exitCrosshairMode={this.exitCrosshairMode}
@@ -35234,8 +34924,10 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
       ;
     }
   }]);
+
   return NvistaRoiSettings;
-}(react.Component);
+}(external_react_.Component);
+
 /* harmony default export */ var NvistaRoiSettingsPanel = (NvistaRoiSettings);
 ;// ./src/SketchField.jsx
 
@@ -35260,20 +34952,29 @@ var NvistaRoiSettings = /*#__PURE__*/function (_Component) {
 
 
 
-var SketchField_fabric = (__webpack_require__(676).fabric);
 
+var SketchField_fabric = (__webpack_require__(676).fabric);
 /**
  * Sketch Tool based on FabricJS for React Applications
  */
-var SketchField = /*#__PURE__*/function (_PureComponent) {
+
+
+var SketchField =
+/*#__PURE__*/
+function (_PureComponent) {
   inherits_default()(SketchField, _PureComponent);
+
   function SketchField() {
     var _getPrototypeOf2;
+
     var _this;
+
     classCallCheck_default()(this, SketchField);
+
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
+
     _this = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(SketchField)).call.apply(_getPrototypeOf2, [this].concat(args)));
     _this.state = {
       parentWidth: 550,
@@ -35293,7 +34994,8 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
       lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000']
     };
     _this._fc = null;
-    _this.childRef = react.createRef();
+    _this.childRef = external_react_default().createRef();
+
     _this._initTools = function (fabricCanvas) {
       _this._tools = {};
       _this._tools[tools.Select] = new src_select(fabricCanvas);
@@ -35306,24 +35008,30 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
       _this._tools[tools.Pan] = new pan(fabricCanvas);
       _this._tools[tools.DefaultTool] = new defaul_tool(fabricCanvas);
     };
+
     _this.enableTouchScroll = function () {
       var canvas = _this._fc;
       if (canvas.allowTouchScrolling) return;
       canvas.allowTouchScrolling = true;
     };
+
     _this.disableTouchScroll = function () {
       var canvas = _this._fc;
+
       if (canvas.allowTouchScrolling) {
         canvas.allowTouchScrolling = false;
       }
     };
+
     _this.addImg = function (dataUrl) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var canvas = _this._fc;
-      // canvas.clear();
+      var canvas = _this._fc; // canvas.clear();
       // let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
+
       canvas.clear();
+
       _this._resize();
+
       SketchField_fabric.Image.fromURL(dataUrl, function (oImg) {
         var widthFactor = canvas.getWidth() / oImg.width;
         var heightFactor = canvas.getHeight() / oImg.height;
@@ -35335,152 +35043,184 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
           hasControls: false,
           hasBorders: false,
           hasRotatingPoint: false
-        });
-
-        // let opts = {
+        }); // let opts = {
         // left: Math.random() * (canvas.getWidth() - oImg.width * 0.5),
         // top: Math.random() * (canvas.getHeight() - oImg.height * 0.5),
         // scale: 0.5
         // };
         // Object.assign(opts, options);
-        oImg.scale(scaleFactor);
-        // oImg.set({
+
+        oImg.scale(scaleFactor); // oImg.set({
         // 'left': opts.left,
         // 'top': opts.top
         // });
+
         canvas.add(oImg);
+
         _this.setState({
           scaleFactor: scaleFactor
         });
+
         canvas.renderAll();
-      });
-      // if (this.state.rotation > 0) {
+      }); // if (this.state.rotation > 0) {
       // setTimeout(() => {
       // this.rotateAndScale(this._fc.item(0), -this.state.rotation, this._fc, this.state.scaleFactor);
       // canvas.renderAll();
       // }, 100);
       // }
     };
+
     _this._onObjectAdded = function (e) {
       var onObjectAdded = _this.props.onObjectAdded;
+
       if (!_this.state.action) {
         _this.setState({
           action: true
         });
+
         return;
       }
+
       var obj = e.target;
-      obj.__version = 1;
-      // record current object state as json and save as originalState
+      obj.__version = 1; // record current object state as json and save as originalState
+
       var objState = obj.toJSON();
       obj.__originalState = objState;
-      var state = JSON.stringify(objState);
-      // object, previous state, current state
+      var state = JSON.stringify(objState); // object, previous state, current state
       // this._history.keep([obj, state, state])
+
       onObjectAdded(e);
     };
+
     _this._onObjectMoving = function (e) {
       var onObjectMoving = _this.props.onObjectMoving;
       onObjectMoving(e);
     };
+
     _this._onObjectScaling = function (e) {
       var onObjectScaling = _this.props.onObjectScaling;
       onObjectScaling(e);
     };
+
     _this._onObjectRotating = function (e) {
       var onObjectRotating = _this.props.onObjectRotating;
       onObjectRotating(e);
     };
+
     _this._onObjectModified = function (e) {
       var onObjectModified = _this.props.onObjectModified;
       var obj = e.target;
       obj.__version += 1;
       var prevState = JSON.stringify(obj.__originalState);
-      var objState = obj.toJSON();
-      // record current object state as json and update to originalState
+      var objState = obj.toJSON(); // record current object state as json and update to originalState
+
       obj.__originalState = objState;
-      var currState = JSON.stringify(objState);
-      // this._history.keep([obj, prevState, currState]);
+      var currState = JSON.stringify(objState); // this._history.keep([obj, prevState, currState]);
+
       onObjectModified(e);
     };
+
     _this._onObjectRemoved = function (e) {
       var onObjectRemoved = _this.props.onObjectRemoved;
       var obj = e.target;
+
       if (obj.__removed) {
         obj.__version += 1;
         return;
       }
+
       obj.__version = 0;
       onObjectRemoved(e);
     };
+
     _this._onMouseDown = function (e) {
       var onMouseDown = _this.props.onMouseDown;
+
       _this._selectedTool.doMouseDown(e);
+
       onMouseDown(e);
     };
+
     _this._onMouseMove = function (e) {
       var onMouseMove = _this.props.onMouseMove;
+
       _this._selectedTool.doMouseMove(e);
+
       onMouseMove(e);
     };
+
     _this._onMouseOut = function (e) {
       var onMouseOut = _this.props.onMouseOut;
+
       _this._selectedTool.doMouseOut(e);
+
       if (_this.props.onChange) {
         var onChange = _this.props.onChange;
         setTimeout(function () {
           onChange(e.e);
         }, 10);
       }
+
       onMouseOut(e);
     };
+
     _this._onMouseUp = function (e) {
       var onMouseUp = _this.props.onMouseUp;
-      _this._selectedTool.doMouseUp(e);
-      // Update the final state to new-generated object
+
+      _this._selectedTool.doMouseUp(e); // Update the final state to new-generated object
       // Ignore Path object since it would be created after mouseUp
       // Assumed the last object in canvas.getObjects() in the newest object
+
+
       if (_this.props.tool !== tools.Pencil) {
         var canvas = _this._fc;
         var objects = canvas.getObjects();
         var newObj = objects[objects.length - 1];
+
         if (newObj && newObj.__version === 1) {
           newObj.__originalState = newObj.toJSON();
         }
       }
+
       if (_this.props.onChange) {
         var onChange = _this.props.onChange;
         setTimeout(function () {
           onChange(e.e);
         }, 10);
       }
+
       onMouseUp(e);
     };
+
     _this._resize = function (e) {
       var canvasWidth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var canvasHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
       var canvas = _this._fc;
+
       if (canvas && canvas.upperCanvasEl) {
         var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
       } else {
         var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
-      }
-      // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+      } // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
       // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
+
+
       var overlayHeight = Math.round(800 / (1280 / overlayWidth));
       var overlayContrain = overlayWidth / overlayHeight;
       console.log('[MIRA] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
+
       _this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
     };
+
     _this.getCanvasAtResoution = function (newWidth, newHeight) {
       var scaleLandmarks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-      var canvas = _this._fc;
-      // let { offsetWidth, clientHeight } = this._container;
+      var canvas = _this._fc; // let { offsetWidth, clientHeight } = this._container;
 
       if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
         var scaleMultiplier = newWidth / canvas.width;
         var scaleHeightMultiplier = newHeight / canvas.height;
         var objects = canvas.getObjects();
+
         for (var i in objects) {
           if (objects[i].type === "image" || scaleLandmarks) {
             // objects[i].width = objects[i].width * scaleMultiplier;
@@ -35489,44 +35229,51 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
             objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
             objects[i].setCoords();
             var scaleFactor = _this.state.scaleFactor * scaleMultiplier;
+
             _this.setState({
               scaleFactor: scaleFactor
             });
-          }
-          // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+          } // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
           // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+
+
           objects[i].left = objects[i].left * scaleMultiplier;
           objects[i].top = objects[i].top * scaleMultiplier;
           objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
           objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
           objects[i].setCoords();
         }
+
         var obj = canvas.backgroundImage;
+
         if (obj) {
           obj.scaleX = obj.scaleX * scaleMultiplier;
           obj.scaleY = obj.scaleY * scaleMultiplier;
         }
+
         console.log("[MIRA] Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
         canvas.discardActiveObject();
         canvas.setWidth(canvas.getWidth() * scaleMultiplier);
         canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
         canvas.renderAll();
-        canvas.calcOffset();
-
-        // this.setState({
+        canvas.calcOffset(); // this.setState({
         // parentWidth: offsetWidth
         // });
+
         var boss = canvas.getObjects().filter(function (o) {
           return o.type == "image";
         })[0];
+
         if (boss) {
           _this.bindLandmarks();
         }
+
         _this.setState({
           canvasHeight: canvas.height
         });
       }
     };
+
     _this.bindLandmarks = function () {
       var updateLandmarks = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       var canvasData = arguments.length > 1 ? arguments[1] : undefined;
@@ -35542,18 +35289,22 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
       var bossTransform = boss[0].calcTransformMatrix();
       var invertedBossTransform = invert(bossTransform);
       minions.forEach(function (o) {
-        var desiredTransform = multiply(invertedBossTransform, o.calcTransformMatrix());
-        // save the desired relation here.
+        var desiredTransform = multiply(invertedBossTransform, o.calcTransformMatrix()); // save the desired relation here.
+
         o.relationship = desiredTransform;
       });
+
       if (updateLandmarks) {
         var landMarks = canvas ? JSON.parse(JSON.stringify(canvas.getObjects().filter(function (o) {
           return o.type !== "image";
         }))) : [];
+
         _this.updateOnepTwop('_landmarks');
+
         console.log("[MIRA] Updated list of landmarks objects: ", JSON.stringify(landMarks));
       }
     };
+
     _this._backgroundColor = function (color) {
       if (!color) return;
       var canvas = _this._fc;
@@ -35561,9 +35312,11 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
         return canvas.renderAll();
       });
     };
+
     _this.zoom = function (factor) {
       var canvas = _this._fc;
       var objects = canvas.getObjects();
+
       for (var i in objects) {
         objects[i].scaleX = objects[i].scaleX * factor;
         objects[i].scaleY = objects[i].scaleY * factor;
@@ -35571,22 +35324,28 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
         objects[i].top = objects[i].top * factor;
         objects[i].setCoords();
       }
+
       canvas.renderAll();
       canvas.calcOffset();
     };
+
     _this.undo = function () {
       var history = _this._history;
+
       var _history$getCurrent = history.getCurrent(),
-        _history$getCurrent2 = slicedToArray_default()(_history$getCurrent, 3),
-        obj = _history$getCurrent2[0],
-        prevState = _history$getCurrent2[1],
-        currState = _history$getCurrent2[2];
+          _history$getCurrent2 = slicedToArray_default()(_history$getCurrent, 3),
+          obj = _history$getCurrent2[0],
+          prevState = _history$getCurrent2[1],
+          currState = _history$getCurrent2[2];
+
       history.undo();
+
       if (obj.__removed) {
         _this.setState({
           action: false
         }, function () {
           _this._fc.add(obj);
+
           obj.__version -= 1;
           obj.__removed = false;
         });
@@ -35596,22 +35355,27 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
         obj.__version -= 1;
         obj.setOptions(JSON.parse(prevState));
         obj.setCoords();
+
         _this._fc.renderAll();
       }
+
       if (_this.props.onChange) {
         _this.props.onChange();
       }
     };
+
     _this.redo = function () {
       var history = _this._history;
+
       if (history.canRedo()) {
-        var canvas = _this._fc;
-        //noinspection Eslint
+        var canvas = _this._fc; //noinspection Eslint
+
         var _history$redo = history.redo(),
-          _history$redo2 = slicedToArray_default()(_history$redo, 3),
-          obj = _history$redo2[0],
-          prevState = _history$redo2[1],
-          currState = _history$redo2[2];
+            _history$redo2 = slicedToArray_default()(_history$redo, 3),
+            obj = _history$redo2[0],
+            prevState = _history$redo2[1],
+            currState = _history$redo2[2];
+
         if (obj.__version === 0) {
           _this.setState({
             action: false
@@ -35623,25 +35387,32 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
           obj.__version += 1;
           obj.setOptions(JSON.parse(currState));
         }
+
         obj.setCoords();
         canvas.renderAll();
+
         if (_this.props.onChange) {
           _this.props.onChange();
         }
       }
     };
+
     _this.canUndo = function () {
       return _this._history.canUndo();
     };
+
     _this.canRedo = function () {
       return _this._history.canRedo();
     };
+
     _this.toDataURL = function (options) {
       return _this._fc.toDataURL(options);
     };
+
     _this.toJSON = function (propertiesToInclude) {
       return _this._fc.toJSON(propertiesToInclude);
     };
+
     _this.fromJSON = function (json) {
       if (!json) return;
       var canvas = _this._fc;
@@ -35653,24 +35424,33 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
               return o.selectable = o.evented = false;
             });
           }
+
           canvas.renderAll();
+
           if (_this.props.onChange) {
             _this.props.onChange();
           }
         });
       }, 100);
     };
+
     _this.clear = function (propertiesToInclude) {
       var discarded = _this.toJSON(propertiesToInclude);
+
       _this._fc.clear();
+
       _this._history.clear();
+
       return discarded;
     };
+
     _this.removeSelected = function () {
       var canvas = _this._fc;
       var activeObj = canvas.getActiveObject();
+
       if (activeObj) {
         var selected = [];
+
         if (activeObj.type === 'activeSelection') {
           activeObj.forEachObject(function (obj) {
             return selected.push(obj);
@@ -35678,24 +35458,29 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
         } else {
           selected.push(activeObj);
         }
+
         selected.forEach(function (obj) {
           obj.__removed = true;
           var objState = obj.toJSON();
           obj.__originalState = objState;
           var state = JSON.stringify(objState);
+
           _this._history.keep([obj, state, state]);
+
           canvas.remove(obj);
         });
         canvas.discardActiveObject();
         canvas.requestRenderAll();
       }
     };
+
     _this.copy = function () {
       var canvas = _this._fc;
       canvas.getActiveObject().clone(function (cloned) {
         return _this._clipboard = cloned;
       });
     };
+
     _this.paste = function () {
       // clone again, so you can do multiple copies.
       _this._clipboard.clone(function (clonedObj) {
@@ -35706,6 +35491,7 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
           top: clonedObj.top + 10,
           evented: true
         });
+
         if (clonedObj.type === 'activeSelection') {
           // active selection needs a reference to the canvas.
           clonedObj.canvas = canvas;
@@ -35716,15 +35502,18 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
         } else {
           canvas.add(clonedObj);
         }
+
         _this._clipboard.top += 10;
         _this._clipboard.left += 10;
         canvas.setActiveObject(clonedObj);
         canvas.requestRenderAll();
       });
     };
+
     _this.setBackgroundFromDataUrl = function (dataUrl) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var canvas = _this._fc;
+
       if (options.stretched) {
         delete options.stretched;
         Object.assign(options, {
@@ -35732,27 +35521,33 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
           height: canvas.height
         });
       }
+
       if (options.stretchedX) {
         delete options.stretchedX;
         Object.assign(options, {
           width: canvas.width
         });
       }
+
       if (options.stretchedY) {
         delete options.stretchedY;
         Object.assign(options, {
           height: canvas.height
         });
       }
+
       var img = new Image();
       img.setAttribute('crossOrigin', 'anonymous');
+
       img.onload = function () {
         return canvas.setBackgroundImage(new SketchField_fabric.Image(img), function () {
           return canvas.renderAll();
         }, options);
       };
+
       img.src = dataUrl;
     };
+
     _this.addText = function (text) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var canvas = _this._fc;
@@ -35768,30 +35563,36 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
       });
       canvas.add(iText);
     };
+
     _this.callEvent = function (e, eventFunction) {
       // console.log("inside callEvet method");
       if (_this._selectedTool) eventFunction(e);
     };
+
     _this.addLandmarks = function (canvas, frontEnd) {
       var self = assertThisInitialized_default()(assertThisInitialized_default()(_this));
+
       canvas.selection = false;
       var imageObject = JSON.parse(JSON.stringify(canvas.getObjects()));
       var landMarks = frontEnd;
+
       if (landMarks.length > 0) {
         landMarks.splice(0, 0, imageObject[0]);
       } else {
         landMarks = imageObject;
       }
+
       canvas.loadFromJSON("{\"objects\":".concat(JSON.stringify(landMarks), "}"), function () {
         if (self.props.oneptwop) {
           self.props.updateSbpfTransformValues(self.props.oneptwop, self.props.loadFromSession);
         } else {
           self.rotateAndScale(canvas.item(0), -0);
-        }
+        } //if (canvas.item(1) && canvas.item(1).cnWidth !== canvas.getWidth()) {
 
-        //if (canvas.item(1) && canvas.item(1).cnWidth !== canvas.getWidth()) {
+
         var scaleMultiplier = canvas.getWidth() / canvas.item(1).cnWidth;
         var objects = canvas.getObjects();
+
         for (var i in objects) {
           if (objects[i].type !== "image") {
             objects[i].left = objects[i].left * scaleMultiplier;
@@ -35800,8 +35601,9 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
             objects[i].cnHeight = canvas.getHeight();
             objects[i].setCoords();
           }
-        }
-        // }
+        } // }
+
+
         if (canvas) {
           var fabricList = JSON.parse(JSON.stringify(canvas.getObjects().filter(function (o) {
             return o.type !== "image";
@@ -35818,24 +35620,27 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
             o.selectable = false;
           });
         }
+
         var boss = canvas.getObjects().filter(function (o) {
           return o.type == "image";
-        })[0];
-        //if (boss) {
-        self.bindLandmarks(true, canvas);
-        //}
+        })[0]; //if (boss) {
+
+        self.bindLandmarks(true, canvas); //}
         //canvas.requestRenderAll();
+
         canvas.renderAll();
       });
       canvas.on('object:modified', function (options) {
         try {
           var obj = options.target;
+
           if (obj.type == "image") {
             return;
           }
+
           var canvasTL = new SketchField_fabric.Point(0, 0);
-          var canvasBR = new SketchField_fabric.Point(canvas.getWidth(), canvas.getHeight());
-          //if object not totally contained in canvas, adjust position
+          var canvasBR = new SketchField_fabric.Point(canvas.getWidth(), canvas.getHeight()); //if object not totally contained in canvas, adjust position
+
           if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
             var objBounds = obj.getBoundingRect();
             obj.setCoords();
@@ -35850,48 +35655,50 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
             obj.setCoords();
             canvas.renderAll();
           }
+
           self.bindLandmarks(true);
         } catch (err) {
           alert("exception in keepObjectInBounds\n\n" + err.message + "\n\n" + err.stack);
         }
       });
     };
+
     _this.componentDidMount = function () {
       var _this$props = _this.props,
-        tool = _this$props.tool,
-        value = _this$props.value,
-        undoSteps = _this$props.undoSteps,
-        defaultValue = _this$props.defaultValue,
-        backgroundColor = _this$props.backgroundColor,
-        image = _this$props.image;
+          tool = _this$props.tool,
+          value = _this$props.value,
+          undoSteps = _this$props.undoSteps,
+          defaultValue = _this$props.defaultValue,
+          backgroundColor = _this$props.backgroundColor,
+          image = _this$props.image;
       console.log("value is coming in component did mount before starttttt-- > ", _this._fc);
-      console.log("component mounted");
-      //let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
+      console.log("component mounted"); //let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
+
       var canvas = _this._fc = new SketchField_fabric.Canvas(_this._canvas, {
         centeredRotation: true,
-        centeredScaling: true
-        //id: "roi-canvas"
-      } /*, {
+        centeredScaling: true //id: "roi-canvas"
+
+        /*, {
         preserveObjectStacking: false,
         renderOnAddRemove: false,
         skipTargetFind: true
-        }*/);
-      _this._initTools(canvas);
+        }*/
 
-      // set initial backgroundColor
+      });
+
+      _this._initTools(canvas); // set initial backgroundColor
+
+
       _this._backgroundColor(backgroundColor);
+
       var selectedTool = _this._tools[tool];
       if (selectedTool) selectedTool.configureCanvas(_this.props);
-      _this._selectedTool = selectedTool;
+      _this._selectedTool = selectedTool; // Control resize
 
-      // Control resize
-
-      window.addEventListener('resize', _this._resize, false);
-
-      // Initialize History, with maximum number of undo steps
+      window.addEventListener('resize', _this._resize, false); // Initialize History, with maximum number of undo steps
       // this._history = new History(undoSteps);
-
       // Events binding
+
       canvas.on('object:added', function (e) {
         return _this.callEvent(e, _this._onObjectAdded);
       });
@@ -35921,48 +35728,53 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
       });
       canvas.on('object:rotating', function (e) {
         return _this.callEvent(e, _this._onObjectRotating);
-      });
-      // IText Events fired on Adding Text
+      }); // IText Events fired on Adding Text
       // canvas.on("text:event:changed", console.log)
       // canvas.on("text:selection:changed", console.log)
       // canvas.on("text:editing:entered", console.log)
       // canvas.on("text:editing:exited", console.log)
 
-      _this.disableTouchScroll();
+      _this.disableTouchScroll(); // setTimeout(() => {
 
-      // setTimeout(() => {
-      _this._resize()
-      // }, 3000);
 
+      _this._resize() // }, 3000);
       // if (image !== null) {
       // this.addImg(image);
       // }
       // initialize canvas with controlled value if exists
       ;
+
       (value || defaultValue) && _this.fromJSON(value || defaultValue);
     };
+
     _this.componentWillUnmount = function () {
       return window.removeEventListener('resize', _this._resize);
     };
+
     _this.componentDidUpdate = function (prevProps, prevState) {
       // console.log(this.props, "props");
       var canvas = _this._fc;
+
       if (_this.state.parentWidth !== prevState.parentWidth || _this.props.width !== prevProps.width || _this.props.height !== prevProps.height) {
         _this._resize();
       }
+
       if (_this.props.tool !== prevProps.tool) {
-        _this._selectedTool = _this._tools[_this.props.tool];
-        //Bring the cursor back to default if it is changed by a tool
+        _this._selectedTool = _this._tools[_this.props.tool]; //Bring the cursor back to default if it is changed by a tool
+
         _this._fc.defaultCursor = 'default';
-        if (_this._selectedTool) {
-          // this._selectedTool.configureCanvas(this.props);
+
+        if (_this._selectedTool) {// this._selectedTool.configureCanvas(this.props);
         }
       }
+
       if (_this.props.backgroundColor !== prevProps.backgroundColor) {
         _this._backgroundColor(_this.props.backgroundColor);
       }
+
       if (_this.props.image !== _this.state.imageUrl) {
         _this.addImg(_this.props.image);
+
         _this.setState({
           imageUrl: _this.props.image,
           scaleFactor: _this.state.scaleFactor,
@@ -35970,65 +35782,79 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
           flipApplied: _this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
         });
       }
+
       if (_this.props.value !== prevProps.value || _this.props.value && _this.props.forceValue) {
         _this.fromJSON(_this.props.value);
-      }
-
-      // if (this.props.callResize !== this.state.callResize) {
+      } // if (this.props.callResize !== this.state.callResize) {
       // this._resize();
       // this.setState({ callResize: this.props.callResize });
       // }
 
+
       if (_this.props.oneptwop) {
         if (_this.props.oneptwop.inscopix.adapter_lsm.rotation !== _this.state.rotation && _this._fc.item(0)) {
           _this.rotateAndScale(_this._fc.item(0), -_this.props.oneptwop.inscopix.adapter_lsm.rotation);
+
           _this.updateLandmarksPosition();
+
           _this._fc.renderAll();
+
           _this.setState({
             rotation: _this.props.oneptwop.inscopix.adapter_lsm.rotation
           });
         }
+
         if (_this.props.oneptwop.inscopix.frontend !== _this.state.frontEnd && _this.state.updateLandmarksForOtherWindow && _this._fc) {
           _this.setState({
             frontEnd: _this.props.oneptwop.inscopix.frontend,
             updateLandmarksForOtherWindow: false
           });
+
           _this.props.addLandmarks(_this._fc, _this.props.oneptwop.inscopix.frontend);
+
           _this._fc.renderAll();
         }
+
         if (_this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal !== _this.state.flipApplied) {
           _this.applyFlip(_this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
+
           _this.setState({
             flipApplied: _this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
           });
         }
       }
+
       if (_this.props.crosshairMode !== _this.state.crosshairMode) {
         _this.setState({
           crosshairMode: _this.props.crosshairMode
         });
       }
+
       if (_this.props.crosshairMoveMode !== _this.state.crosshairMoveMode) {
         _this.setState({
           crosshairMoveMode: _this.props.crosshairMoveMode
         });
       }
+
       if (_this.props.crosshairDeleteMode !== _this.state.crosshairDeleteMode) {
         _this.setState({
           crosshairDeleteMode: _this.props.crosshairDeleteMode
         });
       }
+
       if (_this.props.deleteAllLandmarks !== _this.state.deleteAllLandmarks) {
         _this.setState({
           deleteAllLandmarks: _this.props.deleteAllLandmarks
         });
       }
+
       if (_this.props.resetAllLandmarks !== _this.state.resetAllLandmarks) {
         _this.setState({
           resetAllLandmarks: _this.props.resetAllLandmarks
         });
       }
     };
+
     _this.onChangeSize = function (width, height) {
       // if (this.state.imageUrl !== null) {
       // this.addImg(this.state.imageUrl);
@@ -36037,22 +35863,26 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
       // // this._fc.renderAll();
       // // }
       // }
-
       _this._resize();
     };
+
     _this.updateLandmarksPosition = function () {
       var multiply = SketchField_fabric.util.multiplyTransformMatrices;
       var invert = SketchField_fabric.util.invertTransform;
+
       var boss = _this._fc.getObjects().filter(function (o) {
         return o.type == 'image';
       })[0];
+
       var minions = _this._fc.getObjects().filter(function (o) {
         return o !== boss;
       });
+
       minions.forEach(function (o) {
         if (!o.relationship) {
           return;
         }
+
         var relationship = o.relationship;
         var newTransform = multiply(boss.calcTransformMatrix(), relationship);
         var opt = SketchField_fabric.util.qrDecompose(newTransform);
@@ -36068,68 +35898,80 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
         o.setCoords();
       });
     };
+
     _this.applyFlip = function (value, updateOnepTwop) {
       if (_this._fc.item(0)) {
         _this._fc.item(0).set({
           flipX: value
         });
+
         _this._fc.item(0).setCoords();
       }
+
       _this.updateLandmarksPosition();
       /*if(updateOnepTwop) {
       window.updateOnepTwopData('_transform', []);
       } */
+
+
       _this._fc.requestRenderAll();
+
       _this._fc.renderAll();
     };
+
     _this.rotateAndScale = function (obj, angle) {
       if (obj) {
         var width = _this._fc.getWidth();
+
         var height = _this._fc.getHeight();
+
         var cos_theta = Math.cos(angle * Math.PI / 180);
         var sin_theta = Math.sin(angle * Math.PI / 180);
         var x_scale = width / (Math.abs(width * cos_theta) + Math.abs(height * sin_theta));
         var y_scale = height / (Math.abs(width * sin_theta) + Math.abs(height * cos_theta));
         var scale = Math.min(x_scale, y_scale);
-        var actScale = _this.state.scaleFactor * scale;
-        // get the transformMatrix array
+        var actScale = _this.state.scaleFactor * scale; // get the transformMatrix array
+
         var rotateMatrix = [cos_theta, -sin_theta, sin_theta, cos_theta, 0, 0];
-        var scaleMatrix = [actScale, 0, 0, actScale, 0, 0];
-        // console.log(scaleMatrix, "scaleMatrix");
+        var scaleMatrix = [actScale, 0, 0, actScale, 0, 0]; // console.log(scaleMatrix, "scaleMatrix");
         // console.log(rotateMatrix, "rotateMatrix");
         //var scaleMatrix = [scale, 0 , 0, scale, 0, 0];
-        var rsT = SketchField_fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix);
 
-        // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
-        var options = SketchField_fabric.util.qrDecompose(rsT);
-        // console.log(options, "options");
+        var rsT = SketchField_fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix); // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
+
+        var options = SketchField_fabric.util.qrDecompose(rsT); // console.log(options, "options");
+
         var newCenter = {
           x: _this._fc.getWidth() / 2,
-          y: _this._fc.getHeight() / 2
+          y: _this._fc.getHeight() / 2 // reset transformMatrix to identity and resets flips since negative scale resulting from decompose, will automatically set them.
+          //obj.flipX = false;
+
         };
-
-        // reset transformMatrix to identity and resets flips since negative scale resulting from decompose, will automatically set them.
-        //obj.flipX = false;
         obj.flipY = false;
-        obj.set(options);
+        obj.set(options); // position the object in the center given from translateX and translateY
 
-        // position the object in the center given from translateX and translateY
         obj.setPositionByOrigin(newCenter, 'center', 'center');
         obj.setCoords();
       }
     };
+
     _this.updateLandmarks = function () {
       var currentRotation = _this.props.oneptwop.inscopix.adapter_lsm.rotation;
       var isFliped = _this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal;
+
       if (isFliped) {
         _this.applyFlip(false, true);
       }
+
       _this.props.updateSlider(0);
+
       var points = [];
+
       if (_this.props.oneptwop.inscopix.frontend.length > 0) {
         _this.props.oneptwop.inscopix.frontend = _this.props.oneptwop.inscopix.frontend.filter(function (o) {
           return o.type !== "image";
         });
+
         _this.props.oneptwop.inscopix.frontend.map(function (item, key) {
           var x, y;
           x = item.left + item.width / 2;
@@ -36139,6 +35981,7 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
             y: y
           });
         });
+
         _this.props.oneptwop.inscopix.landmarks = {
           points: points
         };
@@ -36147,11 +35990,14 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
           points: []
         };
       }
+
       _this.props.updateSlider(currentRotation);
+
       if (isFliped) {
         _this.applyFlip(true, true);
       }
     };
+
     _this.updateOnepTwop = function (saveAs) {
       var updateLandmarksForOtherWindow = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       // if (this.sbpfApplyClick) {
@@ -36171,16 +36017,21 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
       oneptwop.inscopix.frontend = landMarks.objects.filter(function (o) {
         return o.type !== "image";
       });
+
       _this.props.oneptwopFrontend(oneptwop);
       /*if (updateLandmarksForOtherWindow) {
       this.props.addLandmarks()
       }*/
+
+
       _this.setState({
         updateLandmarksForOtherWindow: updateLandmarksForOtherWindow
       });
     };
+
     _this.removeAddOrMoveMode = function () {
       var canvas = _this._fc;
+
       if (canvas.upperCanvasEl) {
         canvas.discardActiveObject();
         canvas.forEachObject(function (o) {
@@ -36191,12 +36042,13 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
         canvas.renderAll();
       }
     };
+
     _this.render = function () {
       var _this$props2 = _this.props,
-        className = _this$props2.className,
-        style = _this$props2.style,
-        width = _this$props2.width,
-        height = _this$props2.height;
+          className = _this$props2.className,
+          style = _this$props2.style,
+          width = _this$props2.width,
+          height = _this$props2.height;
       var canvasDivStyle = Object.assign({}, style ? style : {}, width ? {
         width: '100%'
       } : {
@@ -36206,22 +36058,21 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
       } : {
         height: _this.state.canvasHeight
       });
-      return react.createElement("div", {
+      return external_react_default().createElement("div", {
         className: className,
         ref: function ref(c) {
           return _this._container = c;
         },
         style: canvasDivStyle,
         id: "onep-twop-container-2"
-      }, react.createElement(build_namespaceObject["default"], {
+      }, external_react_default().createElement(build_namespaceObject["default"], {
         onResize: _this.onChangeSize.bind(assertThisInitialized_default()(assertThisInitialized_default()(_this)))
-      }), react.createElement("div", {
+      }), external_react_default().createElement("div", {
         style: {
           position: 'absolute'
         }
-      }, react.createElement("canvas", {
-        id: uuid4()
-        // style={{
+      }, external_react_default().createElement("canvas", {
+        id: uuid4() // style={{
         // margin: "0 auto",
         // position: "absolute",
         // opacity: 1,
@@ -36238,7 +36089,7 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
         ref: function ref(c) {
           return _this._canvas = c;
         }
-      }, "Sorry, Canvas HTML5 element is not supported by your browser :(")), _this._fc !== null && _this._fc.item(0) && react.createElement(NvistaRoiSettingsPanel, {
+      }, "Sorry, Canvas HTML5 element is not supported by your browser :(")), _this._fc !== null && _this._fc.item(0) && external_react_default().createElement(NvistaRoiSettingsPanel, {
         canvasProps: _this._fc,
         landMarks: _this.props.oneptwop.inscopix.frontend,
         imageData: _this.props.oneptwop,
@@ -36259,293 +36110,13 @@ var SketchField = /*#__PURE__*/function (_PureComponent) {
         handleMiraErrorPopup: _this.props.handleMiraErrorPopup
       }));
     };
+
     return _this;
   }
-  /**
-  * Enable touch Scrolling on Canvas
-  */
-  /**
-  * Disable touch Scrolling on Canvas
-  */
-  /**
-  * Add an image as object to the canvas
-  *
-  * @param dataUrl the image url or Data Url
-  * @param options object to pass and change some options when loading image, the format of the object is:
-  *
-  * {
-  * left: <Number: distance from left of canvas>,
-  * top: <Number: distance from top of canvas>,
-  * scale: <Number: initial scale of image>
-  * }
-  */
-  /**
-  * Action when an object is added to the canvas
-  */
-  /**
-  * Action when an object is moving around inside the canvas
-  */
-  /**
-  * Action when an object is scaling inside the canvas
-  */
-  /**
-  * Action when an object is rotating inside the canvas
-  */
-  /**
-  * Action when an object is removed from the canvas
-  */
-  /**
-  * Action when the mouse button is pressed down
-  */
-  /**
-  * Action when the mouse cursor is moving around within the canvas
-  */
-  /**
-  * Action when the mouse cursor is moving out from the canvas
-  */
-  /**
-  * Track the resize of the window and update our state
-  *
-  * @param e the resize event
-  * @private
-  */
-  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
-  // if (e) e.preventDefault();
-  // let { widthCorrection, heightCorrection } = this.props;
-  // let canvas = this._fc;
-  // let { offsetWidth, clientHeight } = this._container;
-  // console.log(this._fc.height, "height");
-  // console.log(offsetWidth, "container width");
-  // // let containerHeight = Math.round(800 / (1280 / overlayWidth));
-  // let prevWidth = canvasWidth || canvas.getWidth();
-  // let prevHeight = canvasHeight || canvas.getHeight();
-  // let wfactor = ((offsetWidth - widthCorrection) / prevWidth).toFixed(2);
-  // let hfactor = ((clientHeight - heightCorrection) / prevHeight).toFixed(2);
-  // canvas.setWidth(offsetWidth - widthCorrection);
-  // canvas.setHeight(clientHeight - heightCorrection);
-  // if (canvas.backgroundImage) {
-  // // Need to scale background images as well
-  // let bi = canvas.backgroundImage;
-  // bi.width = bi.width * wfactor;
-  // bi.height = bi.height * hfactor
-  // }
-  // let objects = canvas.getObjects();
-  // for (let i in objects) {
-  // let obj = objects[i];
-  // let scaleX = obj.scaleX;
-  // let scaleY = obj.scaleY;
-  // let left = obj.left;
-  // let top = obj.top;
-  // let tempScaleX = scaleX * wfactor;
-  // let tempScaleY = scaleY * hfactor;
-  // let tempLeft = left * wfactor;
-  // let tempTop = top * hfactor;
-  // obj.scaleX = tempScaleX;
-  // obj.scaleY = tempScaleY;
-  // obj.left = tempLeft;
-  // obj.top = tempTop;
-  // obj.setCoords()
-  // }
-  // this.setState({
-  // parentWidth: offsetWidth
-  // });
-  // canvas.renderAll();
-  // canvas.calcOffset();
-  // };
-  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
-  // if (e) e.preventDefault();
-  // let canvas = this._fc;
-  // let { offsetWidth, clientHeight } = this._container;
-  // var overlayWidth = offsetWidth;
-  // var overlayHeight = Math.round(800 / (1280 / overlayWidth));
-  // var overlayContrain = overlayWidth / overlayHeight;
-  // console.log('[ONEPTWOP] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
-  // console.log(canvas.width, "canvas width");
-  // console.log(canvas.height, "canvas.height");
-  // var scaleMultiplier = overlayWidth / canvas.width;
-  // var scaleHeightMultiplier = overlayHeight / canvas.height;
-  // console.log(scaleMultiplier, "width scaler");
-  // console.log(scaleHeightMultiplier, "height scaler");
-  // var objects = canvas.getObjects();
-  // for (var i in objects) {
-  // if (objects[i].type == "image" || scaleLandmarks) {
-  // //objects[i].width = objects[i].width * scaleMultiplier;
-  // //objects[i].height = objects[i].height * scaleHeightMultiplier;
-  // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-  // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-  // this.scaleFactor = this.scaleFactor * scaleMultiplier;
-  // }
-  // objects[i].left = objects[i].left * scaleMultiplier;
-  // objects[i].top = objects[i].top * scaleMultiplier;
-  // objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
-  // objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
-  // objects[i].setCoords();
-  // }
-  // var obj = canvas.backgroundImage;
-  // if (obj) {
-  // obj.scaleX = obj.scaleX * scaleMultiplier;
-  // obj.scaleY = obj.scaleY * scaleMultiplier;
-  // }
-  // console.log(canvas.getWidth(), "canvas width");
-  // console.log(canvas.getHeight(), "canvas height");
-  // console.log("[ONEPTWOP] resize canvas dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
-  // canvas.discardActiveObject();
-  // canvas.setWidth(canvas.getWidth() * scaleMultiplier);
-  // canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
-  // canvas.renderAll();
-  // canvas.calcOffset();
-  // this.setState({
-  // parentWidth: offsetWidth
-  // });
-  // canvas.renderAll();
-  // canvas.calcOffset();
-  // };
-  // _resize = (e, canvasWidth = null, canvasHeight = null) => {
-  // let canvas = this._fc
-  // if (canvas && canvas.upperCanvasEl) {
-  // var overlayWidth = document.getElementById('onep-twop-container-2')
-  // .offsetWidth
-  // } else {
-  // var overlayWidth = document.getElementById('oneptwop-container')
-  // .offsetWidth
-  // }
-  // // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
-  // // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
-  // var overlayHeight = Math.round(800 / (1280 / overlayWidth))
-  // var overlayContrain = overlayWidth / overlayHeight
-  // console.log(
-  // '[ONEPTWOP] Color Overlay Width:',
-  // overlayWidth,
-  // overlayHeight,
-  // overlayContrain
-  // )
-  // this.getCanvasAtResoution(overlayWidth, overlayHeight, false)
-  // }
-  // getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
-  // let canvas = this._fc
-  // // let { offsetWidth, clientHeight } = this._container;
-  // if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
-  // var scaleMultiplier = newWidth / canvas.width
-  // var scaleHeightMultiplier = newHeight / canvas.height
-  // var objects = canvas.getObjects()
-  // for (var i in objects) {
-  // if (objects[i].type == 'image' || scaleLandmarks) {
-  // // objects[i].width = objects[i].width * scaleMultiplier;
-  // // objects[i].height = objects[i].height * scaleHeightMultiplier;
-  // objects[i].scaleX = objects[i].scaleX * scaleMultiplier
-  // objects[i].scaleY = objects[i].scaleY * scaleMultiplier
-  // objects[i].setCoords()
-  // let scaleFactor = this.state.scaleFactor * scaleMultiplier
-  // this.setState({ scaleFactor })
-  // }
-  // objects[i].left = objects[i].left * scaleMultiplier
-  // objects[i].top = objects[i].top * scaleMultiplier
-  // objects[i].cnWidth = canvas.getWidth() * scaleMultiplier
-  // objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier
-  // objects[i].setCoords()
-  // }
-  // var obj = canvas.backgroundImage
-  // if (obj) {
-  // obj.scaleX = obj.scaleX * scaleMultiplier
-  // obj.scaleY = obj.scaleY * scaleMultiplier
-  // }
-  // console.log(
-  // '[ONEPTWOP] Resize Canvas Dimensions: ',
-  // canvas.getWidth() * scaleMultiplier,
-  // canvas.getHeight() * scaleHeightMultiplier
-  // )
-  // canvas.discardActiveObject()
-  // canvas.setWidth(canvas.getWidth() * scaleMultiplier)
-  // canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier)
-  // canvas.renderAll()
-  // canvas.calcOffset()
-  // // this.setState({
-  // // parentWidth: offsetWidth
-  // // });
-  // // var boss = window.canvas.getObjects().filter(o => o.type == "image")[0];
-  // // if (boss) {
-  // // this.bindLandmarks();
-  // // }
-  // }
-  // }
-  /**
-  * Sets the background color for this sketch
-  * @param color in rgba or hex format
-  */
-  /**
-  * Zoom the drawing by the factor specified
-  *
-  * The zoom factor is a percentage with regards the original, for example if factor is set to 2
-  * it will double the size whereas if it is set to 0.5 it will half the size
-  *
-  * @param factor the zoom factor
-  */
-  /**
-  * Perform an undo operation on canvas, if it cannot undo it will leave the canvas intact
-  */
-  /**
-  * Perform a redo operation on canvas, if it cannot redo it will leave the canvas intact
-  */
-  /**
-  * Delegation method to check if we can perform an undo Operation, useful to disable/enable possible buttons
-  *
-  * @returns {*} true if we can undo otherwise false
-  */
-  /**
-  * Delegation method to check if we can perform a redo Operation, useful to disable/enable possible buttons
-  *
-  * @returns {*} true if we can redo otherwise false
-  */
-  /**
-  * Exports canvas element to a dataurl image. Note that when multiplier is used, cropping is scaled appropriately
-  *
-  * Available Options are
-  * <table style="width:100%">
-  *
-  * <tr><td><b>Name</b></td><td><b>Type</b></td><td><b>Argument</b></td><td><b>Default</b></td><td><b>Description</b></td></tr>
-  * <tr><td>format</td> <td>String</td> <td><optional></td><td>png</td><td>The format of the output image. Either "jpeg" or "png"</td></tr>
-  * <tr><td>quality</td><td>Number</td><td><optional></td><td>1</td><td>Quality level (0..1). Only used for jpeg.</td></tr>
-  * <tr><td>multiplier</td><td>Number</td><td><optional></td><td>1</td><td>Multiplier to scale by</td></tr>
-  * <tr><td>left</td><td>Number</td><td><optional></td><td></td><td>Cropping left offset. Introduced in v1.2.14</td></tr>
-  * <tr><td>top</td><td>Number</td><td><optional></td><td></td><td>Cropping top offset. Introduced in v1.2.14</td></tr>
-  * <tr><td>width</td><td>Number</td><td><optional></td><td></td><td>Cropping width. Introduced in v1.2.14</td></tr>
-  * <tr><td>height</td><td>Number</td><td><optional></td><td></td><td>Cropping height. Introduced in v1.2.14</td></tr>
-  *
-  * </table>
-  *
-  * @returns {String} URL containing a representation of the object in the format specified by options.format
-  */
-  /**
-  * Returns JSON representation of canvas
-  *
-  * @param propertiesToInclude Array <optional> Any properties that you might want to additionally include in the output
-  * @returns {string} JSON string
-  */
-  /**
-  * Populates canvas with data from the specified JSON.
-  *
-  * JSON format must conform to the one of fabric.Canvas#toDatalessJSON
-  *
-  * @param json JSON string or object
-  */
-  /**
-  * Clear the content of the canvas, this will also clear history but will return the canvas content as JSON to be
-  * used as needed in order to undo the clear if possible
-  *
-  * @param propertiesToInclude Array <optional> Any properties that you might want to additionally include in the output
-  * @returns {string} JSON string of the canvas just cleared
-  */
-  /**
-  * Remove selected object from the canvas
-  */
-  /**
-  * Sets the background from the dataUrl given
-  *
-  * @param dataUrl the dataUrl to be used as a background
-  * @param options
-  */
+
   return SketchField;
-}(react.PureComponent);
+}(external_react_.PureComponent);
+
 SketchField.propTypes = {
   // the color of the line
   lineColor: (prop_types_default()).string,
@@ -36665,24 +36236,34 @@ var objectSpread_default = /*#__PURE__*/__webpack_require__.n(objectSpread);
 
 
 
+
 /*eslint no-unused-vars: 0*/
 
 
 
 var ellipse_fabric = (__webpack_require__(676).fabric);
-var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
+
+var Ellipse =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(Ellipse, _FabricCanvasTool);
+
   function Ellipse() {
     var _getPrototypeOf2;
+
     var _this;
+
     classCallCheck_default()(this, Ellipse);
+
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
+
     _this = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(Ellipse)).call.apply(_getPrototypeOf2, [this].concat(args)));
+
     _this.genrateEllipse = function (options, props) {
       var addROIDefaultName = props.addROIDefaultName,
-        removeColorInDefaultShapeColors = props.removeColorInDefaultShapeColors;
+          removeColorInDefaultShapeColors = props.removeColorInDefaultShapeColors;
       var canvas = _this._canvas;
       _this.isDown = true;
       var pointer = canvas.getPointer(options.e);
@@ -36693,9 +36274,11 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
       _this.startX = _ref[0];
       _this.startY = _ref[1];
       var boundary = props.getboudaryCoords();
+
       if (boundary && (pointer.y > boundary.height * boundary.scaleY + boundary.top || pointer.x > boundary.width * boundary.scaleX + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
         return false;
       }
+
       _this.ellipse = new ellipse_fabric.Ellipse({
         left: _this.startX,
         top: _this.startY,
@@ -36720,22 +36303,29 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
           y: 0
         }
       });
+
       _this.addEventTriggerKeys();
+
       canvas.add(_this.ellipse);
-      _this.ellipse.setCoords();
-      // this.containInsideBoundary(options);
+
+      _this.ellipse.setCoords(); // this.containInsideBoundary(options);
+
+
       _this.isDragging = true;
       _this.ellipse.edit = true;
       removeColorInDefaultShapeColors(props.defaultShapeColors);
       addROIDefaultName(props.roiDefaultNames);
     };
+
     _this.addEventTriggerKeys = function () {
       _this.ellipse.triggerEvent = "none";
       _this.ellipse.triggerType = "none";
     };
+
     _this.checkWithInTrackingArea = function (obj, boundaryObj) {
       var canvasTL = new ellipse_fabric.Point(boundaryObj.left, boundaryObj.top);
       var canvasBR = new ellipse_fabric.Point(boundaryObj.left + boundaryObj.width * boundaryObj.scaleX, boundaryObj.height * boundaryObj.scaleY + boundaryObj.top);
+
       if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
         var objBounds = obj.getBoundingRect();
         obj.setCoords();
@@ -36748,12 +36338,18 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
         if (objBounds.left + objBounds.width > canvasBR.x) left = canvasBR.x - objBounds.width;
         obj.setPositionByOrigin(new ellipse_fabric.Point(left, top), "left", "top");
         obj.setCoords();
-        _this._fc.renderAll();
-        // this.props.checkForOverlap(obj);
+
+        _this._fc.renderAll(); // this.props.checkForOverlap(obj);
+
       }
     };
-    _this.checkWithInBoundary = /*#__PURE__*/function () {
-      var _ref2 = asyncToGenerator_default()(/*#__PURE__*/regenerator_default().mark(function _callee(props) {
+
+    _this.checkWithInBoundary =
+    /*#__PURE__*/
+    function () {
+      var _ref2 = asyncToGenerator_default()(
+      /*#__PURE__*/
+      regenerator_default().mark(function _callee(props) {
         var canvas, isObjectOutSideBoundary, roiTypes;
         return regenerator_default().wrap(function _callee$(_context) {
           while (1) {
@@ -36766,6 +36362,7 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
                   if (shape.id === "calibratedLine" || !roiTypes.includes(shape.type)) return;
                   var boundaryObj = props.getboudaryCoords();
                   if (!boundaryObj) return;
+
                   if ((shape.left < boundaryObj.left || shape.top < boundaryObj.top || shape.left + shape.width * shape.scaleX > boundaryObj.left + boundaryObj.width * boundaryObj.scaleX || shape.top + shape.height * shape.scaleY > boundaryObj.top + boundaryObj.height * boundaryObj.scaleY) && shape.id !== "trackingArea") {
                     props.addColorInDefaultShapeColors(shape.stroke);
                     props.deleteROIDefaultName(shape.defaultName);
@@ -36774,22 +36371,26 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
                   }
                 });
                 return _context.abrupt("return", isObjectOutSideBoundary);
+
               case 5:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee);
+        }, _callee, this);
       }));
+
       return function (_x) {
         return _ref2.apply(this, arguments);
       };
     }();
+
     _this.containInsideBoundary = function (o) {
       var canvas = _this._canvas;
       var canvasTL = new ellipse_fabric.Point(0, 0);
       var canvasBR = new ellipse_fabric.Point(canvas.getWidth(), canvas.getHeight());
       var pointer = canvas.getPointer(o.e);
+
       if (_this.startX > pointer.x) {
         _this.ellipse.set({
           originX: "right"
@@ -36799,6 +36400,7 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
           originX: "left"
         });
       }
+
       if (_this.startY > pointer.y) {
         _this.ellipse.set({
           originY: "bottom"
@@ -36808,29 +36410,38 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
           originY: "top"
         });
       }
+
       if (!_this.ellipse.isContainedWithinRect(canvasTL, canvasBR)) {
         var objBounds = _this.ellipse.getBoundingRect();
+
         _this.ellipse.setCoords();
+
         var objTL = _this.ellipse.getPointByOrigin("left", "top");
+
         var left = objTL.x;
         var top = objTL.y;
         if (objBounds.left < canvasTL.x) left = 0;
         if (objBounds.top < canvasTL.y) top = 0;
         if (objBounds.top + objBounds.height > canvasBR.y) top = canvasBR.y - objBounds.height;
         if (objBounds.left + objBounds.width > canvasBR.x) left = canvasBR.x - objBounds.width;
+
         _this.ellipse.setPositionByOrigin(new ellipse_fabric.Point(left, top), "left", "top");
+
         _this.ellipse.setCoords();
+
         canvas.renderAll();
       }
     };
+
     return _this;
   }
+
   createClass_default()(Ellipse, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
       var canvas = this._canvas;
-      canvas.isDrawingMode = canvas.selection = false;
-      // canvas.forEachObject((o) => o.selectable = o.evented = false);
+      canvas.isDrawingMode = canvas.selection = false; // canvas.forEachObject((o) => o.selectable = o.evented = false);
+
       this._width = props.lineWidth;
       this._color = props.lineColor;
       this._fill = props.fillColor;
@@ -36842,29 +36453,38 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
     key: "doMouseDown",
     value: function doMouseDown(options, props, sketch) {
       var _this2 = this;
+
       if (this.objectAdd) {
         // console.log("[Animal Tracking][Ellipse] Object has not added/removed and do not called mouse up function");
         this._canvas.off("mouse:up");
+
         this._canvas.on("mouse:up", function () {});
+
         return;
-      }
-      // console.log("[Animal Tracking][Ellipse] Object has added and called mouse up function.");
+      } // console.log("[Animal Tracking][Ellipse] Object has added and called mouse up function.");
+
+
       this._canvas.off("mouse:up");
+
       this._canvas.on("mouse:up", function (e) {
         return _this2.doMouseUp(e, props, sketch);
       });
+
       if (!this.isDown) return;
       var notificationShow = props.notificationShow,
-        roiDefaultNames = props.roiDefaultNames;
+          roiDefaultNames = props.roiDefaultNames;
+
       var objects = this._canvas.getObjects().filter(function (obj) {
         return obj.id !== "trackingArea" && obj.id !== "calibratedLine";
       });
+
       if (objects.length >= 5 && roiDefaultNames.length === 0) {
         notificationShow();
         console.log("Maximum five shapes allowed ", "color:blue; font-weight:bold;", "color:black;");
         this.objectAdd = false;
         return;
       }
+
       this.objectAdd = true;
       this.genrateEllipse(options, props);
     }
@@ -36873,30 +36493,38 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
     value: function doMouseMove(o, props) {
       if (!this.isDown) return;
       var canvas = this._canvas;
+
       if (this.isDragging) {
         var pointer = canvas.getPointer(o.e);
         var boundary = props.getboudaryCoords();
+
         if (boundary && (pointer.y > boundary.height * boundary.scaleY + boundary.top || pointer.x > boundary.width * boundary.scaleX + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
           return false;
         }
+
         var rx = Math.abs(this.startX - pointer.x) / 2;
         var ry = Math.abs(this.startY - pointer.y) / 2;
+
         if (this.startX > pointer.x) {
           this.ellipse.set({
             left: Math.abs(pointer.x)
           });
         }
+
         if (this.startY > pointer.y) {
           this.ellipse.set({
             top: Math.abs(pointer.y)
           });
         }
+
         if (rx > this.ellipse.strokeWidth) {
           rx -= this.ellipse.strokeWidth / 2;
         }
+
         if (ry > this.ellipse.strokeWidth) {
           ry -= this.ellipse.strokeWidth / 2;
         }
+
         this.ellipse.set({
           rx: rx,
           ry: ry
@@ -36909,8 +36537,11 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
   }, {
     key: "doMouseUp",
     value: function () {
-      var _doMouseUp = asyncToGenerator_default()(/*#__PURE__*/regenerator_default().mark(function _callee2(o, props, sketch) {
+      var _doMouseUp = asyncToGenerator_default()(
+      /*#__PURE__*/
+      regenerator_default().mark(function _callee2(o, props, sketch) {
         var _this3 = this;
+
         var onShapeAdded, checkForOverlap, isOverlap, ellipseSmall, outsideZone;
         return regenerator_default().wrap(function _callee2$(_context2) {
           while (1) {
@@ -36920,47 +36551,60 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
                 this.isDragging = false;
                 onShapeAdded = props.onShapeAdded, checkForOverlap = props.checkForOverlap;
                 isOverlap = false;
+
                 if (!this.objectAdd) {
                   _context2.next = 27;
                   break;
                 }
+
                 _context2.next = 7;
                 return props.checkForMinTotalArea();
+
               case 7:
                 ellipseSmall = _context2.sent;
                 _context2.next = 10;
                 return this.checkWithInBoundary(props);
+
               case 10:
                 outsideZone = _context2.sent;
+
                 if (!outsideZone) {
                   _context2.next = 16;
                   break;
                 }
+
                 console.log("%c[Animal Tracking]%c [Skecth Field][Rectangle][do mouse up] Ellipse is created outside the tracking area.", "color:blue; font-weight: bold;", "color: black;");
                 props.notificationShow("Zone should not be created outside tracking area.");
                 _context2.next = 24;
                 break;
+
               case 16:
                 if (ellipseSmall) {
                   _context2.next = 21;
                   break;
                 }
+
                 console.log("%c[Animal Tracking]%c [Skecth Field][Ellipse][do mouse up] The zone size should not be less than 100px of the total area.", "color:blue; font-weight: bold;", "color: black;");
                 props.notificationShow("Zone size should be bigger then 100px.");
                 _context2.next = 24;
                 break;
+
               case 21:
                 _context2.next = 23;
                 return checkForOverlap();
+
               case 23:
                 isOverlap = _context2.sent;
+
               case 24:
                 _context2.next = 26;
                 return onShapeAdded();
+
               case 26:
                 setTimeout(function () {
                   _this3.objectAdd = false;
                 }, isOverlap ? 500 : 0);
+
               case 27:
               case "end":
                 return _context2.stop();
@@ -36968,15 +36612,19 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
           }
         }, _callee2, this);
       }));
+
       return function doMouseUp(_x2, _x3, _x4) {
         return _doMouseUp.apply(this, arguments);
       };
     }()
   }]);
+
   return Ellipse;
 }(fabrictool);
+
 /* harmony default export */ var ellipse = (Ellipse);
 ;// ./src/polygon.js
+
 
 
 
@@ -36987,54 +36635,61 @@ var Ellipse = /*#__PURE__*/function (_FabricCanvasTool) {
 
 
 var polygon_fabric = (__webpack_require__(676).fabric);
+
 var geometric = __webpack_require__(779);
+
 var svgData = '<svg xmlns="http://www.w3.org/2000/svg" class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiBox-root css-uqopch" viewBox="0 0 24 24" focusable="false" aria-hidden="true" data-testid="Rotate90DegreesCwIcon"><path fill="red" d="M4.64 19.37c3.03 3.03 7.67 3.44 11.15 1.25l-1.46-1.46c-2.66 1.43-6.04 1.03-8.28-1.21-2.73-2.73-2.73-7.17 0-9.9C7.42 6.69 9.21 6.03 11 6.03V9l4-4-4-4v3.01c-2.3 0-4.61.87-6.36 2.63-3.52 3.51-3.52 9.21 0 12.73zM11 13l6 6 6-6-6-6-6 6z"></path></svg>';
 var rotateIcon = 'data:image/svg+xml,' + encodeURIComponent(svgData);
 var img = document.createElement('img');
 img.src = rotateIcon;
+
 function mouseRotateIcon(angle) {
   var relativeAngle = angle - 90;
   var pos = {
-      '-90': '9.25 5.25',
-      '-75': '9.972 3.863',
-      '-60': '10.84 1.756',
-      '-45': '11.972 -1.716',
-      '-30': '18.83 0.17',
-      '-15': '28.49 -9.49',
-      15: '-7.985 46.77',
-      30: '-0.415 27.57',
-      45: '2.32 21.713',
-      60: '3.916 18.243',
-      75: '4.762 16.135',
-      90: '5.25 14.75',
-      105: '5.84 13.617',
-      120: '6.084 12.666',
-      135: '6.317 12.01',
-      150: '6.754 11.325',
-      165: '7.06 10.653',
-      180: '7.25 10',
-      195: '7.597 9.43',
-      210: '7.825 8.672',
-      225: '7.974 7.99',
-      240: '8.383 7.332',
-      255: '8.83 6.441'
-    },
-    defaultPos = '7.25 10';
+    '-90': '9.25 5.25',
+    '-75': '9.972 3.863',
+    '-60': '10.84 1.756',
+    '-45': '11.972 -1.716',
+    '-30': '18.83 0.17',
+    '-15': '28.49 -9.49',
+    15: '-7.985 46.77',
+    30: '-0.415 27.57',
+    45: '2.32 21.713',
+    60: '3.916 18.243',
+    75: '4.762 16.135',
+    90: '5.25 14.75',
+    105: '5.84 13.617',
+    120: '6.084 12.666',
+    135: '6.317 12.01',
+    150: '6.754 11.325',
+    165: '7.06 10.653',
+    180: '7.25 10',
+    195: '7.597 9.43',
+    210: '7.825 8.672',
+    225: '7.974 7.99',
+    240: '8.383 7.332',
+    255: '8.83 6.441'
+  },
+      defaultPos = '7.25 10';
   var transform = relativeAngle === 0 ? 'translate(9.5 3.5)' : "rotate(".concat(relativeAngle, " ").concat(pos[relativeAngle] || defaultPos, ")");
   var imgCursor = encodeURIComponent("\n  <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='24' height='24'>\n    <defs>\n      <filter id='a' width='266.7%' height='156.2%' x='-75%' y='-21.9%' filterUnits='objectBoundingBox'>\n        <feOffset dy='1' in='SourceAlpha' result='shadowOffsetOuter1'/>\n        <feGaussianBlur in='shadowOffsetOuter1' result='shadowBlurOuter1' stdDeviation='1'/>\n        <feColorMatrix in='shadowBlurOuter1' result='shadowMatrixOuter1' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0'/>\n        <feMerge>\n          <feMergeNode in='shadowMatrixOuter1'/>\n          <feMergeNode in='SourceGraphic'/>\n        </feMerge>\n      </filter>\n      <path id='b' d='M1.67 12.67a7.7 7.7 0 0 0 0-9.34L0 5V0h5L3.24 1.76a9.9 9.9 0 0 1 0 12.48L5 16H0v-5l1.67 1.67z'/>\n    </defs>\n    <g fill='none' fill-rule='evenodd'><path d='M0 24V0h24v24z'/>\n      <g fill-rule='nonzero' filter='url(#a)' transform='".concat(transform, "'>\n        <use fill='#000' fill-rule='evenodd' xlink:href='#b'/>\n        <path stroke='#FFF' d='M1.6 11.9a7.21 7.21 0 0 0 0-7.8L-.5 6.2V-.5h6.7L3.9 1.8a10.4 10.4 0 0 1 0 12.4l2.3 2.3H-.5V9.8l2.1 2.1z'/>\n      </g>\n    </g>\n  </svg>"));
   return "url(\"data:image/svg+xml;charset=utf-8,".concat(imgCursor, "\") 12 12, crosshair");
 }
+
 function treatAngle(angle) {
   return angle - angle % 15;
 }
+
 function rotationStyleHandler(eventData, control, fabricObject) {
   if (fabricObject.lockRotation) {
     return NOT_ALLOWED_CURSOR;
   }
+
   var angle = treatAngle(fabricObject.angle);
   this.lastAngleRotation = angle;
   return mouseRotateIcon(angle);
 }
+
 function renderIcon(ctx, left, top, styleOverride, fabricObject) {
   var size = this.cornerSize;
   ctx.save();
@@ -37043,15 +36698,23 @@ function renderIcon(ctx, left, top, styleOverride, fabricObject) {
   ctx.drawImage(img, -size / 2, -size / 2, size, size);
   ctx.restore();
 }
-var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
+
+var Polygon =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(Polygon, _FabricCanvasTool);
+
   function Polygon() {
     var _getPrototypeOf2;
+
     var _this;
+
     classCallCheck_default()(this, Polygon);
+
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
+
     _this = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(Polygon)).call.apply(_getPrototypeOf2, [this].concat(args)));
     _this.activeLine = void 0;
     _this.activeShape = void 0;
@@ -37060,15 +36723,19 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
     _this.pointArray = [];
     _this.drawMode = true;
     _this.lastAngleRotation = null;
+
     _this.onObjectRotating = function (e) {
       var angle = treatAngle(e.target.angle);
       var canvas = _this._canvas;
+
       if (_this.lastAngleRotation !== angle) {
         canvas.setCursor(mouseRotateIcon(angle));
         _this.lastAngleRotation = angle;
       }
+
       ;
     };
+
     _this.addPoint = function (options, props) {
       var canvas = _this._canvas;
       var boundaryObject = canvas.getObjects().find(function (ob) {
@@ -37091,15 +36758,18 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
         objectCaching: false
       };
       var point = new polygon_fabric.Circle(pointOption);
+
       if (boundaryObject && (point.left > boundaryObject.width * boundaryObject.scaleX + boundaryObject.left || point.top > boundaryObject.height * boundaryObject.scaleY + boundaryObject.top || point.left < boundaryObject.left || point.top < boundaryObject.top)) {
         return;
       }
+
       if (_this.pointArray.length === 0) {
         // fill first point with red color
         point.set({
           fill: "red"
         });
       }
+
       var linePoints = [options.e.layerX / canvas.getZoom(), options.e.layerY / canvas.getZoom(), options.e.layerX / canvas.getZoom(), options.e.layerY / canvas.getZoom()];
       var lineOption = {
         strokeWidth: 2,
@@ -37115,9 +36785,12 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
       };
       var line = new polygon_fabric.Line(linePoints, lineOption);
       line.class = "line";
+
       if (_this.activeShape) {
         var pos = canvas.getPointer(options.e);
+
         var points = _this.activeShape.get("points");
+
         points.push({
           x: pos.x,
           y: pos.y
@@ -37143,6 +36816,7 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
           x: options.e.layerX / canvas.getZoom(),
           y: options.e.layerY / canvas.getZoom()
         }];
+
         var _polygon = new polygon_fabric.Polygon(polyPoint, {
           stroke: "#333333",
           strokeWidth: 1,
@@ -37155,30 +36829,37 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
           objectCaching: false,
           visible: false
         });
+
         _this.activeShape = _polygon;
         canvas.add(_polygon);
       }
+
       _this.activeLine = line;
+
       _this.pointArray.push(point);
+
       _this.lineArray.push(line);
+
       canvas.add(line);
       canvas.add(point);
     };
+
     _this.generatePolygon = function (pointArray, props) {
       var canvas = _this._canvas;
       var objects = canvas.getObjects();
       var roiTypes = ["rect", "ellipse", "polygon"];
       var findIdForObject = objects.filter(function (object) {
         return object.id !== undefined && roiTypes.includes(object.type);
-      });
-      // let name = `ROI#${findIdForObject.length + 1}`;
+      }); // let name = `ROI#${findIdForObject.length + 1}`;
+
       var name = props.roiDefaultNames[0];
       var defaultName = props.roiDefaultNames[0];
-      var points = [];
-      // collect points and remove them from canvas
+      var points = []; // collect points and remove them from canvas
+
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
+
       try {
         for (var _iterator = pointArray[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var point = _step.value;
@@ -37187,9 +36868,8 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
             y: point.top
           });
           canvas.remove(point);
-        }
+        } // // remove lines from canvas
 
-        // // remove lines from canvas
       } catch (err) {
         _didIteratorError = true;
         _iteratorError = err;
@@ -37204,16 +36884,17 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
           }
         }
       }
+
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
       var _iteratorError2 = undefined;
+
       try {
         for (var _iterator2 = _this.lineArray[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var line = _step2.value;
           canvas.remove(line);
-        }
+        } // remove selected Shape and Line
 
-        // remove selected Shape and Line
       } catch (err) {
         _didIteratorError2 = true;
         _iteratorError2 = err;
@@ -37228,9 +36909,9 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
           }
         }
       }
-      canvas.remove(_this.activeShape).remove(_this.activeLine);
 
-      // create polygon from collected points
+      canvas.remove(_this.activeShape).remove(_this.activeLine); // create polygon from collected points
+
       var polygon = new polygon_fabric.Polygon(points, {
         id: new Date().getTime(),
         fill: _this._fill,
@@ -37248,44 +36929,53 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
       });
       polygon = _this.addEventTriggerKeys(polygon);
       canvas.add(polygon);
+
       _this.toggleDrawPolygon();
+
       _this.editPolygon(polygon, false);
+
       polygon.setCoords();
+
       if (!_this.checkForMinDistance(polygon, props)) {
         props.notificationShow("Zone size should be bigger then 100px");
         return;
       }
+
       props.checkForOverlap();
       props.onShapeAdded();
     };
+
     _this.addEventTriggerKeys = function (polygon) {
       polygon.triggerEvent = "none";
       polygon.triggerType = "none";
       return polygon;
     };
+
     _this.toggleDrawPolygon = function () {
       var canvas = _this._canvas;
+
       if (_this.drawMode) {
         // stop draw mode
         _this.activeLine = null;
         _this.activeShape = null;
         _this.lineArray = [];
         _this.pointArray = [];
-        _this.canvas.selection = true;
-        // this.drawMode = false;
+        _this.canvas.selection = true; // this.drawMode = false;
       } else {
         // start draw mode
         canvas.selection = false;
         _this.drawMode = true;
       }
     };
+
     _this.editPolygon = function (polygon, editForRotate) {
       var canvas = _this._canvas;
       var activeObject;
+
       if (!activeObject) {
-        activeObject = polygon;
-        // canvas.setActiveObject(activeObject);
+        activeObject = polygon; // canvas.setActiveObject(activeObject);
       }
+
       activeObject.edit = !polygon.edit;
       activeObject.objectCaching = false;
       var lastControl = activeObject.points.length - 1;
@@ -37296,7 +36986,7 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
           pointIndex: index,
           positionHandler: function positionHandler(dim, finalMatrix, fabricObject) {
             var x = fabricObject.points[index].x - fabricObject.pathOffset.x,
-              y = fabricObject.points[index].y - fabricObject.pathOffset.y;
+                y = fabricObject.points[index].y - fabricObject.pathOffset.y;
             return polygon_fabric.util.transformPoint({
               x: x,
               y: y
@@ -37312,6 +37002,7 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
         return ob === "mtr" ? controlsVisibility[ob] = false : controlsVisibility[ob] = true;
       });
       activeObject.setControlsVisibility(controlsVisibility);
+
       if (editForRotate) {
         activeObject.controls.mtr = new polygon_fabric.Control({
           x: 0.35,
@@ -37330,10 +37021,12 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
         });
         activeObject.setControlsVisibility(_controlsVisibility);
       }
+
       activeObject.hasBorders = true;
       activeObject.setCoords();
       canvas.requestRenderAll();
     };
+
     _this.polygonPositionHandler = function (dim, finalMatrix, fabricObject) {
       var transformPoint = {
         x: fabricObject.points[_this.pointIndex].x - fabricObject.pathOffset.x,
@@ -37341,78 +37034,95 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
       };
       return polygon_fabric.util.transformPoint(transformPoint, fabricObject.calcTransformMatrix());
     };
+
     _this.anchorWrapper = function (anchorIndex, fn) {
       return function (eventData, transform, x, y) {
         var fabricObject = transform.target,
-          absolutePoint = polygon_fabric.util.transformPoint({
-            x: fabricObject.points[anchorIndex].x - fabricObject.pathOffset.x,
-            y: fabricObject.points[anchorIndex].y - fabricObject.pathOffset.y
-          }, fabricObject.calcTransformMatrix()),
-          actionPerformed = fn(eventData, transform, x, y),
-          newDim = fabricObject._setPositionDimensions({}),
-          polygonBaseSize = _this.getObjectSizeWithStroke(fabricObject),
-          newX = (fabricObject.points[anchorIndex].x - fabricObject.pathOffset.x) / polygonBaseSize.x,
-          newY = (fabricObject.points[anchorIndex].y - fabricObject.pathOffset.y) / polygonBaseSize.y;
+            absolutePoint = polygon_fabric.util.transformPoint({
+          x: fabricObject.points[anchorIndex].x - fabricObject.pathOffset.x,
+          y: fabricObject.points[anchorIndex].y - fabricObject.pathOffset.y
+        }, fabricObject.calcTransformMatrix()),
+            actionPerformed = fn(eventData, transform, x, y),
+            newDim = fabricObject._setPositionDimensions({}),
+            polygonBaseSize = _this.getObjectSizeWithStroke(fabricObject),
+            newX = (fabricObject.points[anchorIndex].x - fabricObject.pathOffset.x) / polygonBaseSize.x,
+            newY = (fabricObject.points[anchorIndex].y - fabricObject.pathOffset.y) / polygonBaseSize.y;
+
         fabricObject.setPositionByOrigin(absolutePoint, newX + 0.5, newY + 0.5);
         return actionPerformed;
       };
     };
+
     _this.actionHandler = function (eventData, transform, x, y) {
       var canvas = _this._canvas;
       var boundary = canvas.getObjects().find(function (ob) {
         return ob.id === "trackingArea";
       });
       if (!boundary) boundary = _this.getboudaryCoords();
+
       var polygon = transform.target,
-        currentControl = polygon.controls[polygon.__corner],
-        mouseLocalPosition = polygon.toLocalPoint(new polygon_fabric.Point(x, y), "center", "center"),
-        polygonBaseSize = _this.getObjectSizeWithStroke(polygon),
-        size = polygon._getTransformedDimensions(0, 0),
-        finalPointPosition = {
-          x: mouseLocalPosition.x * polygonBaseSize.x / size.x + polygon.pathOffset.x,
-          y: mouseLocalPosition.y * polygonBaseSize.y / size.y + polygon.pathOffset.y
-        };
+          currentControl = polygon.controls[polygon.__corner],
+          mouseLocalPosition = polygon.toLocalPoint(new polygon_fabric.Point(x, y), "center", "center"),
+          polygonBaseSize = _this.getObjectSizeWithStroke(polygon),
+          size = polygon._getTransformedDimensions(0, 0),
+          finalPointPosition = {
+        x: mouseLocalPosition.x * polygonBaseSize.x / size.x + polygon.pathOffset.x,
+        y: mouseLocalPosition.y * polygonBaseSize.y / size.y + polygon.pathOffset.y
+      };
+
       if (boundary && (y > boundary.height * boundary.scaleY + boundary.top || x > boundary.width * boundary.scaleX + boundary.left || x < boundary.left || y < boundary.top)) {
         return false;
       }
+
       var tempPolygon = JSON.parse(JSON.stringify(polygon));
       tempPolygon.points[currentControl.pointIndex] = finalPointPosition;
+
       if (!_this.checkForMinDistance(tempPolygon)) {
         polygon.points[currentControl.pointIndex] = polygon.points[currentControl.pointIndex];
         return true;
       }
+
       polygon.points[currentControl.pointIndex] = finalPointPosition;
       return true;
     };
+
     _this.checkWithinBoundary = function (finalPointPosition) {
       var canvas = _this._canvas;
       var boundary = canvas.getObjects().find(function (ob) {
         return ob.id === "trackingArea";
       });
+
       if (boundary && (finalPointPosition.y > boundary.height + boundary.top || finalPointPosition.x > boundary.width + boundary.left || finalPointPosition.x < boundary.left || finalPointPosition.y < boundary.top)) {
         return false;
       }
+
       return true;
     };
+
     _this.getObjectSizeWithStroke = function (object) {
       var stroke = new polygon_fabric.Point(object.strokeUniform ? 1 / object.scaleX : 1, object.strokeUniform ? 1 / object.scaleY : 1).multiply(object.strokeWidth);
       return new polygon_fabric.Point(object.width + stroke.x, object.height + stroke.y);
     };
+
     _this.checkForMinDistance = function (polygon, props) {
       var minArea = 100;
       var totalArea = geometric.polygonArea(_this.getPolygonCoords(polygon));
+
       if (totalArea < minArea) {
         if (props) props.setSelected(polygon, true);
         return false;
       }
+
       return true;
     };
+
     _this.getboudaryCoords = function () {
       var canvas = _this._canvas;
       var boundary = canvas.getObjects().find(function (ob) {
         return ob.id === "trackingArea";
       });
       var cords = {};
+
       if (!boundary) {
         cords["width"] = canvas.getWidth() - 1;
         cords["height"] = canvas.getHeight() - 1;
@@ -37428,20 +37138,26 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
         cords["scaleX"] = boundary.scaleX;
         cords["scaleY"] = boundary.scaleY;
       }
+
       return cords;
     };
+
     _this.getPolygonCoords = function (obj) {
       var coords = [];
+
       for (var i = 0; i < obj.points.length; i++) {
         var point = obj.points[i];
         var x = point.x;
         var y = point.y;
         coords.push([x, y]);
       }
+
       return coords;
     };
+
     return _this;
   }
+
   createClass_default()(Polygon, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
@@ -37464,22 +37180,27 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
     value: function doMouseDown(options, props) {
       if (this.drawMode) {
         var notificationShow = props.notificationShow,
-          addROIDefaultName = props.addROIDefaultName,
-          removeColorInDefaultShapeColors = props.removeColorInDefaultShapeColors;
+            addROIDefaultName = props.addROIDefaultName,
+            removeColorInDefaultShapeColors = props.removeColorInDefaultShapeColors;
         var roiTypes = ["rect", "ellipse", "polygon"];
+
         var objects = this._canvas.getObjects();
+
         objects = objects.filter(function (object) {
           return object.id !== undefined && roiTypes.includes(object.type) && object.id !== "trackingArea";
         });
+
         if (objects.length >= 5) {
           notificationShow();
           console.log("Maximum five shapes allowed ", "color:blue; font-weight:bold;", "color:black;");
           this.objectAdd = false;
           return;
         }
+
         if (options.target && this.pointArray.length === 1 && options.target.id === this.pointArray[0].id) {
           return;
         }
+
         if (options.target && this.pointArray[0] && options.target.id === this.pointArray[0].id) {
           this.objectAdd = true;
           this.generatePolygon(this.pointArray, props);
@@ -37489,7 +37210,9 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
           this.addPoint(options, props);
         }
       }
+
       var evt = options.e;
+
       if (evt.altKey === true) {
         this.isDragging = true;
         this.selection = false;
@@ -37504,9 +37227,11 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
       var canvas = this._canvas;
       var pointer = canvas.getPointer(options.e);
       var boundary = props.getboudaryCoords();
+
       if (boundary && (pointer.y > boundary.height * boundary.scaleY + boundary.top || pointer.x > boundary.width * boundary.scaleX + boundary.left || pointer.x < boundary.left || pointer.y < boundary.top)) {
         return;
       }
+
       if (this.isDragging) {
         var e = options.e;
         var obj = e.target;
@@ -37516,9 +37241,11 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
         this.lastPosX = e.clientX;
         this.lastPosY = e.clientY;
       }
+
       if (this.drawMode) {
         if (this.activeLine && this.activeLine.class === "line") {
           var _pointer = this.canvas.getPointer(options.e);
+
           this.activeLine.set({
             x2: _pointer.x,
             y2: _pointer.y
@@ -37532,6 +37259,7 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
             points: points
           });
         }
+
         canvas.renderAll();
       }
     }
@@ -37548,8 +37276,10 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
       //   onShapeAdded();
     }
   }]);
+
   return Polygon;
 }(fabrictool);
+
 /* harmony default export */ var polygon = (Polygon);
 ;// ./src/freedrawline.js
 
@@ -37558,27 +37288,41 @@ var Polygon = /*#__PURE__*/function (_FabricCanvasTool) {
 
 
 
+
 var freedrawline_fabric = (__webpack_require__(676).fabric);
-var FreeDrawLine = /*#__PURE__*/function (_FabricCanvasTool) {
+
+var FreeDrawLine =
+/*#__PURE__*/
+function (_FabricCanvasTool) {
   inherits_default()(FreeDrawLine, _FabricCanvasTool);
+
   function FreeDrawLine() {
     var _getPrototypeOf2;
+
     var _this;
+
     classCallCheck_default()(this, FreeDrawLine);
+
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
+
     _this = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(FreeDrawLine)).call.apply(_getPrototypeOf2, [this].concat(args)));
+
     _this.checkWithInBoundary = function (o) {
       var canvas = _this._canvas;
       var pointer = canvas.getPointer(o.e);
+
       if (canvas && (pointer.y > canvas.getHeight() || pointer.x > canvas.getWidth() || pointer.x < 0 || pointer.y < 0)) {
         return true;
       }
+
       return false;
     };
+
     return _this;
   }
+
   createClass_default()(FreeDrawLine, [{
     key: "configureCanvas",
     value: function configureCanvas(props) {
@@ -37601,6 +37345,7 @@ var FreeDrawLine = /*#__PURE__*/function (_FabricCanvasTool) {
       this.isDown = true;
       var canvas = this._canvas;
       var pointer = canvas.getPointer(o.e);
+
       if (!this.startPoint) {
         // Create new circle for starting point
         this.startPoint = new freedrawline_fabric.Circle({
@@ -37633,6 +37378,7 @@ var FreeDrawLine = /*#__PURE__*/function (_FabricCanvasTool) {
         if (this.startPoint.left === pointer.x && this.startPoint.top === pointer.y) {
           return;
         }
+
         this.line.set({
           'x2': pointer.x,
           'y2': pointer.y
@@ -37645,9 +37391,8 @@ var FreeDrawLine = /*#__PURE__*/function (_FabricCanvasTool) {
         props.updateIsTrackingSettingsChanged({
           isTrackingSettingChanged: true,
           calibratedArenaEdited: true
-        });
+        }); // Reset starting point
 
-        // Reset starting point
         this.startPoint = null;
         this.line = null;
       }
@@ -37657,10 +37402,12 @@ var FreeDrawLine = /*#__PURE__*/function (_FabricCanvasTool) {
     value: function doMouseMove(o) {
       var canvas = this._canvas;
       var pointer = canvas.getPointer(o.e);
+
       if (this.checkWithInBoundary(o)) {
         this.outside = true;
         return;
       }
+
       if (this.startPoint !== null && this.line) {
         this.line.set({
           'x2': pointer.x,
@@ -37675,8 +37422,7 @@ var FreeDrawLine = /*#__PURE__*/function (_FabricCanvasTool) {
     value: function doMouseUp(o, props) {
       var canvas = this._canvas;
       var onLineAdded = props.onLineAdded;
-      var pointer = canvas.getPointer(o.e);
-      // if(this.startPoint.left === pointer.x && this.startPoint.top ===pointer.y){
+      var pointer = canvas.getPointer(o.e); // if(this.startPoint.left === pointer.x && this.startPoint.top ===pointer.y){
       //   canvas.remove(this.line);
       //   canvas.remove(this.startPoint);
       //   this.line = null;
@@ -37700,8 +37446,10 @@ var FreeDrawLine = /*#__PURE__*/function (_FabricCanvasTool) {
       this.isDown = false;
     }
   }]);
+
   return FreeDrawLine;
 }(fabrictool);
+
 /* harmony default export */ var freedrawline = (FreeDrawLine);
 ;// ./node_modules/@daybrush/utils/dist/utils.esm.js
 /*
@@ -39918,23 +39666,29 @@ function getOverlapSize(points1, points2) {
 
 
 
+ // import ReactResizeDetector from './ReactResizeDetector';
 
 
 
 
 
+ // Class-based wrapper using ResizeObserver, compatible without hooks
 
-
-// Class-based wrapper using ResizeObserver, compatible without hooks
-var RefWrapper = /*#__PURE__*/function (_React$Component) {
+var RefWrapper =
+/*#__PURE__*/
+function (_React$Component) {
   inherits_default()(RefWrapper, _React$Component);
+
   function RefWrapper(props) {
     var _this;
+
     classCallCheck_default()(this, RefWrapper);
+
     _this = possibleConstructorReturn_default()(this, getPrototypeOf_default()(RefWrapper).call(this, props));
-    _this.ref = react.createRef();
+    _this.ref = external_react_default().createRef();
     return _this;
   }
+
   createClass_default()(RefWrapper, [{
     key: "componentDidMount",
     value: function componentDidMount() {
@@ -39952,69 +39706,77 @@ var RefWrapper = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
-      return react.cloneElement(this.props.children, {
+      return external_react_default().cloneElement(this.props.children, {
         ref: this.ref
       });
     }
   }]);
+
   return RefWrapper;
-}(react.Component);
+}((external_react_default()).Component);
+
 var nVisionSketchField_fabric = (__webpack_require__(676).fabric);
+
 var controlsVisible = {
   mtr: false
 };
 var executeCanvasResize = false;
-nVisionSketchField_fabric.Object.prototype.noScaleCache = false;
-//fabric.Object.prototype.setControlsVisibility(controlsVisible);
+nVisionSketchField_fabric.Object.prototype.noScaleCache = false; //fabric.Object.prototype.setControlsVisibility(controlsVisible);
+
 var nVisionSketchField_svgData = '<svg xmlns="http://www.w3.org/2000/svg" class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiBox-root css-uqopch" viewBox="0 0 24 24" focusable="false" aria-hidden="true" data-testid="Rotate90DegreesCwIcon"><path fill="red" d="M4.64 19.37c3.03 3.03 7.67 3.44 11.15 1.25l-1.46-1.46c-2.66 1.43-6.04 1.03-8.28-1.21-2.73-2.73-2.73-7.17 0-9.9C7.42 6.69 9.21 6.03 11 6.03V9l4-4-4-4v3.01c-2.3 0-4.61.87-6.36 2.63-3.52 3.51-3.52 9.21 0 12.73zM11 13l6 6 6-6-6-6-6 6z"></path></svg>';
 var nVisionSketchField_rotateIcon = 'data:image/svg+xml,' + encodeURIComponent(nVisionSketchField_svgData);
 var nVisionSketchField_img = document.createElement('img');
 nVisionSketchField_img.src = nVisionSketchField_rotateIcon;
+
 function nVisionSketchField_mouseRotateIcon(angle) {
   var relativeAngle = angle - 90;
   var pos = {
-      '-90': '9.25 5.25',
-      '-75': '9.972 3.863',
-      '-60': '10.84 1.756',
-      '-45': '11.972 -1.716',
-      '-30': '18.83 0.17',
-      '-15': '28.49 -9.49',
-      15: '-7.985 46.77',
-      30: '-0.415 27.57',
-      45: '2.32 21.713',
-      60: '3.916 18.243',
-      75: '4.762 16.135',
-      90: '5.25 14.75',
-      105: '5.84 13.617',
-      120: '6.084 12.666',
-      135: '6.317 12.01',
-      150: '6.754 11.325',
-      165: '7.06 10.653',
-      180: '7.25 10',
-      195: '7.597 9.43',
-      210: '7.825 8.672',
-      225: '7.974 7.99',
-      240: '8.383 7.332',
-      255: '8.83 6.441'
-    },
-    defaultPos = '7.25 10';
+    '-90': '9.25 5.25',
+    '-75': '9.972 3.863',
+    '-60': '10.84 1.756',
+    '-45': '11.972 -1.716',
+    '-30': '18.83 0.17',
+    '-15': '28.49 -9.49',
+    15: '-7.985 46.77',
+    30: '-0.415 27.57',
+    45: '2.32 21.713',
+    60: '3.916 18.243',
+    75: '4.762 16.135',
+    90: '5.25 14.75',
+    105: '5.84 13.617',
+    120: '6.084 12.666',
+    135: '6.317 12.01',
+    150: '6.754 11.325',
+    165: '7.06 10.653',
+    180: '7.25 10',
+    195: '7.597 9.43',
+    210: '7.825 8.672',
+    225: '7.974 7.99',
+    240: '8.383 7.332',
+    255: '8.83 6.441'
+  },
+      defaultPos = '7.25 10';
   var transform = relativeAngle === 0 ? 'translate(9.5 3.5)' : "rotate(".concat(relativeAngle, " ").concat(pos[relativeAngle] || defaultPos, ")");
   var imgCursor = encodeURIComponent("\n  <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='24' height='24'>\n    <defs>\n      <filter id='a' width='266.7%' height='156.2%' x='-75%' y='-21.9%' filterUnits='objectBoundingBox'>\n        <feOffset dy='1' in='SourceAlpha' result='shadowOffsetOuter1'/>\n        <feGaussianBlur in='shadowOffsetOuter1' result='shadowBlurOuter1' stdDeviation='1'/>\n        <feColorMatrix in='shadowBlurOuter1' result='shadowMatrixOuter1' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0'/>\n        <feMerge>\n          <feMergeNode in='shadowMatrixOuter1'/>\n          <feMergeNode in='SourceGraphic'/>\n        </feMerge>\n      </filter>\n      <path id='b' d='M1.67 12.67a7.7 7.7 0 0 0 0-9.34L0 5V0h5L3.24 1.76a9.9 9.9 0 0 1 0 12.48L5 16H0v-5l1.67 1.67z'/>\n    </defs>\n    <g fill='none' fill-rule='evenodd'><path d='M0 24V0h24v24z'/>\n      <g fill-rule='nonzero' filter='url(#a)' transform='".concat(transform, "'>\n        <use fill='#000' fill-rule='evenodd' xlink:href='#b'/>\n        <path stroke='#FFF' d='M1.6 11.9a7.21 7.21 0 0 0 0-7.8L-.5 6.2V-.5h6.7L3.9 1.8a10.4 10.4 0 0 1 0 12.4l2.3 2.3H-.5V9.8l2.1 2.1z'/>\n      </g>\n    </g>\n  </svg>"));
   return "url(\"data:image/svg+xml;charset=utf-8,".concat(imgCursor, "\") 12 12, crosshair");
 }
+
 function nVisionSketchField_treatAngle(angle) {
   return angle - angle % 15;
 }
+
 function nVisionSketchField_rotationStyleHandler(eventData, control, fabricObject) {
   if (fabricObject.lockRotation) {
     return NOT_ALLOWED_CURSOR;
   }
+
   var angle = nVisionSketchField_treatAngle(fabricObject.angle);
   this.lastAngleRotation = angle;
   return nVisionSketchField_mouseRotateIcon(angle);
-}
-// here's where your custom rotation control is defined
+} // here's where your custom rotation control is defined
 // by changing the values you can customize the location, size, look, and behavior of the control
+
+
 nVisionSketchField_fabric.Object.prototype.controls.mtr = new nVisionSketchField_fabric.Control({
   x: 0.35,
   y: -0.45,
@@ -40025,9 +39787,8 @@ nVisionSketchField_fabric.Object.prototype.controls.mtr = new nVisionSketchField
   render: nVisionSketchField_renderIcon,
   cornerSize: 15,
   withConnection: true
-});
+}); // here's where the render action for the control is defined
 
-// here's where the render action for the control is defined
 function nVisionSketchField_renderIcon(ctx, left, top, styleOverride, fabricObject) {
   var size = this.cornerSize;
   ctx.save();
@@ -40036,6 +39797,7 @@ function nVisionSketchField_renderIcon(ctx, left, top, styleOverride, fabricObje
   ctx.drawImage(nVisionSketchField_img, -size / 2, -size / 2, size, size);
   ctx.restore();
 }
+
 nVisionSketchField_fabric.Object.prototype.set({
   cornerSize: 6,
   cornerColor: 'red',
@@ -40043,43 +39805,23 @@ nVisionSketchField_fabric.Object.prototype.set({
   strokeUniform: true
 });
 nVisionSketchField_fabric.Object.NUM_FRACTION_DIGITS = 17;
-
 /**
  * Sketch Tool based on FabricJS for React Applications
  */
-var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
+
+var NvisionSketchField =
+/*#__PURE__*/
+function (_PureComponent) {
   inherits_default()(NvisionSketchField, _PureComponent);
-  function NvisionSketchField() {
-    var _getPrototypeOf2;
+
+  function NvisionSketchField(props) {
     var _this2;
+
     classCallCheck_default()(this, NvisionSketchField);
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-    _this2 = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(NvisionSketchField)).call.apply(_getPrototypeOf2, [this].concat(args)));
-    _this2.state = {
-      parentWidth: 550,
-      action: true,
-      imageUrl: null,
-      scaleFactor: 1,
-      rotation: 0,
-      flipApplied: false,
-      crosshairMode: false,
-      crosshairMoveMode: false,
-      crosshairDeleteMode: false,
-      deleteAllLandmarks: false,
-      resetAllLandmarks: false,
-      frontEnd: [],
-      canvasHeight: 512,
-      canvasWidth: 800,
-      strokeWidth: 2,
-      updateLandmarksForOtherWindow: false,
-      scaleHeightMultiplier: 1,
-      scaleMultiplier: 1,
-      lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000']
-    };
+
+    _this2 = possibleConstructorReturn_default()(this, getPrototypeOf_default()(NvisionSketchField).call(this, props));
     _this2._fc = null;
-    _this2.childRef = react.createRef();
+    _this2.childRef = external_react_default().createRef();
     _this2.left1 = 0;
     _this2.top1 = 0;
     _this2.scale1x = 0;
@@ -40091,6 +39833,9 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
     _this2.currentAngle = 0;
     _this2.isRotating = false;
     _this2.cursorPos = new nVisionSketchField_fabric.Point();
+    _this2.resizeObserver = null;
+    _this2.internalRef = external_react_default().createRef();
+
     _this2._initTools = function (fabricCanvas) {
       _this2._tools = {};
       _this2._tools[tools.Select] = new src_select(fabricCanvas);
@@ -40106,24 +39851,30 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       _this2._tools[tools.Polygon] = new polygon(fabricCanvas);
       _this2._tools[tools.FreeDrawLine] = new freedrawline(fabricCanvas);
     };
+
     _this2.enableTouchScroll = function () {
       var canvas = _this2._fc;
       if (canvas.allowTouchScrolling) return;
       canvas.allowTouchScrolling = true;
     };
+
     _this2.disableTouchScroll = function () {
       var canvas = _this2._fc;
+
       if (canvas.allowTouchScrolling) {
         canvas.allowTouchScrolling = false;
       }
     };
+
     _this2.addImg = function (dataUrl) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var canvas = _this2._fc;
-      // canvas.clear();
+      var canvas = _this2._fc; // canvas.clear();
       // let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
+
       canvas.clear();
+
       _this2._resize();
+
       nVisionSketchField_fabric.Image.fromURL(dataUrl, function (oImg) {
         var widthFactor = canvas.getWidth() / oImg.width;
         var heightFactor = canvas.getHeight() / oImg.height;
@@ -40135,42 +39886,47 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           hasControls: false,
           hasBorders: false,
           hasRotatingPoint: false
-        });
-
-        // let opts = {
+        }); // let opts = {
         // left: Math.random() * (canvas.getWidth() - oImg.width * 0.5),
         // top: Math.random() * (canvas.getHeight() - oImg.height * 0.5),
         // scale: 0.5
         // };
         // Object.assign(opts, options);
-        oImg.scale(scaleFactor);
-        // oImg.set({
+
+        oImg.scale(scaleFactor); // oImg.set({
         // 'left': opts.left,
         // 'top': opts.top
         // });
+
         canvas.add(oImg);
+
         _this2.setState({
           scaleFactor: scaleFactor
         });
+
         canvas.renderAll();
-      });
-      // if (this.state.rotation > 0) {
+      }); // if (this.state.rotation > 0) {
       // setTimeout(() => {
       // this.rotateAndScale(this._fc.item(0), -this.state.rotation, this._fc, this.state.scaleFactor);
       // canvas.renderAll();
       // }, 100);
       // }
     };
+
     _this2._onObjectAdded = function (e) {
       var onObjectAdded = _this2.props.onObjectAdded;
+
       if (!_this2.state.action) {
         _this2.setState({
           action: true
         });
+
         return;
       }
+
       var obj = e.target;
       console.log("TRACKING SETTING NVISION SKETCH FIELD _onObjectAdded : ", obj);
+
       if (obj.id === "trackingArea") {
         _this2.left1 = obj.left;
         _this2.top1 = obj.top;
@@ -40178,24 +39934,29 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         _this2.scale1y = obj.scaleY;
         _this2.width1 = obj.width;
         _this2.height1 = obj.height;
-      }
-      // obj.__version = 1
+      } // obj.__version = 1
       // // record current object state as json and save as originalState
       // let objState = obj.toJSON()
       // obj.__originalState = objState
       // let state = JSON.stringify(objState)
       // object, previous state, current state
       // this._history.keep([obj, state, state])
+
+
       onObjectAdded(e);
     };
+
     _this2._onObjectMoving = function (e) {
       var onObjectMoving = _this2.props.onObjectMoving;
       var obj = e.target;
       console.log("TRACKING SETTING NVISION SKETCH FIELD _onObjectMoving : ", obj);
       var roiTypes = ["rect", "ellipse", "polygon"];
+
       var boundary = _this2.props.getboudaryCoords();
+
       var brNew = obj.getBoundingRect();
       if (boundary && (brNew.height + brNew.top > boundary.height * boundary.scaleY + boundary.top || brNew.width + brNew.left > boundary.width * boundary.scaleX + boundary.left || brNew.left < boundary.left || brNew.top < boundary.top)) return;
+
       if (obj.id !== "trackingArea" && roiTypes.includes(obj.type)) {
         _this2.left1 = obj.left;
         _this2.top1 = obj.top;
@@ -40204,8 +39965,10 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         _this2.width1 = obj.width;
         _this2.height1 = obj.height;
       }
+
       onObjectMoving(e);
     };
+
     _this2._onObjectScaling = function (e) {
       var onObjectScaling = _this2.props.onObjectScaling;
       var obj = e.target;
@@ -40213,9 +39976,12 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       obj.setCoords();
       var brNew = obj.getBoundingRect();
       var canvas = _this2._fc;
+
       if (obj.id !== "trackingArea") {
         var boundary = _this2.props.getboudaryCoords();
+
         var pointer = canvas.getPointer(e.e);
+
         if (boundary && (brNew.height + brNew.top > boundary.height * boundary.scaleY + boundary.top || brNew.width + brNew.left > boundary.width * boundary.scaleX + boundary.left || brNew.left < boundary.left || brNew.top < boundary.top)) {
           obj.left = _this2.left1;
           obj.top = _this2.top1;
@@ -40237,12 +40003,14 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           _this2.scale1x = obj.scaleX;
           _this2.scale1y = obj.scaleY;
           _this2.width1 = obj.width;
-          _this2.height1 = obj.height;
-          // this.props.onShapeAdded();
+          _this2.height1 = obj.height; // this.props.onShapeAdded();
         }
+
         return;
       }
+
       brNew = obj;
+
       if (brNew.width * brNew.scaleX + brNew.left > canvas.getWidth() - 1 || brNew.height * brNew.scaleY + brNew.top > canvas.getHeight() - 1 || brNew.left < 0 || brNew.top < 0) {
         obj.left = _this2.left1 <= 0 ? obj.left : _this2.left1;
         obj.top = _this2.top1 <= 0 ? obj.top : _this2.top1;
@@ -40265,19 +40033,22 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         _this2.scale1x = obj.scaleX;
         _this2.scale1y = obj.scaleY;
         _this2.width1 = obj.width;
-        _this2.height1 = obj.height;
-        // this.props.onShapeAdded();
+        _this2.height1 = obj.height; // this.props.onShapeAdded();
       }
+
       onObjectScaling(e);
     };
+
     _this2._onObjectRotating = function (e) {
       var onObjectRotating = _this2.props.onObjectRotating;
       var angle = nVisionSketchField_treatAngle(e.target.angle);
       var canvas = _this2._fc;
+
       if (_this2.lastAngleRotation !== angle) {
         canvas.setCursor(nVisionSketchField_mouseRotateIcon(angle));
         _this2.lastAngleRotation = angle;
       }
+
       ;
       _this2.isRotating = true;
       _this2.currentAngle = e.target.angle;
@@ -40287,8 +40058,10 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       var obj = e.target;
       obj.setCoords();
       var brNew = obj.getBoundingRect();
+
       if (obj.id !== "trackingArea" && roiTypes.includes(obj.type)) {
         var boundary = _this2.props.getboudaryCoords();
+
         if (boundary && (brNew.height + brNew.top > boundary.height * boundary.scaleY + boundary.top || brNew.width + brNew.left > boundary.width * boundary.scaleX + boundary.left || brNew.left < boundary.left || brNew.top < boundary.top)) {
           obj.angle = _this2.angle1;
           obj.left = _this2.left1;
@@ -40306,34 +40079,43 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           _this2.width1 = obj.width;
           _this2.height1 = obj.height;
         }
+
         return;
       }
+
       onObjectRotating(e);
     };
+
     _this2._onObjectModified = function (e) {
       var obj = e.target;
       console.log("TRACKING SETTING NVISION SKETCH FIELD _onObjectModified : ", obj);
       _this2.isRotating = false;
+
       if (obj.id === "trackingArea") {
         _this2.trackingAreaModified(obj);
+
         return;
-      }
-      // if(obj.type === "polygon" && this.checkForMinDistance(obj)){
+      } // if(obj.type === "polygon" && this.checkForMinDistance(obj)){
       //   this.props.notificationShow("Zone size should be bigger then 100px");
       //   this.props.onShapeAdded();
       //   return;
       // }
-      var boundaryObj = _this2.props.getboudaryCoords();
-      //FEN-413
+
+
+      var boundaryObj = _this2.props.getboudaryCoords(); //FEN-413
+
       /*if(boundaryObj && obj.height > (boundaryObj.height * boundaryObj.scaleY) || obj.width > (boundaryObj.width * boundaryObj.scaleX) ){
       return;
       }*/
+
+
       var canvasTL = new nVisionSketchField_fabric.Point(boundaryObj.left, boundaryObj.top);
       var canvasBR = new nVisionSketchField_fabric.Point(boundaryObj.left + boundaryObj.width * boundaryObj.scaleX, boundaryObj.height * boundaryObj.scaleY + boundaryObj.top);
+
       if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
         var vertices = obj.getCoords(); // Get the transformed vertices
-
         // Define the boundaries
+
         var boundaryLeft = canvasTL.x;
         var boundaryTop = canvasTL.y;
         var boundaryRight = canvasBR.x;
@@ -40341,25 +40123,26 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         var leftAdjustment = 0;
         var topAdjustment = 0;
         var rightAdjustment = 0;
-        var bottomAdjustment = 0;
+        var bottomAdjustment = 0; // Check each vertex
 
-        // Check each vertex
         vertices.forEach(function (vertex) {
           if (vertex.x < boundaryLeft) {
             leftAdjustment = Math.max(leftAdjustment, boundaryLeft - vertex.x);
           }
+
           if (vertex.x > boundaryRight) {
             rightAdjustment = Math.max(rightAdjustment, vertex.x - boundaryRight);
           }
+
           if (vertex.y < boundaryTop) {
             topAdjustment = Math.max(topAdjustment, boundaryTop - vertex.y);
           }
+
           if (vertex.y > boundaryBottom) {
             bottomAdjustment = Math.max(bottomAdjustment, vertex.y - boundaryBottom);
           }
-        });
+        }); // Apply adjustments to the object's position
 
-        // Apply adjustments to the object's position
         var newLeft = obj.left + leftAdjustment - rightAdjustment;
         var newTop = obj.top + topAdjustment - bottomAdjustment;
         obj.set({
@@ -40367,28 +40150,36 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           top: newTop
         });
         obj.setCoords();
+
         _this2._fc.renderAll();
       }
+
       obj.setCoords();
+
       _this2.props.checkForOverlap(obj);
+
       _this2.props.onShapeAdded();
+
       obj.__version += 1;
       var prevState = JSON.stringify(obj.__originalState);
-      var objState = obj.toJSON();
-      // record current object state as json and update to originalState
+      var objState = obj.toJSON(); // record current object state as json and update to originalState
+
       obj.__originalState = objState;
       var currState = JSON.stringify(objState);
+
       _this2.props.updateIsTrackingSettingsChanged({
         isTrackingSettingChanged: true,
         defineArenaZoneEdited: true
-      });
-      // this._history.keep([obj, prevState, currState]);
+      }); // this._history.keep([obj, prevState, currState]);
+
     };
+
     _this2.trackingAreaModified = function (obj) {
       var canvas = _this2._fc;
       var canvasTL = new nVisionSketchField_fabric.Point(0, 0);
       var canvasBR = new nVisionSketchField_fabric.Point(canvas.getWidth() - 1, canvas.getHeight() - 1);
       console.log("TRACKING SETTING NVISION SKETCH FIELD trackingAreaModified : ", obj);
+
       if (!obj.isContainedWithinRect(canvasTL, canvasBR, true, true)) {
         console.log("%c[Animal Tracking]%c [Traking Area] Modified outside the canvas", "color:blue; font-weight: bold;", "color: black;", obj);
         var objBounds = obj.getBoundingRect();
@@ -40404,41 +40195,55 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         if (left < 0) left = 0;
         obj.setPositionByOrigin(new nVisionSketchField_fabric.Point(left, top), "left", "top");
         obj.setCoords();
+
         _this2._fc.renderAll();
+
         _this2.checkWithInBoundary();
       } else {
         console.log("%c[Animal Tracking]%c [Traking Area] Modified with in canvas", "color:blue; font-weight: bold;", "color: black;", obj);
+
         _this2.checkWithInBoundary();
       }
+
       _this2.props.onShapeAdded();
+
       _this2.props.updateIsTrackingSettingsChanged({
         isTrackingSettingChanged: true,
         trackingAreaEdited: true
       });
     };
+
     _this2.getCenterPoint = function (obj) {
       var selectedObj = _this2._fc.getObjects().find(function (ob) {
         return ob.defaultName === obj.defaultName;
       });
+
       if (selectedObj) {
         return selectedObj.getCenterPoint();
       }
+
       return obj.centerPoint;
     };
+
     _this2.areShapesOverlapping = function (obj1, obj2) {
       var shape1Points = _this2.convertShapeToPolygon(obj1);
+
       var shape2Points = _this2.convertShapeToPolygon(obj2);
+
       console.log(getOverlapAreas(shape1Points, shape2Points).length > 0, "isOverlap");
       var isOverlap = getOverlapAreas(shape1Points, shape2Points).length > 0 ? true : false;
       return isOverlap;
     };
+
     _this2.generateEllipsePoints = function (ellipse) {
       var points = [];
       var center = ellipse.getCenterPoint();
       var radiusX = ellipse.rx * ellipse.scaleX;
       var radiusY = ellipse.ry * ellipse.scaleY;
       var angle = ellipse.angle * (Math.PI / 180); // Convert angle to radians
+
       var numPoints = 32; // Adjust as needed
+
       for (var i = 0; i < numPoints; i++) {
         var angleIncrement = i / numPoints * 2 * Math.PI;
         var x = center.x + radiusX * Math.cos(angleIncrement);
@@ -40447,9 +40252,9 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           x: x,
           y: y
         });
-      }
+      } // Rotate all points
 
-      // Rotate all points
+
       var rotatedPoints = [];
       points.map(function (point) {
         var rotatedX = center.x + (point.x - center.x) * Math.cos(angle) - (point.y - center.y) * Math.sin(angle);
@@ -40458,6 +40263,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       });
       return rotatedPoints;
     };
+
     _this2.convertShapeToPolygon = function (shape) {
       switch (shape.type) {
         case 'rect':
@@ -40470,8 +40276,10 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           var x4 = shape.oCoords.bl.x;
           var y4 = shape.oCoords.bl.y;
           return [[x1, y1], [x2, y2], [x3, y3], [x4, y4]];
+
         case 'ellipse':
           return _this2.generateEllipsePoints(shape);
+
         case 'polygon':
           var points = [];
           Object.keys(shape.oCoords).map(function (p) {
@@ -40482,11 +40290,17 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
             }
           });
           return points;
+
         default:
           throw new Error("Unknown shape type: ".concat(shape.type));
       }
     };
-    _this2.checkWithInBoundary = /*#__PURE__*/asyncToGenerator_default()(/*#__PURE__*/regenerator_default().mark(function _callee() {
+
+    _this2.checkWithInBoundary =
+    /*#__PURE__*/
+    asyncToGenerator_default()(
+    /*#__PURE__*/
+    regenerator_default().mark(function _callee() {
       var canvas, showNotification, boundary, boundryCoords;
       return regenerator_default().wrap(function _callee$(_context) {
         while (1) {
@@ -40498,37 +40312,47 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
                 return ob.id === "trackingArea";
               });
               boundryCoords = [];
+
               if (boundary) {
                 boundryCoords = _this2.convertShapeToPolygon(boundary);
               }
+
               boundryCoords.length && canvas.getObjects().forEach(function (shape) {
                 if (shape.id === "calibratedLine") return;
+
                 if (shape.id !== "trackingArea") {
                   var isOutsideBoundary = false;
+
                   var transformedPoints = _this2.convertShapeToPolygon(shape);
+
                   transformedPoints.forEach(function (point) {
                     if (!isInside(point, boundryCoords)) {
                       isOutsideBoundary = true;
                     }
                   });
+
                   if (isOutsideBoundary) {
                     showNotification = true;
+
                     _this2.props.addColorInDefaultShapeColors(shape.stroke);
+
                     _this2.props.deleteROIDefaultName(shape.defaultName);
+
                     canvas.remove(shape);
                   }
                 }
               });
               showNotification && _this2.props.notificationShow("Zones lying outside of tracking area were removed.");
-              canvas.renderAll();
-              // this.props.onShapeAdded();
+              canvas.renderAll(); // this.props.onShapeAdded();
+
             case 8:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee);
+      }, _callee, this);
     }));
+
     _this2.removeUnCompletedShapes = function () {
       var canvas = _this2._fc;
       var roiTypes = ["rect", "ellipse", "polygon"];
@@ -40537,85 +40361,112 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       });
       canvas.renderAll();
     };
+
     _this2.checkForMinDistance = function (polygon) {
       var points = polygon.points;
       var minDistance = 10;
       var distance;
+
       for (var i = 0; i < points.length - 1; i++) {
         distance = Math.sqrt(Math.pow(points[i + 1].x - points[i].x, 2) + Math.pow(points[i + 1].y - points[i].y, 2));
+
         if (distance < minDistance) {
           _this2.props.setSelected(polygon, true);
+
           return true;
         }
       }
+
       return false;
     };
+
     _this2._onObjectRemoved = function (e) {
       var onObjectRemoved = _this2.props.onObjectRemoved;
       var obj = e.target;
+
       if (obj.__removed) {
         obj.__version += 1;
         return;
       }
+
       obj.__version = 0;
       onObjectRemoved(e);
     };
+
     _this2._onMouseDown = function (e) {
       var onMouseDown = _this2.props.onMouseDown;
+
       _this2._selectedTool.doMouseDown(e, _this2.props, assertThisInitialized_default()(assertThisInitialized_default()(_this2)));
+
       onMouseDown(e);
     };
+
     _this2._onMouseMove = function (e) {
       var onMouseMove = _this2.props.onMouseMove;
+
       _this2._selectedTool.doMouseMove(e, _this2.props);
+
       onMouseMove(e);
     };
+
     _this2._onMouseOut = function (e) {
       var onMouseOut = _this2.props.onMouseOut;
+
       _this2._selectedTool.doMouseOut(e);
+
       if (_this2.props.onChange) {
         var onChange = _this2.props.onChange;
         setTimeout(function () {
           onChange(e.e);
         }, 10);
       }
+
       onMouseOut(e);
     };
+
     _this2._onMouseUp = function (e) {
       var onMouseUp = _this2.props.onMouseUp;
+
       _this2._selectedTool.doMouseUp(e, _this2.props, assertThisInitialized_default()(assertThisInitialized_default()(_this2)));
-      _this2.isRotating = false;
-      // Update the final state to new-generated object
+
+      _this2.isRotating = false; // Update the final state to new-generated object
       // Ignore Path object since it would be created after mouseUp
       // Assumed the last object in canvas.getObjects() in the newest object
+
       if (_this2.props.tool !== tools.Pencil) {
         var canvas = _this2._fc;
         var objects = canvas.getObjects();
         var newObj = objects[objects.length - 1];
+
         if (newObj && newObj.__version === 1) {
           newObj.__originalState = newObj.toJSON();
         }
       }
+
       if (_this2.props.onChange) {
         var onChange = _this2.props.onChange;
         setTimeout(function () {
           onChange(e.e);
         }, 10);
       }
+
       onMouseUp(e);
       _this2.isRotating = false;
     };
+
     _this2.renderRotateLabel = function (ctx, canvas) {
       var angleText = "".concat(_this2.currentAngle.toFixed(0), "\xB0"),
-        borderRadius = 5,
-        rectWidth = 32,
-        rectHeight = 19,
-        textWidth = 6.01 * angleText.length - 2.317;
+          borderRadius = 5,
+          rectWidth = 32,
+          rectHeight = 19,
+          textWidth = 6.01 * angleText.length - 2.317;
       var tempPoint = nVisionSketchField_fabric.util.rotatePoint(new nVisionSketchField_fabric.Point(40, 0), new nVisionSketchField_fabric.Point(40, 0), nVisionSketchField_fabric.util.degreesToRadians(30));
+
       var pos = _this2.cursorPos.add(tempPoint);
+
       var _canvas$vptCoords = canvas.vptCoords,
-        tl = _canvas$vptCoords.tl,
-        br = _canvas$vptCoords.br;
+          tl = _canvas$vptCoords.tl,
+          br = _canvas$vptCoords.br;
       ctx.save();
       ctx.translate(Math.min(Math.max(pos.x, tl.x), br.x - rectWidth), Math.min(Math.max(pos.y, tl.y), br.y - rectHeight));
       ctx.beginPath();
@@ -40627,14 +40478,18 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       ctx.fillText(angleText, rectWidth / 2 - textWidth / 2, rectHeight / 2 + 4);
       ctx.restore();
     };
+
     _this2.getOverlayDimensions = function () {
       var canvas = _this2._fc;
+
       if (canvas && canvas.upperCanvasEl) {
         var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
       } else {
         var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
       }
+
       var resolutionRatio = _this2.props.resolutionWidth / _this2.props.resolutionHeight;
+
       if (_this2.props.resolutionHeight === 1080 && _this2.props.resolutionWidth === 1920) {
         var overlayHeight = Math.ceil(_this2.props.resolutionHeight / (_this2.props.resolutionWidth / overlayWidth));
       } else {
@@ -40643,73 +40498,89 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         var overlayHeight = document.getElementById("video-container-3").offsetHeight;
         var overlayWidth = Math.ceil(_this2.props.resolutionWidth / (_this2.props.resolutionHeight / overlayHeight));
       }
-      console.log('[Tracking Setting][Tracking Area] Canvas Overlay Width:', overlayWidth, overlayHeight);
+
+      console.log('[Tracking Setting][Tracking Area][getOverlayDimensions] Canvas Overlay Width:', overlayWidth, overlayHeight);
       return {
         overlayWidth: overlayWidth,
         overlayHeight: overlayHeight
       };
     };
+
     _this2._resize = function (e) {
       var canvasWidth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var canvasHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
       var _this2$getOverlayDime = _this2.getOverlayDimensions(),
-        overlayWidth = _this2$getOverlayDime.overlayWidth,
-        overlayHeight = _this2$getOverlayDime.overlayHeight;
+          overlayWidth = _this2$getOverlayDime.overlayWidth,
+          overlayHeight = _this2$getOverlayDime.overlayHeight;
+
+      console.log('[Tracking Setting][Tracking Area] [_resize] Canvas Overlay Width height:', overlayWidth, overlayHeight);
+
       _this2.getCanvasAtResoution(overlayWidth, overlayHeight, false);
     };
+
     _this2.resizeZones = function (oldWidth, oldHeight) {
       return;
       // removed by dead control flow
 { var _this2$state, scaleHeightMultiplier, scaleMultiplier; }
       // removed by dead control flow
-{ var canvas; }
-      //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+{ var canvas; } //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
       //let cHeight = canvas.getHeight() - this.state.strokeWidth;
+
       // removed by dead control flow
 { var cWidth; }
+
       // removed by dead control flow
 { var cHeight; }
+
       // removed by dead control flow
 { var newWidth; }
       // removed by dead control flow
 { var newHeight; }
+
+      // removed by dead control flow
+{}
+
       // removed by dead control flow
 {}
       // removed by dead control flow
 {}
       // removed by dead control flow
 {}
-      // removed by dead control flow
-{}
+
       // removed by dead control flow
 { var scaleFactor, i, objects, cnHeightMultiplier, cnwidthMultiplier; }
     };
+
     _this2.resizeZonesOnImport = function (newWidth, newHeight) {
       console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport] New width", newWidth, "NewHeight", newHeight);
       var _this2$state2 = _this2.state,
-        scaleHeightMultiplier = _this2$state2.scaleHeightMultiplier,
-        scaleMultiplier = _this2$state2.scaleMultiplier;
-      var canvas = _this2._fc;
-      //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
+          scaleHeightMultiplier = _this2$state2.scaleHeightMultiplier,
+          scaleMultiplier = _this2$state2.scaleMultiplier;
+      var canvas = _this2._fc; //let cWidth =  canvas.getWidth() - this.state.strokeWidth;
       //let cHeight = canvas.getHeight() - this.state.strokeWidth;
+
       var cWidth = canvas.getWidth();
       var cHeight = canvas.getHeight();
-      if (_this2.props.resolutionHeight === 1080 && _this2.props.resolutionWidth === 1920) {
-        //cHeight = canvas.getHeight() - this.state.strokeWidth;
+
+      if (_this2.props.resolutionHeight === 1080 && _this2.props.resolutionWidth === 1920) {//cHeight = canvas.getHeight() - this.state.strokeWidth;
       }
+
       console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Overlay container new width and new height", newWidth, newHeight);
       console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas width and height", cWidth, cHeight);
       console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas scaleMultiplier", scaleMultiplier, "heightmultiplier", scaleHeightMultiplier);
+
       if (canvas && canvas.upperCanvasEl) {
         //if (canvas && canvas.upperCanvasEl) {
         // if(!scaleMultiplier)
-        scaleMultiplier = cWidth / newWidth;
-        // if(!scaleHeightMultiplier)
+        scaleMultiplier = cWidth / newWidth; // if(!scaleHeightMultiplier)
+
         scaleHeightMultiplier = cHeight / newHeight;
         var cnwidthMultiplier = newWidth / cWidth;
         var cnHeightMultiplier = newHeight / cHeight;
         console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas scaleMultiplier", scaleMultiplier, "hightmultiplier", scaleHeightMultiplier);
         var objects = canvas.getObjects();
+
         for (var i in objects) {
           //objects[i].width = objects[i].width * scaleMultiplier;
           //objects[i].height = objects[i].height * scaleHeightMultiplier;
@@ -40718,49 +40589,63 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
           objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
           objects[i].setCoords();
-          var scaleFactor = _this2.state.scaleFactor * scaleMultiplier;
-          // this.setState({ scaleFactor });
+          var scaleFactor = _this2.state.scaleFactor * scaleMultiplier; // this.setState({ scaleFactor });
+
           console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: object details after resizing", objects[i]);
-        }
-        // this.props.onShapeAdded();
+        } // this.props.onShapeAdded();
+
+
         _this2.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
+
         _this2.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
+
         console.log("[Tracking Settings][Sketch Field][resizeZonesOnImport]: Canvas Dimensions after resize", cHeight * cnwidthMultiplier, cWidth * cnHeightMultiplier);
-        canvas.discardActiveObject();
-        // canvas.setWidth(cWidth * cnwidthMultiplier);
+        canvas.discardActiveObject(); // canvas.setWidth(cWidth * cnwidthMultiplier);
         // canvas.setHeight(cHeight * cnHeightMultiplier);
+
         _this2.props.trackingCanvasHeight(cHeight);
+
         _this2.props.trackingCanvasWidth(cWidth);
-        canvas.renderAll();
-        // canvas.calcOffset();
+
+        canvas.renderAll(); // canvas.calcOffset();
         // this.props.onShapeAdded();
         // this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width, scaleHeightMultiplier, scaleMultiplier},()=>{
         // });
       }
     };
+
     _this2.resizeOverlayAndCanvasOnCompoentMount = function (e) {
       var canvasWidth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var canvasHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
       var _this2$getOverlayDime2 = _this2.getOverlayDimensions(),
-        overlayWidth = _this2$getOverlayDime2.overlayWidth,
-        overlayHeight = _this2$getOverlayDime2.overlayHeight;
+          overlayWidth = _this2$getOverlayDime2.overlayWidth,
+          overlayHeight = _this2$getOverlayDime2.overlayHeight;
+
       _this2.getCanvasAtComponentMount(overlayWidth, overlayHeight, false);
     };
+
     _this2.getCanvasAtResoution = function (newWidth, newHeight) {
       var scaleLandmarks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var canvas = _this2._fc;
+
       var cWidth = canvas.getWidth() - _this2.state.strokeWidth;
+
       var cHeight = canvas.getHeight() - _this2.state.strokeWidth;
-      if (_this2.props.resolutionHeight === 1080 && _this2.props.resolutionWidth === 1920) {
-        //cHeight = canvas.getHeight() - this.state.strokeWidth;
+
+      if (_this2.props.resolutionHeight === 1080 && _this2.props.resolutionWidth === 1920) {//cHeight = canvas.getHeight() - this.state.strokeWidth;
       }
+
       console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight);
       console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas width and height after removing 2 px", cWidth, cHeight);
+
       if (canvas && cWidth !== newWidth && canvas.upperCanvasEl) {
         //if (canvas && canvas.upperCanvasEl) {
         var scaleMultiplier = newWidth / cWidth;
         var scaleHeightMultiplier = newHeight / cHeight;
+        console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: scaleMultiplier & scaleHeightMultiplier ", scaleMultiplier, scaleHeightMultiplier);
         var objects = canvas.getObjects();
+
         for (var i in objects) {
           //objects[i].width = objects[i].width * scaleMultiplier;
           //objects[i].height = objects[i].height * scaleHeightMultiplier;
@@ -40772,21 +40657,30 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           objects[i].cnHeight = Math.round(cHeight * scaleHeightMultiplier);
           objects[i].setCoords();
           var scaleFactor = _this2.state.scaleFactor * scaleMultiplier;
+
           _this2.setState({
             scaleFactor: scaleFactor
           });
+
           console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: object details after resizing", objects[i]);
         }
+
         _this2.updateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
+
         _this2.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, true);
+
         console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: Canvas Dimensions after resize", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
         canvas.discardActiveObject();
         canvas.setWidth(cWidth * scaleMultiplier);
         canvas.setHeight(cHeight * scaleHeightMultiplier);
+
         _this2.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
+
         _this2.props.trackingCanvasWidth(cWidth * scaleMultiplier);
+
         canvas.renderAll();
         canvas.calcOffset();
+
         _this2.setState({
           canvasHeight: canvas.height,
           canvasWidth: canvas.width,
@@ -40795,17 +40689,20 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         }, function () {});
       }
     };
+
     _this2.scaleObject = function (object, scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
       var updateCanvasDimensions = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
       object.left = object.left * scaleMultiplier;
       object.top = object.top * scaleMultiplier;
       object.scaleX = object.scaleX * scaleMultiplier;
       object.scaleY = object.scaleY * scaleMultiplier;
+
       if (object.type === "ellipse") {
         var canvas = _this2._fc;
         var selectedObject = canvas.getObjects().find(function (ob) {
           return ob.defaultName === object.defaultName;
         });
+
         if (selectedObject) {
           var centerPoint = {};
           centerPoint = selectedObject.getCenterPoint();
@@ -40819,11 +40716,14 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           object.centerPoint = _centerPoint;
         }
       }
+
       if (object.type === "polygon" || object.type === "rect" && object.angle > 0) {
         var _canvas = _this2._fc;
+
         var _selectedObject = _canvas.getObjects().find(function (ob) {
           return ob.defaultName === object.defaultName;
         });
+
         if (_selectedObject) {
           var oCoords = {};
           oCoords = JSON.parse(JSON.stringify(_selectedObject.oCoords));
@@ -40839,29 +40739,69 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           object.oCoords = _oCoords;
         }
       }
+
       if (updateCanvasDimensions) {
         object.cnWidth = Math.round(cWidth * scaleMultiplier);
         object.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
       }
+
       return object;
     };
+
     _this2.updateObjectsInReduxAnimalTrackingKey = function (scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
       var updateCanvasDimensions = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
       var scaleMultiplierForObjects = scaleMultiplier;
+
       var trackingArea = _this2.scaleObject(JSON.parse(JSON.stringify(_this2.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+
+      console.log("[REACT SKETCH][updateObjectsInReduxAnimalTrackingKey] TRACKING AREA : ", trackingArea);
+
       _this2.props.saveDimesions(trackingArea);
+
       var lineShape = [];
+
       if (_this2.props.lineShape.length) {
         lineShape[0] = _this2.scaleObject(JSON.parse(JSON.stringify(_this2.props.lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
       }
+
       _this2.props.updateLineShape(lineShape);
+
       var zones = [];
-      _this2.props.zones.map(function (zone) {
-        var scaledObject = _this2.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
-        zones.push(scaledObject);
-      });
+
+      _this2.props.zones.map(
+      /*#__PURE__*/
+      function () {
+        var _ref2 = asyncToGenerator_default()(
+        /*#__PURE__*/
+        regenerator_default().mark(function _callee2(zone) {
+          var scaledObject;
+          return regenerator_default().wrap(function _callee2$(_context2) {
+            while (1) {
+              switch (_context2.prev = _context2.next) {
+                case 0:
+                  _context2.next = 2;
+                  return _this2.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+
+                case 2:
+                  scaledObject = _context2.sent;
+                  zones.push(scaledObject);
+
+                case 4:
+                case "end":
+                  return _context2.stop();
+              }
+            }
+          }, _callee2, this);
+        }));
+
+        return function (_x) {
+          return _ref2.apply(this, arguments);
+        };
+      }());
+
       _this2.props.updateArenaZoneShapesList(zones);
     };
+
     _this2.updateObjectsInRedux = function (scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
       var updateCanvasDimensions = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
       var selectedCameraForTracking = _this2.props.selectedCameraForTracking;
@@ -40872,9 +40812,11 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       var lineShape = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates));
       var arenaZoneShapesList = JSON.parse(JSON.stringify(trackingInterface[selectedCameraForTracking].arenaZone.zoneList));
       trackingArea.geometry.coordinates = _this2.scaleObject(trackingArea.geometry.coordinates, scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+
       if (lineShape.length) {
         lineShape[0] = _this2.scaleObject(lineShape[0], scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
       }
+
       var zones = [];
       arenaZoneShapesList.map(function (zone) {
         var scaledObject = JSON.parse(JSON.stringify(_this2.scaleObject(zone, scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions)));
@@ -40884,8 +40826,10 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].trackingArea = trackingArea;
       nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].calibrateArena.geometry.coordinates = lineShape;
       nVisionSession.userInterface.trackingInterface[selectedCameraForTracking].arenaZone.zoneList = zones;
+
       _this2.props.updateNvisionSession(nVisionSession);
     };
+
     _this2.getCanvasAtComponentMount = function (newWidth, newHeight) {
       var scaleLandmarks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var canvas = _this2._fc;
@@ -40904,49 +40848,69 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         zones.push(scaledObject);
       })
       this.props.updateArenaZoneShapesList(zones);*/
+
       console.log("[Tracking Settings][Sketch Field][getCanvasAtComponentMount][component mount] Resize Canvas Dimensions to: ", cHeight * scaleHeightMultiplier, cWidth * scaleMultiplier);
       canvas.setWidth(cWidth * scaleMultiplier);
       canvas.setHeight(cHeight * scaleHeightMultiplier);
+
       _this2.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
+
       _this2.props.trackingCanvasWidth(cWidth * scaleMultiplier);
+
       canvas.renderAll();
       canvas.calcOffset();
+
       _this2.setState({
         canvasHeight: canvas.height,
         canvasWidth: canvas.width
       }, function () {});
+
       _this2.resizeCanvas(true, false);
     };
+
     _this2.resizeCanvas = function () {
       var addDimension = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       var resize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
       var currCanvas = _this2._fc;
+
       var _this2$getOverlayDime3 = _this2.getOverlayDimensions(),
-        overlayWidth = _this2$getOverlayDime3.overlayWidth,
-        overlayHeight = _this2$getOverlayDime3.overlayHeight;
+          overlayWidth = _this2$getOverlayDime3.overlayWidth,
+          overlayHeight = _this2$getOverlayDime3.overlayHeight;
+
       console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of overlay container] :", overlayWidth, overlayHeight);
       console.log("[Tracking Settings][Sketch Field][resize Canvas][Current width and height of canvas] :", currCanvas.getWidth(), currCanvas.getHeight());
+
       if (resize) {
         _this2._resize();
       }
+
       var newCanvasWidth = overlayWidth;
       var newCanvasHeight = overlayHeight;
+
       if (addDimension) {
         newCanvasWidth = _this2.getActualCanvasDimensions(overlayWidth, overlayHeight, true).width;
         newCanvasHeight = _this2.getActualCanvasDimensions(overlayWidth, overlayHeight, true).height;
       }
+
       currCanvas.setHeight(newCanvasHeight);
       currCanvas.setWidth(newCanvasWidth);
       currCanvas.requestRenderAll();
+
       _this2.props.trackingCanvasHeight(currCanvas.getHeight());
+
       _this2.props.trackingCanvasWidth(currCanvas.getWidth());
+
       console.log("[Tracking Settings][Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(), currCanvas.getHeight());
     };
+
     _this2.setCanvasWidthHeightInRedux = function () {
       var currCanvas = _this2._fc;
+
       _this2.props.trackingCanvasHeight(currCanvas.getHeight());
+
       _this2.props.trackingCanvasWidth(currCanvas.getWidth());
     };
+
     _this2.bindLandmarks = function () {
       var updateLandmarks = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       var canvasData = arguments.length > 1 ? arguments[1] : undefined;
@@ -40962,18 +40926,22 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       var bossTransform = boss[0].calcTransformMatrix();
       var invertedBossTransform = invert(bossTransform);
       minions.forEach(function (o) {
-        var desiredTransform = multiply(invertedBossTransform, o.calcTransformMatrix());
-        // save the desired relation here.
+        var desiredTransform = multiply(invertedBossTransform, o.calcTransformMatrix()); // save the desired relation here.
+
         o.relationship = desiredTransform;
       });
+
       if (updateLandmarks) {
         var landMarks = canvas ? JSON.parse(JSON.stringify(canvas.getObjects().filter(function (o) {
           return o.type !== "image";
         }))) : [];
+
         _this2.updateOnepTwop('_landmarks');
+
         console.log("[MIRA] Updated list of landmarks objects: ", JSON.stringify(landMarks));
       }
     };
+
     _this2.getActualCanvasDimensions = function (width, height) {
       var fullWidth = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
       var canvas = _this2._fc;
@@ -40985,54 +40953,77 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       obj.height = height + (fullWidth ? _this2.state.strokeWidth : _this2.state.strokeWidth + 0);
       return obj;
     };
+
     _this2.onMountUpdateObjectsInReduxAnimalTrackingKey = function (scaleMultiplier, scaleHeightMultiplier, cWidth, cHeight) {
       var updateCanvasDimensions = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
       var trackingArea = arguments.length > 5 ? arguments[5] : undefined;
       var arenaZoneShapesList = arguments.length > 6 ? arguments[6] : undefined;
       var lineShape = arguments.length > 7 ? arguments[7] : undefined;
       var scaleMultiplierForObjects = scaleMultiplier;
+
       var trackingObject = _this2.scaleObject(JSON.parse(JSON.stringify(trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
+
       _this2.props.saveDimesions(trackingObject);
+
       var lineObject = [];
+
       if (lineShape.length) {
         lineObject[0] = _this2.scaleObject(JSON.parse(JSON.stringify(lineShape[0])), scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions);
       }
+
       _this2.props.updateLineShape(lineObject);
+
       var zones = [];
       arenaZoneShapesList.map(function (zone) {
         var scaledObject = JSON.parse(JSON.stringify(_this2.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier, cWidth, cHeight, updateCanvasDimensions)));
         zones.push(scaledObject);
       });
+
       _this2.props.updateArenaZoneShapesList(zones);
     };
+
     _this2.resizeReduxAndSessionObjectsOnMount = function (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) {
       var canvas = _this2._fc;
+
       var cWidth = canvas.getWidth() - _this2.state.strokeWidth;
+
       var cHeight = canvas.getHeight() - _this2.state.strokeWidth;
+
       console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsOnMount]: canvas Old width and old height:", oldWidth, oldHeight);
       console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsOnMount]: Current Canvas width and height : ", cWidth, cHeight);
+
       if (canvas && oldWidth !== cWidth && canvas.upperCanvasEl) {
         //if (canvas && canvas.upperCanvasEl) {
         var scaleMultiplier = cWidth / oldWidth;
         var scaleHeightMultiplier = cHeight / oldHeight;
+
         _this2.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape);
+
         _this2.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true);
       }
     };
+
     _this2.resizeReduxAndSessionObjectsAfterPageLoad = function (oldWidth, oldHeight, trackingArea, arenaZoneShapesList, lineShape) {
       var canvas = _this2._fc;
+
       var cWidth = canvas.getWidth() - _this2.state.strokeWidth;
+
       var cHeight = canvas.getHeight() - _this2.state.strokeWidth;
+
       console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsAfterPageLoad]: canvas Old width and old height:", oldWidth, oldHeight);
       console.log("[Tracking Settings][Sketch Field][resizeReduxAndSessionObjectsAfterPageLoad]: Current Canvas width and height : ", cWidth, cHeight);
+
       if (canvas && oldWidth !== cWidth && canvas.upperCanvasEl) {
         //if (canvas && canvas.upperCanvasEl) {
         var scaleMultiplier = cWidth / oldWidth;
         var scaleHeightMultiplier = cHeight / oldHeight;
+
         _this2.onMountUpdateObjectsInReduxAnimalTrackingKey(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true, trackingArea, arenaZoneShapesList, lineShape);
+
         _this2.updateObjectsInRedux(scaleMultiplier, scaleHeightMultiplier, oldWidth, oldHeight, true);
       }
     };
+
     _this2._backgroundColor = function (color) {
       if (!color) return;
       var canvas = _this2._fc;
@@ -41040,9 +41031,11 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         return canvas.renderAll();
       });
     };
+
     _this2.zoom = function (factor) {
       var canvas = _this2._fc;
       var objects = canvas.getObjects();
+
       for (var i in objects) {
         objects[i].scaleX = objects[i].scaleX * factor;
         objects[i].scaleY = objects[i].scaleY * factor;
@@ -41050,22 +41043,28 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         objects[i].top = objects[i].top * factor;
         objects[i].setCoords();
       }
+
       canvas.renderAll();
       canvas.calcOffset();
     };
+
     _this2.undo = function () {
       var history = _this2._history;
+
       var _history$getCurrent = history.getCurrent(),
-        _history$getCurrent2 = slicedToArray_default()(_history$getCurrent, 3),
-        obj = _history$getCurrent2[0],
-        prevState = _history$getCurrent2[1],
-        currState = _history$getCurrent2[2];
+          _history$getCurrent2 = slicedToArray_default()(_history$getCurrent, 3),
+          obj = _history$getCurrent2[0],
+          prevState = _history$getCurrent2[1],
+          currState = _history$getCurrent2[2];
+
       history.undo();
+
       if (obj.__removed) {
         _this2.setState({
           action: false
         }, function () {
           _this2._fc.add(obj);
+
           obj.__version -= 1;
           obj.__removed = false;
         });
@@ -41075,22 +41074,27 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         obj.__version -= 1;
         obj.setOptions(JSON.parse(prevState));
         obj.setCoords();
+
         _this2._fc.renderAll();
       }
+
       if (_this2.props.onChange) {
         _this2.props.onChange();
       }
     };
+
     _this2.redo = function () {
       var history = _this2._history;
+
       if (history.canRedo()) {
-        var canvas = _this2._fc;
-        //noinspection Eslint
+        var canvas = _this2._fc; //noinspection Eslint
+
         var _history$redo = history.redo(),
-          _history$redo2 = slicedToArray_default()(_history$redo, 3),
-          obj = _history$redo2[0],
-          prevState = _history$redo2[1],
-          currState = _history$redo2[2];
+            _history$redo2 = slicedToArray_default()(_history$redo, 3),
+            obj = _history$redo2[0],
+            prevState = _history$redo2[1],
+            currState = _history$redo2[2];
+
         if (obj.__version === 0) {
           _this2.setState({
             action: false
@@ -41102,25 +41106,32 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           obj.__version += 1;
           obj.setOptions(JSON.parse(currState));
         }
+
         obj.setCoords();
         canvas.renderAll();
+
         if (_this2.props.onChange) {
           _this2.props.onChange();
         }
       }
     };
+
     _this2.canUndo = function () {
       return _this2._history.canUndo();
     };
+
     _this2.canRedo = function () {
       return _this2._history.canRedo();
     };
+
     _this2.toDataURL = function (options) {
       return _this2._fc.toDataURL(options);
     };
+
     _this2.toJSON = function (propertiesToInclude) {
       return _this2._fc.toJSON(propertiesToInclude);
     };
+
     _this2.fromJSON = function (json) {
       if (!json) return;
       var canvas = _this2._fc;
@@ -41132,24 +41143,32 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
               return o.selectable = o.evented = false;
             });
           }
+
           canvas.renderAll();
+
           if (_this2.props.onChange) {
             _this2.props.onChange();
           }
         });
       }, 100);
     };
+
     _this2.clear = function (propertiesToInclude) {
       var discarded = _this2.toJSON(propertiesToInclude);
-      _this2._fc.clear();
-      // this._history.clear()
+
+      _this2._fc.clear(); // this._history.clear()
+
+
       return discarded;
     };
+
     _this2.removeSelected = function () {
       var canvas = _this2._fc;
       var activeObj = canvas.getActiveObject();
+
       if (activeObj) {
         var selected = [];
+
         if (activeObj.type === 'activeSelection') {
           activeObj.forEachObject(function (obj) {
             return selected.push(obj);
@@ -41157,24 +41176,27 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         } else {
           selected.push(activeObj);
         }
+
         selected.forEach(function (obj) {
           obj.__removed = true;
           var objState = obj.toJSON();
           obj.__originalState = objState;
-          var state = JSON.stringify(objState);
-          // this._history.keep([obj, state, state])
+          var state = JSON.stringify(objState); // this._history.keep([obj, state, state])
+
           canvas.remove(obj);
         });
         canvas.discardActiveObject();
         canvas.requestRenderAll();
       }
     };
+
     _this2.copy = function () {
       var canvas = _this2._fc;
       canvas.getActiveObject().clone(function (cloned) {
         return _this2._clipboard = cloned;
       });
     };
+
     _this2.paste = function () {
       // clone again, so you can do multiple copies.
       _this2._clipboard.clone(function (clonedObj) {
@@ -41185,6 +41207,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           top: clonedObj.top + 10,
           evented: true
         });
+
         if (clonedObj.type === 'activeSelection') {
           // active selection needs a reference to the canvas.
           clonedObj.canvas = canvas;
@@ -41195,15 +41218,18 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         } else {
           canvas.add(clonedObj);
         }
+
         _this2._clipboard.top += 10;
         _this2._clipboard.left += 10;
         canvas.setActiveObject(clonedObj);
         canvas.requestRenderAll();
       });
     };
+
     _this2.setBackgroundFromDataUrl = function (dataUrl) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var canvas = _this2._fc;
+
       if (options.stretched) {
         delete options.stretched;
         Object.assign(options, {
@@ -41211,27 +41237,33 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           height: canvas.height
         });
       }
+
       if (options.stretchedX) {
         delete options.stretchedX;
         Object.assign(options, {
           width: canvas.width
         });
       }
+
       if (options.stretchedY) {
         delete options.stretchedY;
         Object.assign(options, {
           height: canvas.height
         });
       }
+
       var img = new Image();
       img.setAttribute('crossOrigin', 'anonymous');
+
       img.onload = function () {
         return canvas.setBackgroundImage(new nVisionSketchField_fabric.Image(img), function () {
           return canvas.renderAll();
         }, options);
       };
+
       img.src = dataUrl;
     };
+
     _this2.addText = function (text) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var canvas = _this2._fc;
@@ -41247,30 +41279,36 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       });
       canvas.add(iText);
     };
+
     _this2.callEvent = function (e, eventFunction) {
       // console.log("inside callEvet method");
       if (_this2._selectedTool) eventFunction(e);
     };
+
     _this2.addLandmarks = function (canvas, frontEnd) {
       var self = assertThisInitialized_default()(assertThisInitialized_default()(_this2));
+
       canvas.selection = false;
       var imageObject = JSON.parse(JSON.stringify(canvas.getObjects()));
       var landMarks = frontEnd;
+
       if (landMarks.length > 0) {
         landMarks.splice(0, 0, imageObject[0]);
       } else {
         landMarks = imageObject;
       }
+
       canvas.loadFromJSON("{\"objects\":".concat(JSON.stringify(landMarks), "}"), function () {
         if (self.props.oneptwop) {
           self.props.updateSbpfTransformValues(self.props.oneptwop, self.props.loadFromSession);
         } else {
           self.rotateAndScale(canvas.item(0), -0);
-        }
+        } //if (canvas.item(1) && canvas.item(1).cnWidth !== canvas.getWidth()) {
 
-        //if (canvas.item(1) && canvas.item(1).cnWidth !== canvas.getWidth()) {
+
         var scaleMultiplier = canvas.getWidth() / canvas.item(1).cnWidth;
         var objects = canvas.getObjects();
+
         for (var i in objects) {
           if (objects[i].type !== "image") {
             objects[i].left = objects[i].left * scaleMultiplier;
@@ -41279,8 +41317,9 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
             objects[i].cnHeight = canvas.getHeight();
             objects[i].setCoords();
           }
-        }
-        // }
+        } // }
+
+
         if (canvas) {
           var fabricList = JSON.parse(JSON.stringify(canvas.getObjects().filter(function (o) {
             return o.type !== "image";
@@ -41297,24 +41336,27 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
             o.selectable = false;
           });
         }
+
         var boss = canvas.getObjects().filter(function (o) {
           return o.type == "image";
-        })[0];
-        //if (boss) {
-        self.bindLandmarks(true, canvas);
-        //}
+        })[0]; //if (boss) {
+
+        self.bindLandmarks(true, canvas); //}
         //canvas.requestRenderAll();
+
         canvas.renderAll();
       });
       canvas.on('object:modified', function (options) {
         try {
           var obj = options.target;
+
           if (obj.type == "image") {
             return;
           }
+
           var canvasTL = new nVisionSketchField_fabric.Point(0, 0);
-          var canvasBR = new nVisionSketchField_fabric.Point(canvas.getWidth(), canvas.getHeight());
-          //if object not totally contained in canvas, adjust position
+          var canvasBR = new nVisionSketchField_fabric.Point(canvas.getWidth(), canvas.getHeight()); //if object not totally contained in canvas, adjust position
+
           if (!obj.isContainedWithinRect(canvasTL, canvasBR)) {
             var objBounds = obj.getBoundingRect();
             obj.setCoords();
@@ -41329,47 +41371,44 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
             obj.setCoords();
             canvas.renderAll();
           }
+
           self.bindLandmarks(true);
         } catch (err) {
           alert("exception in keepObjectInBounds\n\n" + err.message + "\n\n" + err.stack);
         }
       });
     };
+
     _this2.componentDidMount = function () {
       var _this2$props = _this2.props,
-        tool = _this2$props.tool,
-        value = _this2$props.value,
-        undoSteps = _this2$props.undoSteps,
-        defaultValue = _this2$props.defaultValue,
-        backgroundColor = _this2$props.backgroundColor,
-        image = _this2$props.image; //console.log("value is coming in component did mount before starttttt-- > ", this._fc);
+          tool = _this2$props.tool,
+          value = _this2$props.value,
+          undoSteps = _this2$props.undoSteps,
+          defaultValue = _this2$props.defaultValue,
+          backgroundColor = _this2$props.backgroundColor,
+          image = _this2$props.image; //console.log("value is coming in component did mount before starttttt-- > ", this._fc);
       //let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
+
       var canvas = _this2._fc = new nVisionSketchField_fabric.Canvas(_this2._canvas, {
         centeredRotation: true,
-        centeredScaling: false
-        //id: "roi-canvas"
-      } /*, {
-        preserveObjectStacking: false,
-        renderOnAddRemove: false,
-        skipTargetFind: true
-        }*/);
+        centeredScaling: false,
+        id: "roi-canvas"
+      });
       canvas.centeredScaling = false;
-      _this2._initTools(canvas);
 
-      // set initial backgroundColor
+      _this2._initTools(canvas); // set initial backgroundColor
+
+
       _this2._backgroundColor(backgroundColor);
+
       var selectedTool = _this2._tools[tool];
       if (selectedTool) selectedTool.configureCanvas(_this2.props);
-      _this2._selectedTool = selectedTool;
-
-      // Control resize
-
+      _this2._selectedTool = selectedTool; // Control resize
       //window.addEventListener('resize', this._resize, false)
-
       // Initialize History, with maximum number of undo steps
       // this._history = new History(undoSteps);
-
       // Events binding
+
       canvas.on('object:added', function (e) {
         return _this2.callEvent(e, _this2._onObjectAdded);
       });
@@ -41400,53 +41439,86 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       canvas.on('object:rotating', function (e) {
         return _this2.callEvent(e, _this2._onObjectRotating);
       });
-      canvas.on("after:render", function (opt) {
-        // this.isRotating && this.renderRotateLabel(opt.ctx, canvas);
-      });
-      // IText Events fired on Adding Text
+      canvas.on("after:render", function (opt) {// this.isRotating && this.renderRotateLabel(opt.ctx, canvas);
+      }); // IText Events fired on Adding Text
       // canvas.on("text:event:changed", console.log)
       // canvas.on("text:selection:changed", console.log)
       // canvas.on("text:editing:entered", console.log)
       // canvas.on("text:editing:exited", console.log)
 
-      _this2.disableTouchScroll();
-
-      // setTimeout(() => {
+      _this2.disableTouchScroll(); // setTimeout(() => {
       //this._resize()
-      _this2.resizeOverlayAndCanvasOnCompoentMount();
-      // }, 3000);
 
+
+      _this2.resizeOverlayAndCanvasOnCompoentMount(); // }, 3000);
       // if (image !== null) {
       // this.addImg(image);
       // }
       // initialize canvas with controlled value if exists
-      ;
+
+
       (value || defaultValue) && _this2.fromJSON(value || defaultValue);
+
+      if (_this2.internalRef.current) {
+        _this2.resizeObserver = new ResizeObserver(function (entries) {
+          if (entries.length > 0) {
+            var lastEntry = entries[entries.length - 1];
+
+            if (lastEntry.target === _this2.internalRef.current) {
+              var _lastEntry$contentRec = lastEntry.contentRect,
+                  width = _lastEntry$contentRec.width,
+                  height = _lastEntry$contentRec.height;
+              console.log("[nVisionSketchField] [TRACKING SETTING] [componentDidMount] width, height : ", width, height);
+
+              _this2.handleResize(Math.round(width), Math.round(height));
+            }
+          }
+        });
+
+        _this2.resizeObserver.observe(_this2.internalRef.current);
+      }
     };
+
+    _this2.resizeTimeout = null;
+
     _this2.componentWillUnmount = function () {
       window.removeEventListener('resize', _this2._resize);
       executeCanvasResize = false;
+
+      if (_this2.resizeObserver) {
+        _this2.resizeObserver.disconnect();
+      }
+
+      if (_this2.resizeTimeout) {
+        clearTimeout(_this2.resizeTimeout);
+      }
     };
+
     _this2.componentDidUpdate = function (prevProps, prevState) {
       // console.log(this.props, "props");
       var canvas = _this2._fc;
-      if (_this2.state.parentWidth !== prevState.parentWidth || _this2.props.width !== prevProps.width || _this2.props.height !== prevProps.height) {
-        //   this._resize();
+
+      if (_this2.state.parentWidth !== prevState.parentWidth || _this2.props.width !== prevProps.width || _this2.props.height !== prevProps.height) {//   this._resize();
         // this.resizeCanvas(true);
       }
+
       if (_this2.props.tool !== prevProps.tool) {
-        _this2._selectedTool = _this2._tools[_this2.props.tool];
-        //Bring the cursor back to default if it is changed by a tool
+        _this2._selectedTool = _this2._tools[_this2.props.tool]; //Bring the cursor back to default if it is changed by a tool
+
         _this2._fc.defaultCursor = 'default';
+
         if (_this2._selectedTool) {
           _this2._selectedTool.configureCanvas(_this2.props);
         }
       }
+
       if (_this2.props.backgroundColor !== prevProps.backgroundColor) {
         _this2._backgroundColor(_this2.props.backgroundColor);
       }
+
       if (_this2.props.image !== _this2.state.imageUrl) {
         _this2.addImg(_this2.props.image);
+
         _this2.setState({
           imageUrl: _this2.props.image,
           scaleFactor: _this2.state.scaleFactor,
@@ -41454,65 +41526,79 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           flipApplied: _this2.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
         });
       }
+
       if (_this2.props.value !== prevProps.value || _this2.props.value && _this2.props.forceValue) {
         _this2.fromJSON(_this2.props.value);
-      }
-
-      // if (this.props.callResize !== this.state.callResize) {
+      } // if (this.props.callResize !== this.state.callResize) {
       // this._resize();
       // this.setState({ callResize: this.props.callResize });
       // }
 
+
       if (_this2.props.oneptwop) {
         if (_this2.props.oneptwop.inscopix.adapter_lsm.rotation !== _this2.state.rotation && _this2._fc.item(0)) {
           _this2.rotateAndScale(_this2._fc.item(0), -_this2.props.oneptwop.inscopix.adapter_lsm.rotation);
+
           _this2.updateLandmarksPosition();
+
           _this2._fc.renderAll();
+
           _this2.setState({
             rotation: _this2.props.oneptwop.inscopix.adapter_lsm.rotation
           });
         }
+
         if (_this2.props.oneptwop.inscopix.frontend !== _this2.state.frontEnd && _this2.state.updateLandmarksForOtherWindow && _this2._fc) {
           _this2.setState({
             frontEnd: _this2.props.oneptwop.inscopix.frontend,
             updateLandmarksForOtherWindow: false
           });
+
           _this2.props.addLandmarks(_this2._fc, _this2.props.oneptwop.inscopix.frontend);
+
           _this2._fc.renderAll();
         }
+
         if (_this2.props.oneptwop.inscopix.adapter_lsm.flip_horizontal !== _this2.state.flipApplied) {
           _this2.applyFlip(_this2.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
+
           _this2.setState({
             flipApplied: _this2.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
           });
         }
       }
+
       if (_this2.props.crosshairMode !== _this2.state.crosshairMode) {
         _this2.setState({
           crosshairMode: _this2.props.crosshairMode
         });
       }
+
       if (_this2.props.crosshairMoveMode !== _this2.state.crosshairMoveMode) {
         _this2.setState({
           crosshairMoveMode: _this2.props.crosshairMoveMode
         });
       }
+
       if (_this2.props.crosshairDeleteMode !== _this2.state.crosshairDeleteMode) {
         _this2.setState({
           crosshairDeleteMode: _this2.props.crosshairDeleteMode
         });
       }
+
       if (_this2.props.deleteAllLandmarks !== _this2.state.deleteAllLandmarks) {
         _this2.setState({
           deleteAllLandmarks: _this2.props.deleteAllLandmarks
         });
       }
+
       if (_this2.props.resetAllLandmarks !== _this2.state.resetAllLandmarks) {
         _this2.setState({
           resetAllLandmarks: _this2.props.resetAllLandmarks
         });
       }
     };
+
     _this2.onChangeSize = function (width, height) {
       // if (this.state.imageUrl !== null) {
       // this.addImg(this.state.imageUrl);
@@ -41521,24 +41607,29 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       // // this._fc.renderAll();
       // // }
       // }
-
       // this._resize();
       console.log("[TRACKING SETTINGS][NVISION SKETCH FIELD][onChangeSize]: Resized to:", width, height);
+
       _this2.resizeCanvas(true);
     };
+
     _this2.updateLandmarksPosition = function () {
       var multiply = nVisionSketchField_fabric.util.multiplyTransformMatrices;
       var invert = nVisionSketchField_fabric.util.invertTransform;
+
       var boss = _this2._fc.getObjects().filter(function (o) {
         return o.type == 'image';
       })[0];
+
       var minions = _this2._fc.getObjects().filter(function (o) {
         return o !== boss;
       });
+
       minions.forEach(function (o) {
         if (!o.relationship) {
           return;
         }
+
         var relationship = o.relationship;
         var newTransform = multiply(boss.calcTransformMatrix(), relationship);
         var opt = nVisionSketchField_fabric.util.qrDecompose(newTransform);
@@ -41554,68 +41645,80 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         o.setCoords();
       });
     };
+
     _this2.applyFlip = function (value, updateOnepTwop) {
       if (_this2._fc.item(0)) {
         _this2._fc.item(0).set({
           flipX: value
         });
+
         _this2._fc.item(0).setCoords();
       }
+
       _this2.updateLandmarksPosition();
       /*if(updateOnepTwop) {
       window.updateOnepTwopData('_transform', []);
       } */
+
+
       _this2._fc.requestRenderAll();
+
       _this2._fc.renderAll();
     };
+
     _this2.rotateAndScale = function (obj, angle) {
       if (obj) {
         var width = _this2._fc.getWidth();
+
         var height = _this2._fc.getHeight();
+
         var cos_theta = Math.cos(angle * Math.PI / 180);
         var sin_theta = Math.sin(angle * Math.PI / 180);
         var x_scale = width / (Math.abs(width * cos_theta) + Math.abs(height * sin_theta));
         var y_scale = height / (Math.abs(width * sin_theta) + Math.abs(height * cos_theta));
         var scale = Math.min(x_scale, y_scale);
-        var actScale = _this2.state.scaleFactor * scale;
-        // get the transformMatrix array
+        var actScale = _this2.state.scaleFactor * scale; // get the transformMatrix array
+
         var rotateMatrix = [cos_theta, -sin_theta, sin_theta, cos_theta, 0, 0];
-        var scaleMatrix = [actScale, 0, 0, actScale, 0, 0];
-        // console.log(scaleMatrix, "scaleMatrix");
+        var scaleMatrix = [actScale, 0, 0, actScale, 0, 0]; // console.log(scaleMatrix, "scaleMatrix");
         // console.log(rotateMatrix, "rotateMatrix");
         //var scaleMatrix = [scale, 0 , 0, scale, 0, 0];
-        var rsT = nVisionSketchField_fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix);
 
-        // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
-        var options = nVisionSketchField_fabric.util.qrDecompose(rsT);
-        // console.log(options, "options");
+        var rsT = nVisionSketchField_fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix); // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
+
+        var options = nVisionSketchField_fabric.util.qrDecompose(rsT); // console.log(options, "options");
+
         var newCenter = {
           x: _this2._fc.getWidth() / 2,
-          y: _this2._fc.getHeight() / 2
+          y: _this2._fc.getHeight() / 2 // reset transformMatrix to identity and resets flips since negative scale resulting from decompose, will automatically set them.
+          //obj.flipX = false;
+
         };
-
-        // reset transformMatrix to identity and resets flips since negative scale resulting from decompose, will automatically set them.
-        //obj.flipX = false;
         obj.flipY = false;
-        obj.set(options);
+        obj.set(options); // position the object in the center given from translateX and translateY
 
-        // position the object in the center given from translateX and translateY
         obj.setPositionByOrigin(newCenter, 'center', 'center');
         obj.setCoords();
       }
     };
+
     _this2.updateLandmarks = function () {
       var currentRotation = _this2.props.oneptwop.inscopix.adapter_lsm.rotation;
       var isFliped = _this2.props.oneptwop.inscopix.adapter_lsm.flip_horizontal;
+
       if (isFliped) {
         _this2.applyFlip(false, true);
       }
+
       _this2.props.updateSlider(0);
+
       var points = [];
+
       if (_this2.props.oneptwop.inscopix.frontend.length > 0) {
         _this2.props.oneptwop.inscopix.frontend = _this2.props.oneptwop.inscopix.frontend.filter(function (o) {
           return o.type !== "image";
         });
+
         _this2.props.oneptwop.inscopix.frontend.map(function (item, key) {
           var x, y;
           x = item.left + item.width / 2;
@@ -41625,6 +41728,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
             y: y
           });
         });
+
         _this2.props.oneptwop.inscopix.landmarks = {
           points: points
         };
@@ -41633,11 +41737,14 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
           points: []
         };
       }
+
       _this2.props.updateSlider(currentRotation);
+
       if (isFliped) {
         _this2.applyFlip(true, true);
       }
     };
+
     _this2.updateOnepTwop = function (saveAs) {
       var updateLandmarksForOtherWindow = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       // if (this.sbpfApplyClick) {
@@ -41657,16 +41764,21 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
       oneptwop.inscopix.frontend = landMarks.objects.filter(function (o) {
         return o.type !== "image";
       });
+
       _this2.props.oneptwopFrontend(oneptwop);
       /*if (updateLandmarksForOtherWindow) {
       this.props.addLandmarks()
       }*/
+
+
       _this2.setState({
         updateLandmarksForOtherWindow: updateLandmarksForOtherWindow
       });
     };
+
     _this2.removeAddOrMoveMode = function () {
       var canvas = _this2._fc;
+
       if (canvas.upperCanvasEl) {
         canvas.discardActiveObject();
         canvas.forEachObject(function (o) {
@@ -41677,14 +41789,15 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         canvas.renderAll();
       }
     };
+
     _this2.createRect = function () {
       var canvas = _this2._fc;
       var updatedheight = canvas.getHeight();
-      var updatedWidth = canvas.getWidth();
-      // let updatedTop = obj.y * canvas.getHeight() / fov.height;
+      var updatedWidth = canvas.getWidth(); // let updatedTop = obj.y * canvas.getHeight() / fov.height;
       // let updatedLeft = obj.x * canvas.getWidth() / fov.width;
       // console.log(updatedTop,"updatedTop");
       // console.log(updatedLeft,"updatedLeft");
+
       var rect = new nVisionSketchField_fabric.Rect({
         left: 0,
         top: 0,
@@ -41708,42 +41821,49 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         angle: 0
       });
       canvas.add(rect);
+
       _this2.props.onShapeAdded();
     };
+
     _this2.render = function () {
       var _this2$props2 = _this2.props,
-        className = _this2$props2.className,
-        style = _this2$props2.style,
-        width = _this2$props2.width,
-        height = _this2$props2.height;
+          className = _this2$props2.className,
+          style = _this2$props2.style,
+          width = _this2$props2.width,
+          height = _this2$props2.height;
       var canvasDivStyle = Object.assign({}, style ? style : {}, width ? {
         width: '100%'
       } : {
         width: '100%'
-      },
-      //width ? { width: this.state.canvasWidth } : { width: this.state.canvasWidth },
+      }, //width ? { width: this.state.canvasWidth } : { width: this.state.canvasWidth },
       height ? {
         height: _this2.state.canvasHeight
       } : {
         height: _this2.state.canvasHeight
       });
-      // console.log("TRACKLING SETTINGS NVISION SKETCH FIELD LINK");
-      return react.createElement(RefWrapper, {
+      var canvasResizeObserver = {
+        width: "".concat(_this2._fc && _this2._fc.getWidth() ? _this2._fc.getWidth() + "px" : "100%"),
+        height: "".concat(_this2._fc && _this2._fc.getHeight() ? _this2._fc.getHeight() + "px" : "100%") // console.log("TRACKLING SETTINGS NVISION SKETCH FIELD LINK");
+
+      };
+      return external_react_default().createElement(RefWrapper, {
         refCallback: function refCallback(ref) {
           return _this2._container = ref.current;
         }
-      }, react.createElement("div", {
+      }, external_react_default().createElement("div", {
         className: className,
         style: canvasDivStyle,
         id: "onep-twop-container-2"
-      }, react.createElement("div", {
+      }, external_react_default().createElement("div", {
+        ref: _this2.internalRef,
+        style: canvasResizeObserver
+      }, external_react_default().createElement("div", {
         style: {
           position: 'absolute'
         }
-      }, react.createElement("canvas", {
+      }, external_react_default().createElement("canvas", {
         //id={uuid4()}
-        id: "tracking-canvas"
-        // style={{
+        id: "tracking-canvas" // style={{
         // margin: "0 auto",
         // position: "absolute",
         // opacity: 1,
@@ -41760,7 +41880,7 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         ref: function ref(c) {
           return _this2._canvas = c;
         }
-      })), _this2._fc !== null && _this2._fc.item(0) && _this2.props.from === undefined && react.createElement(NvistaRoiSettingsPanel, {
+      }))), _this2._fc !== null && _this2._fc.item(0) && _this2.props.from === undefined && external_react_default().createElement(NvistaRoiSettingsPanel, {
         canvasProps: _this2._fc,
         landMarks: _this2.props.oneptwop.inscopix.frontend,
         imageData: _this2.props.oneptwop,
@@ -41781,266 +41901,57 @@ var NvisionSketchField = /*#__PURE__*/function (_PureComponent) {
         handleMiraErrorPopup: _this2.props.handleMiraErrorPopup
       })));
     };
+
+    _this2.state = {
+      parentWidth: 550,
+      action: true,
+      imageUrl: null,
+      scaleFactor: 1,
+      rotation: 0,
+      flipApplied: false,
+      crosshairMode: false,
+      crosshairMoveMode: false,
+      crosshairDeleteMode: false,
+      deleteAllLandmarks: false,
+      resetAllLandmarks: false,
+      frontEnd: [],
+      canvasHeight: 512,
+      canvasWidth: 800,
+      strokeWidth: 2,
+      updateLandmarksForOtherWindow: false,
+      scaleHeightMultiplier: 1,
+      scaleMultiplier: 1,
+      lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000']
+    };
+    _this2.handleResize = _this2.handleResize.bind(assertThisInitialized_default()(assertThisInitialized_default()(_this2)));
     return _this2;
   }
-  /**
-  * Enable touch Scrolling on Canvas
-  */
-  /**
-  * Disable touch Scrolling on Canvas
-  */
-  /**
-  * Add an image as object to the canvas
-  *
-  * @param dataUrl the image url or Data Url
-  * @param options object to pass and change some options when loading image, the format of the object is:
-  *
-  * {
-  * left: <Number: distance from left of canvas>,
-  * top: <Number: distance from top of canvas>,
-  * scale: <Number: initial scale of image>
-  * }
-  */
-  /**
-  * Action when an object is added to the canvas
-  */
-  /**
-  * Action when an object is moving around inside the canvas
-  */
-  /**
-  * Action when an object is scaling inside the canvas
-  */
-  /**
-  * Action when an object is rotating inside the canvas
-  */
-  /*checkWithInBoundary = async() =>{
-    let canvas = this._fc; 
-    let showNotification = false;
-    canvas.getObjects().forEach((shape) => {
-      if(shape.id === "calibratedLine") return;
-      let boundaryObj = this.props.getboudaryCoords();
-      if(!boundaryObj) return;
-      var canvasTL = new fabric.Point(boundaryObj.left, boundaryObj.top);
-      var canvasBR = new fabric.Point(boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX), (boundaryObj.height * boundaryObj.scaleY) + boundaryObj.top);
-      // if (!shape.isContainedWithinRect(canvasTL, canvasBR, true, true) && shape.id !== "trackingArea") {
-      //   this.props.addColorInDefaultShapeColors(shape.stroke);
-      //   this.props.deleteROIDefaultName(shape.defaultName);
-      //   canvas.remove(shape);
-      // }
-      if((shape.left < boundaryObj.left ||
-        shape.top < boundaryObj.top ||
-        shape.left + (shape.width * shape.scaleX) > boundaryObj.left + (boundaryObj.width * boundaryObj.scaleX) ||
-        shape.top + (shape.height * shape.scaleY) > boundaryObj.top + (boundaryObj.height * boundaryObj.scaleY)) && shape.id !== "trackingArea"){
-          showNotification = true;
-          this.props.addColorInDefaultShapeColors(shape.stroke);
-          this.props.deleteROIDefaultName(shape.defaultName);
-          canvas.remove(shape);
-        }
-    });   
-    showNotification && this.props.notificationShow("Zones lying outside of tracking area were removed.");   
-    canvas.renderAll();
-    this.props.onShapeAdded();
-  }*/
-  /**
-  * Action when an object is removed from the canvas
-  */
-  /**
-  * Action when the mouse button is pressed down
-  */
-  /**
-  * Action when the mouse cursor is moving around within the canvas
-  */
-  /**
-  * Action when the mouse cursor is moving out from the canvas
-  */
-  /**
-  * Track the resize of the window and update our state
-  *
-  * @param e the resize event
-  * @private
-  */
-  /*getCanvasAtResoution = (newWidth, newHeight, scaleLandmarks = false) => {
-    let canvas = this._fc;
-    // let { offsetWidth, clientHeight } = this._container;
-    let cWidth =  canvas.getWidth() - 1;
-    let cHeight = canvas.getHeight() - 1;
-    //let cWidth =  canvas.getWidth();
-    //let cHeight = canvas.getHeight();
-    console.log("[getCanvasAtResoution]: Overlay container new width and new height", newWidth, newHeight );
-    console.log("[getCanvasAtResoution]: Canvas width and height after removing 1 px", cWidth, cHeight );
-    if (canvas && cWidth !== newWidth  && canvas.upperCanvasEl) {
-    //if (canvas && canvas.upperCanvasEl) {
-      let isMira = this.props.from === undefined ? true : false;  
-      var scaleMultiplier = newWidth / cWidth;
-      var scaleHeightMultiplier = newHeight / cHeight;
-      var objects = canvas.getObjects();
-       for (var i in objects) {
-        let isObjectTypeImage = isMira ? objects[i].type === "image" : objects[i].type !== "image";
-        if (isObjectTypeImage || scaleLandmarks) {
-          objects[i].width = objects[i].width * scaleMultiplier;
-          objects[i].height = objects[i].height * scaleHeightMultiplier;
-          console.log("object before scaling>>>", objects[i]);
-          //objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-          //objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-          objects[i].setCoords();
-          var scaleFactor = this.state.scaleFactor * scaleMultiplier;
-          this.setState({ scaleFactor });
-        }
-        // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
-        // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
-        objects[i].left = objects[i].left * scaleMultiplier;
-        objects[i].top = objects[i].top * scaleMultiplier;
-        objects[i].cnWidth = cWidth * scaleMultiplier;
-        objects[i].cnHeight = cHeight * scaleHeightMultiplier;
-        objects[i].setCoords();
-        console.log("object after scaling>>>>>>>>", objects[i]);
+
+  createClass_default()(NvisionSketchField, [{
+    key: "handleResize",
+    value: function handleResize(width, height) {
+      var _this3 = this;
+
+      var DEBOUNCE_DELAY = 50;
+
+      if (this.resizeTimeout) {
+        clearTimeout(this.resizeTimeout);
       }
-        var obj = canvas.backgroundImage;
-      if (obj) {
-        obj.scaleX = obj.scaleX * scaleMultiplier;
-        obj.scaleY = obj.scaleY * scaleMultiplier;
-      }
-       //console.log("Resize Canvas Dimensions: ", canvas.getHeight() * scaleMultiplier, canvas.getWidth() * scaleHeightMultiplier);
-      console.log("Resize Canvas Dimensions: ", cHeight * scaleMultiplier, cWidth * scaleHeightMultiplier);
-      canvas.discardActiveObject();
-      //let refactorCanvasHeight = Math.ceil(cHeight * scaleHeightMultiplier) + 1;
-      //let refactorCanvasWidth = Math.ceil(cWidth * scaleMultiplier) + 1;
-      canvas.setWidth(cWidth * scaleMultiplier);
-      canvas.setHeight(cHeight * scaleHeightMultiplier);
-      this.props.trackingCanvasHeight(cHeight * scaleHeightMultiplier);
-      this.props.trackingCanvasWidth( cWidth * scaleMultiplier);
-      /*canvas.setWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));
-      canvas.setHeight(Math.ceil(canvas.getHeight() * scaleHeightMultiplier));
-      this.props.trackingCanvasHeight(Math.ceil(canvas.getHeight() * scaleHeightMultiplier));
-      this.props.trackingCanvasWidth(Math.ceil(canvas.getWidth() * scaleMultiplier));*/
-  /*
-  canvas.renderAll();
-  canvas.calcOffset();
-   // this.setState({
-  // parentWidth: offsetWidth
-  // });
-  var boss = canvas.getObjects().filter(o => o.type == "image")[0];
-  if (boss) {
-    this.bindLandmarks();
-  }
-  this.setState({canvasHeight:canvas.height,canvasWidth:canvas.width},()=>{
-    if(!isMira){
-      this.props.onShapeAdded();
+
+      console.log("[TRACKING SETTING] [handleResize] width, height before timeout : ", width, height);
+      this.resizeTimeout = setTimeout(function () {
+        console.log("[TRACKING SETTING] [handleResize] width, height after timeout : ", width, height);
+
+        _this3.onChangeSize(width, height);
+
+        _this3.resizeTimeout = null;
+      }, DEBOUNCE_DELAY);
     }
-  });
-  }
-  } */
-  /*scaleObject = (object, scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false) =>{
-    let obj = JSON.parse(JSON.stringify(object));
-    let canvas = this._fc;
-    console.log("[scledd Object]Object before scaling", object);
-    let selectedObject = canvas.getObjects().find(ob => ob.defaultName === obj.defaultName);
-    if(selectedObject){
-      let left = 0, top = 0, scaleX = 1, scaleY = 1;
-      left = selectedObject.left;
-      top = selectedObject.top;
-      scaleX = selectedObject.scaleX;
-      scaleY = selectedObject.scaleY;
-      obj.left = left;
-      obj.top = top;
-      obj.scaleX = scaleX;
-      obj.scaleY = scaleY;
-      if(obj.type === "polygon"){
-        let oCoords = {};
-        oCoords = JSON.parse(JSON.stringify(selectedObject.oCoords));
-        obj.oCoords = oCoords;
-      }
-    }else{
-      obj.left = obj.left * scaleMultiplier;
-      obj.top = obj.top * scaleMultiplier;
-      obj.scaleX = obj.scaleX * scaleMultiplier;
-      obj.scaleY = obj.scaleY * scaleMultiplier;
-    }
-    if(updateCanvasDimensions){
-      obj.cnWidth = Math.round(cWidth * scaleMultiplier);
-      obj.cnHeight = Math.round(cHeight * scaleHeightMultiplier);
-    }
-    console.log("[scledd Object]Object after scaling", obj);
-    return obj;
-  }*/
-  /**
-  * Sets the background color for this sketch
-  * @param color in rgba or hex format
-  */
-  /**
-  * Zoom the drawing by the factor specified
-  *
-  * The zoom factor is a percentage with regards the original, for example if factor is set to 2
-  * it will double the size whereas if it is set to 0.5 it will half the size
-  *
-  * @param factor the zoom factor
-  */
-  /**
-  * Perform an undo operation on canvas, if it cannot undo it will leave the canvas intact
-  */
-  /**
-  * Perform a redo operation on canvas, if it cannot redo it will leave the canvas intact
-  */
-  /**
-  * Delegation method to check if we can perform an undo Operation, useful to disable/enable possible buttons
-  *
-  * @returns {*} true if we can undo otherwise false
-  */
-  /**
-  * Delegation method to check if we can perform a redo Operation, useful to disable/enable possible buttons
-  *
-  * @returns {*} true if we can redo otherwise false
-  */
-  /**
-  * Exports canvas element to a dataurl image. Note that when multiplier is used, cropping is scaled appropriately
-  *
-  * Available Options are
-  * <table style="width:100%">
-  *
-  * <tr><td><b>Name</b></td><td><b>Type</b></td><td><b>Argument</b></td><td><b>Default</b></td><td><b>Description</b></td></tr>
-  * <tr><td>format</td> <td>String</td> <td><optional></td><td>png</td><td>The format of the output image. Either "jpeg" or "png"</td></tr>
-  * <tr><td>quality</td><td>Number</td><td><optional></td><td>1</td><td>Quality level (0..1). Only used for jpeg.</td></tr>
-  * <tr><td>multiplier</td><td>Number</td><td><optional></td><td>1</td><td>Multiplier to scale by</td></tr>
-  * <tr><td>left</td><td>Number</td><td><optional></td><td></td><td>Cropping left offset. Introduced in v1.2.14</td></tr>
-  * <tr><td>top</td><td>Number</td><td><optional></td><td></td><td>Cropping top offset. Introduced in v1.2.14</td></tr>
-  * <tr><td>width</td><td>Number</td><td><optional></td><td></td><td>Cropping width. Introduced in v1.2.14</td></tr>
-  * <tr><td>height</td><td>Number</td><td><optional></td><td></td><td>Cropping height. Introduced in v1.2.14</td></tr>
-  *
-  * </table>
-  *
-  * @returns {String} URL containing a representation of the object in the format specified by options.format
-  */
-  /**
-  * Returns JSON representation of canvas
-  *
-  * @param propertiesToInclude Array <optional> Any properties that you might want to additionally include in the output
-  * @returns {string} JSON string
-  */
-  /**
-  * Populates canvas with data from the specified JSON.
-  *
-  * JSON format must conform to the one of fabric.Canvas#toDatalessJSON
-  *
-  * @param json JSON string or object
-  */
-  /**
-  * Clear the content of the canvas, this will also clear history but will return the canvas content as JSON to be
-  * used as needed in order to undo the clear if possible
-  *
-  * @param propertiesToInclude Array <optional> Any properties that you might want to additionally include in the output
-  * @returns {string} JSON string of the canvas just cleared
-  */
-  /**
-  * Remove selected object from the canvas
-  */
-  /**
-  * Sets the background from the dataUrl given
-  *
-  * @param dataUrl the dataUrl to be used as a background
-  * @param options
-  */
+  }]);
+
   return NvisionSketchField;
-}(react.PureComponent);
+}(external_react_.PureComponent);
+
 NvisionSketchField.propTypes = {
   // the color of the line
   lineColor: (prop_types_default()).string,
@@ -42155,25 +42066,35 @@ NvisionSketchField.defaultProps = {
 
 
 
+
 /*eslint no-unused-vars: 0*/
 
 
 
 
-var MiraMode_fabric = (__webpack_require__(676).fabric);
 
+var MiraMode_fabric = (__webpack_require__(676).fabric);
 /**
  * Sketch Tool based on FabricJS for React Applications
  */
-var MiraMode = /*#__PURE__*/function (_PureComponent) {
+
+
+var MiraMode =
+/*#__PURE__*/
+function (_PureComponent) {
   inherits_default()(MiraMode, _PureComponent);
+
   function MiraMode() {
     var _getPrototypeOf2;
+
     var _this;
+
     classCallCheck_default()(this, MiraMode);
+
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
+
     _this = possibleConstructorReturn_default()(this, (_getPrototypeOf2 = getPrototypeOf_default()(MiraMode)).call.apply(_getPrototypeOf2, [this].concat(args)));
     _this.state = {
       parentWidth: 550,
@@ -42189,19 +42110,24 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
       resetAllLandmarks: false
     };
     _this._fc = null;
+
     _this.disableTouchScroll = function () {
       var canvas = _this._fc;
+
       if (canvas.allowTouchScrolling) {
         canvas.allowTouchScrolling = false;
       }
     };
+
     _this.addImg = function (dataUrl) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var canvas = _this._fc;
-      // canvas.clear();
+      var canvas = _this._fc; // canvas.clear();
       // let canvas = this._fc = new fabric.Canvas("roi-canvas", { centeredRotation: true, centeredScaling: true });
+
       canvas.clear();
+
       _this._resize();
+
       MiraMode_fabric.Image.fromURL(dataUrl, function (oImg) {
         var widthFactor = canvas.getWidth() / oImg.width;
         var heightFactor = canvas.getHeight() / oImg.height;
@@ -42214,82 +42140,95 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
         });
         oImg.scale(scaleFactor);
         canvas.add(oImg);
+
         _this.setState({
           scaleFactor: scaleFactor
         });
+
         canvas.renderAll();
       });
     };
+
     _this._resize = function (e) {
       var canvasWidth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var canvasHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
       var canvas = _this._fc;
+
       if (canvas && canvas.upperCanvasEl) {
         var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
       } else {
         var overlayWidth = document.getElementById("oneptwop-container").offsetWidth;
-      }
-      // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
+      } // var overlayWidth = document.getElementById("onep-twop-container-2").offsetWidth;
       // var overlayHeight = document.getElementById("onep-twop-container-2").offsetHeight;
+
+
       var overlayHeight = Math.round(800 / (1280 / overlayWidth));
       var overlayContrain = overlayWidth / overlayHeight;
       console.log('[ONEPTWOP] Color Overlay Width:', overlayWidth, overlayHeight, overlayContrain);
+
       _this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
     };
+
     _this.getCanvasAtResoution = function (newWidth, newHeight) {
       var scaleLandmarks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-      var canvas = _this._fc;
-      // let { offsetWidth, clientHeight } = this._container;
+      var canvas = _this._fc; // let { offsetWidth, clientHeight } = this._container;
 
       if (canvas && canvas.width !== newWidth && canvas.upperCanvasEl) {
         var scaleMultiplier = newWidth / canvas.width;
         var scaleHeightMultiplier = newHeight / canvas.height;
         var objects = canvas.getObjects();
+
         for (var i in objects) {
           if (objects[i].type === "image" || scaleLandmarks) {
-            console.log(objects[i].type, "type");
-            // objects[i].width = objects[i].width * scaleMultiplier;
+            console.log(objects[i].type, "type"); // objects[i].width = objects[i].width * scaleMultiplier;
             // objects[i].height = objects[i].height * scaleHeightMultiplier;
+
             objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
             objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
             objects[i].setCoords();
             var scaleFactor = _this.state.scaleFactor * scaleMultiplier;
+
             _this.setState({
               scaleFactor: scaleFactor
             });
           }
-          console.log(objects[i].type, "type");
-          // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
+
+          console.log(objects[i].type, "type"); // objects[i].scaleX = objects[i].scaleX * scaleMultiplier;
           // objects[i].scaleY = objects[i].scaleY * scaleMultiplier;
+
           objects[i].left = objects[i].left * scaleMultiplier;
           objects[i].top = objects[i].top * scaleMultiplier;
           objects[i].cnWidth = canvas.getWidth() * scaleMultiplier;
           objects[i].cnHeight = canvas.getHeight() * scaleHeightMultiplier;
           objects[i].setCoords();
         }
+
         var obj = canvas.backgroundImage;
+
         if (obj) {
           obj.scaleX = obj.scaleX * scaleMultiplier;
           obj.scaleY = obj.scaleY * scaleMultiplier;
         }
+
         console.log("[ONEPTWOP] Resize Canvas Dimensions: ", canvas.getWidth() * scaleMultiplier, canvas.getHeight() * scaleHeightMultiplier);
         canvas.discardActiveObject();
         canvas.setWidth(canvas.getWidth() * scaleMultiplier);
         canvas.setHeight(canvas.getHeight() * scaleHeightMultiplier);
         canvas.renderAll();
-        canvas.calcOffset();
-
-        // this.setState({
+        canvas.calcOffset(); // this.setState({
         //   parentWidth: offsetWidth
         // });
+
         var boss = canvas.getObjects().filter(function (o) {
           return o.type == "image";
         })[0];
+
         if (boss) {
           _this.bindLandmarks();
         }
       }
     };
+
     _this.bindLandmarks = function () {
       var canvas = _this._fc;
       var multiply = MiraMode_fabric.util.multiplyTransformMatrices;
@@ -42303,91 +42242,109 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
       var bossTransform = boss[0].calcTransformMatrix();
       var invertedBossTransform = invert(bossTransform);
       minions.forEach(function (o) {
-        var desiredTransform = multiply(invertedBossTransform, o.calcTransformMatrix());
-        // save the desired relation here.
+        var desiredTransform = multiply(invertedBossTransform, o.calcTransformMatrix()); // save the desired relation here.
+
         o.relationship = desiredTransform;
       });
     };
+
     _this.componentDidMount = function () {
       var canvas = _this._fc = new MiraMode_fabric.Canvas(_this._canvas, {
         centeredRotation: true,
         centeredScaling: true
-      });
-
-      // Control resize
+      }); // Control resize
 
       window.addEventListener('resize', _this._resize, false);
+
       _this.disableTouchScroll();
+
       _this._resize();
     };
+
     _this.componentWillUnmount = function () {
       return window.removeEventListener('resize', _this._resize);
     };
+
     _this.componentDidUpdate = function (prevProps, prevState) {
       // console.log(this.props, "props");
       var canvas = _this._fc;
+
       if (_this.state.parentWidth !== prevState.parentWidth || _this.props.width !== prevProps.width || _this.props.height !== prevProps.height) {
         _this._resize();
       }
+
       if (_this.props.image !== _this.state.imageUrl) {
         console.log("value is coming in component did updateeeee iff image props -- > ", _this.props.image, " and ---- >>>>>> ", _this.props.oneptwop);
+
         _this.addImg(_this.props.image);
+
         _this.setState({
           imageUrl: _this.props.image,
           scaleFactor: _this.state.scaleFactor,
           rotation: _this.props.oneptwop.inscopix.adapter_lsm.rotation,
           flipApplied: _this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
         });
-      }
-
-      // if (this.props.callResize !== this.state.callResize) {
+      } // if (this.props.callResize !== this.state.callResize) {
       // this._resize();
       // this.setState({ callResize: this.props.callResize });
       // }
 
+
       if (_this.props.oneptwop.inscopix.adapter_lsm.rotation !== _this.state.rotation && _this._fc.item(0)) {
         _this.rotateAndScale(_this._fc.item(0), -_this.props.oneptwop.inscopix.adapter_lsm.rotation);
+
         _this.updateLandmarksPosition();
+
         _this._fc.renderAll();
+
         _this.setState({
           rotation: _this.props.oneptwop.inscopix.adapter_lsm.rotation
         });
       }
+
       if (_this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal !== _this.state.flipApplied) {
         _this.applyFlip(_this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal, false);
+
         _this.setState({
           flipApplied: _this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal
         });
       }
+
       if (_this.props.crosshairMode !== _this.state.crosshairMode) {
         _this.setState({
           crosshairMode: _this.props.crosshairMode
         });
       }
+
       if (_this.props.crosshairMoveMode !== _this.state.crosshairMoveMode) {
         _this.setState({
           crosshairMoveMode: _this.props.crosshairMoveMode
         });
       }
+
       if (_this.props.crosshairDeleteMode !== _this.state.crosshairDeleteMode) {
         _this.setState({
           crosshairDeleteMode: _this.props.crosshairDeleteMode
         });
       }
+
       if (_this.props.deleteAllLandmarks !== _this.state.deleteAllLandmarks) {
         _this.setState({
           deleteAllLandmarks: _this.props.deleteAllLandmarks
         });
       }
+
       if (_this.props.resetAllLandmarks !== _this.state.resetAllLandmarks) {
         _this.setState({
           resetAllLandmarks: _this.props.resetAllLandmarks
         });
       }
+
       if (_this.props.activePanels !== prevProps.activePanels) {
         _this._resize();
       }
     };
+
     _this.onChangeSize = function (width, height) {
       // if (this.state.imageUrl !== null) {
       // this.addImg(this.state.imageUrl);
@@ -42396,22 +42353,26 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
       // // this._fc.renderAll();
       // // }
       // }
-
       _this._resize();
     };
+
     _this.updateLandmarksPosition = function () {
       var multiply = MiraMode_fabric.util.multiplyTransformMatrices;
       var invert = MiraMode_fabric.util.invertTransform;
+
       var boss = _this._fc.getObjects().filter(function (o) {
         return o.type == 'image';
       })[0];
+
       var minions = _this._fc.getObjects().filter(function (o) {
         return o !== boss;
       });
+
       minions.forEach(function (o) {
         if (!o.relationship) {
           return;
         }
+
         var relationship = o.relationship;
         var newTransform = multiply(boss.calcTransformMatrix(), relationship);
         var opt = MiraMode_fabric.util.qrDecompose(newTransform);
@@ -42427,63 +42388,75 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
         o.setCoords();
       });
     };
+
     _this.applyFlip = function (value, updateOnepTwop) {
       _this._fc.item(0).set({
         flipX: value
       });
+
       _this._fc.item(0).setCoords();
+
       _this.updateLandmarksPosition();
       /*if(updateOnepTwop) {
       window.updateOnepTwopData('_transform', []);
       } */
+
+
       _this._fc.requestRenderAll();
+
       _this._fc.renderAll();
     };
+
     _this.rotateAndScale = function (obj, angle) {
       if (obj) {
         var width = _this._fc.getWidth();
+
         var height = _this._fc.getHeight();
+
         var cos_theta = Math.cos(angle * Math.PI / 180);
         var sin_theta = Math.sin(angle * Math.PI / 180);
         var x_scale = width / (Math.abs(width * cos_theta) + Math.abs(height * sin_theta));
         var y_scale = height / (Math.abs(width * sin_theta) + Math.abs(height * cos_theta));
         var scale = Math.min(x_scale, y_scale);
-        var actScale = _this.state.scaleFactor * scale;
-        // get the transformMatrix array
+        var actScale = _this.state.scaleFactor * scale; // get the transformMatrix array
+
         var rotateMatrix = [cos_theta, -sin_theta, sin_theta, cos_theta, 0, 0];
         var scaleMatrix = [actScale, 0, 0, actScale, 0, 0];
-        var rsT = MiraMode_fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix);
+        var rsT = MiraMode_fabric.util.multiplyTransformMatrices(rotateMatrix, scaleMatrix); // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
 
-        // Unfold the matrix in a combination of scaleX, scaleY, skewX, skewY...
-        var options = MiraMode_fabric.util.qrDecompose(rsT);
-        // console.log(options, "options");
+        var options = MiraMode_fabric.util.qrDecompose(rsT); // console.log(options, "options");
+
         var newCenter = {
           x: _this._fc.getWidth() / 2,
           y: _this._fc.getHeight() / 2
-        };
-
-        // reset transformMatrix to identity and resets flips since negative scale resulting from decompose, will automatically set them.
+        }; // reset transformMatrix to identity and resets flips since negative scale resulting from decompose, will automatically set them.
         //obj.flipX = false;
-        obj.flipY = false;
-        obj.set(options);
 
-        // position the object in the center given from translateX and translateY
+        obj.flipY = false;
+        obj.set(options); // position the object in the center given from translateX and translateY
+
         obj.setPositionByOrigin(newCenter, 'center', 'center');
         obj.setCoords();
       }
     };
+
     _this.updateLandmarks = function () {
       var currentRotation = _this.props.oneptwop.inscopix.adapter_lsm.rotation;
       var isFliped = _this.props.oneptwop.inscopix.adapter_lsm.flip_horizontal;
+
       if (isFliped) {
         _this.applyFlip(false, true);
       }
+
       _this.props.updateSlider(0);
+
       var points = [];
+
       if (_this.props.oneptwop.inscopix.frontend.length > 0) {
         _this.props.oneptwop.inscopix.frontend = _this.props.oneptwop.inscopix.frontend.filter(function (o) {
           return o.type !== "image";
         });
+
         _this.props.oneptwop.inscopix.frontend.map(function (item, key) {
           var x, y;
           x = item.left + item.width / 2;
@@ -42493,6 +42466,7 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
             y: y
           });
         });
+
         _this.props.oneptwop.inscopix.landmarks = {
           points: points
         };
@@ -42501,15 +42475,17 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
           points: []
         };
       }
+
       _this.props.updateSlider(currentRotation);
+
       if (isFliped) {
         _this.applyFlip(true, true);
       }
     };
+
     _this.updateOnepTwop = function (saveAs) {
       var landmarks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-      console.log("updateOnepTwop method");
-      // if (this.sbpfApplyClick) {
+      console.log("updateOnepTwop method"); // if (this.sbpfApplyClick) {
       //   this.oneptwop.inscopix.bpf = {
       //     sigma1: $("#deltaSBFSnapSigmaOne").val() * 1,
       //     sigma2: $("#deltaSBFSnapSigmaTwo").val() * 1,
@@ -42521,15 +42497,19 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
       //   rotation: parseInt($(".transforms-rotate-data").val()),
       //   flip_horizontal: $("#flip-horizontal").hasClass("active")
       // };
+
       var landMarks = _this._fc ? JSON.parse(JSON.stringify(_this._fc.toJSON(['cnWidth', 'cnHeight']))) : [];
       var oneptwop = _this.props.oneptwop;
       oneptwop.inscopix.frontend = landMarks.objects.filter(function (o) {
         return o.type !== "image";
       });
+
       _this.props.oneptwopFrontend(oneptwop);
     };
+
     _this.removeAddOrMoveMode = function () {
       window.canvas = _this._fc;
+
       if (window.canvas.upperCanvasEl) {
         window.canvas.discardActiveObject();
         window.canvas.forEachObject(function (o) {
@@ -42540,16 +42520,19 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
         window.canvas.renderAll();
       }
     };
+
     _this.render = function () {
       var _this$props = _this.props,
-        className = _this$props.className,
-        style = _this$props.style,
-        width = _this$props.width,
-        height = _this$props.height;
+          className = _this$props.className,
+          style = _this$props.style,
+          width = _this$props.width,
+          height = _this$props.height;
       var containerH = 512;
+
       if (_this._fc) {
         containerH = _this._fc.height;
       }
+
       var canvasDivStyle = Object.assign({}, style ? style : {}, width ? {
         width: '100%'
       } : {
@@ -42559,24 +42542,24 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
       } : {
         height: containerH
       });
-      return react.createElement("div", {
+      return external_react_default().createElement("div", {
         className: className,
         ref: function ref(c) {
           return _this._container = c;
         },
         style: canvasDivStyle,
         id: "onep-twop-container-2"
-      }, react.createElement(build_namespaceObject["default"], {
+      }, external_react_default().createElement(build_namespaceObject["default"], {
         onResize: _this.onChangeSize.bind(assertThisInitialized_default()(assertThisInitialized_default()(_this)))
-      }), react.createElement("div", {
+      }), external_react_default().createElement("div", {
         style: {
           position: 'absolute'
         }
-      }, react.createElement("canvas", {
+      }, external_react_default().createElement("canvas", {
         ref: function ref(c) {
           return _this._canvas = c;
         }
-      }, "Sorry, Canvas HTML5 element is not supported by your browser :(")), _this._fc !== null && _this._fc.item(0) && react.createElement(NvistaRoiSettingsPanel, {
+      }, "Sorry, Canvas HTML5 element is not supported by your browser :(")), _this._fc !== null && _this._fc.item(0) && external_react_default().createElement(NvistaRoiSettingsPanel, {
         canvasProps: _this._fc,
         landMarks: _this.props.oneptwop.inscopix.frontend,
         imageData: _this.props.oneptwop,
@@ -42597,31 +42580,13 @@ var MiraMode = /*#__PURE__*/function (_PureComponent) {
         handleMiraErrorPopup: _this.props.handleMiraErrorPopup
       }));
     };
+
     return _this;
   }
-  /**
-   * Disable touch Scrolling on Canvas
-   */
-  /**
-   * Add an image as object to the canvas
-   *
-   * @param dataUrl the image url or Data Url
-   * @param options object to pass and change some options when loading image, the format of the object is:
-   *
-   * {
-   * left: <Number: distance from left of canvas>,
-   * top: <Number: distance from top of canvas>,
-   * scale: <Number: initial scale of image>
-   * }
-   */
-  /**
-   * Track the resize of the window and update our state
-   *
-   * @param e the resize event
-   * @private
-   */
+
   return MiraMode;
-}(react.PureComponent);
+}(external_react_.PureComponent);
+
 MiraMode.propTypes = {
   // outside the component
   value: (prop_types_default()).object,

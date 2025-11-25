@@ -233,7 +233,7 @@ class Rectangle extends FabricCanvasTool {
       height = canvas.getHeight() - (this.strokeWidth + 0) ;
     }
     //let height = canvas.getHeight();
-    console.log("[Tracking Settings][Sketch Field][Rectangle][genrateTrackingArea]: Width and Height of canvas after removing stroke width", width, height);
+    console.log("[Rectangle] [Tracking Area] [Tracking Settings][Sketch Field][Rectangle][genrateTrackingArea]: Width and Height of canvas after removing stroke width", width, height);
     let name = "trackingArea";
     let defaultName = "trackingArea";
     let rect = new fabric.Rect({

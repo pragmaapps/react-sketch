@@ -13,6 +13,7 @@ import Tool from './tools'
 import RectangleLabel from './rectangle-label'
 import DefaultTool from './defaul-tool'
 import { useResizeDetector } from 'react-resize-detector'
+// import ReactResizeDetector from './ReactResizeDetector';
 import NvistaRoiSettings from './NvistaRoiSettingsPanel'
 import Ellipse from './ellipse'
 import Polygon from './polygon'
@@ -247,29 +248,32 @@ class NvisionSketchField extends PureComponent {
     onObjectScaling: () => null,
     onObjectRotating: () => null
   }
+  constructor(props) {
+    super(props);
+    this.state = {
+      parentWidth: 550,
+      action: true,
+      imageUrl: null,
+      scaleFactor: 1,
+      rotation: 0,
+      flipApplied: false,
+      crosshairMode: false,
+      crosshairMoveMode: false,
+      crosshairDeleteMode: false,
+      deleteAllLandmarks: false,
+      resetAllLandmarks: false,
+      frontEnd: [],
+      canvasHeight: 512,
+      canvasWidth: 800,
+      strokeWidth: 2,
+      updateLandmarksForOtherWindow: false,
+      scaleHeightMultiplier: 1,
+      scaleMultiplier: 1,
+      lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
 
-  state = {
-    parentWidth: 550,
-    action: true,
-    imageUrl: null,
-    scaleFactor: 1,
-    rotation: 0,
-    flipApplied: false,
-    crosshairMode: false,
-    crosshairMoveMode: false,
-    crosshairDeleteMode: false,
-    deleteAllLandmarks: false,
-    resetAllLandmarks: false,
-    frontEnd: [],
-    canvasHeight:512,
-    canvasWidth:800,
-    strokeWidth:2,
-    updateLandmarksForOtherWindow: false,
-    scaleHeightMultiplier: 1,
-    scaleMultiplier: 1,
-    lmColorUsed: ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000'],
-
-  }
+    };
+      this.handleResize = this.handleResize.bind(this);
+    }
 
   _fc = null
   childRef = React.createRef();
@@ -284,7 +288,8 @@ class NvisionSketchField extends PureComponent {
   currentAngle = 0;
   isRotating = false;
   cursorPos = new fabric.Point();
-
+  resizeObserver = null;
+  internalRef = React.createRef();
   _initTools = fabricCanvas => {
     this._tools = {}
     this._tools[Tool.Select] = new Select(fabricCanvas)
@@ -959,12 +964,13 @@ class NvisionSketchField extends PureComponent {
       var overlayHeight = document.getElementById("video-container-3").offsetHeight;
       var overlayWidth = Math.ceil(this.props.resolutionWidth / (this.props.resolutionHeight / overlayHeight));
     }
-    console.log('[Tracking Setting][Tracking Area] Canvas Overlay Width:', overlayWidth, overlayHeight);
+    console.log('[Tracking Setting][Tracking Area][getOverlayDimensions] Canvas Overlay Width:', overlayWidth, overlayHeight);
     return { overlayWidth: overlayWidth,overlayHeight: overlayHeight }
   }
 
   _resize = (e, canvasWidth = null, canvasHeight = null) => {
     let {overlayWidth, overlayHeight} = this.getOverlayDimensions();
+    console.log('[Tracking Setting][Tracking Area] [_resize] Canvas Overlay Width height:', overlayWidth, overlayHeight);
     this.getCanvasAtResoution(overlayWidth, overlayHeight, false);
   };
 
@@ -1171,6 +1177,7 @@ class NvisionSketchField extends PureComponent {
     //if (canvas && canvas.upperCanvasEl) {
       var scaleMultiplier = newWidth / cWidth;
       var scaleHeightMultiplier = newHeight / cHeight;
+      console.log("[Tracking Settings][Sketch Field][getCanvasAtResoution]: scaleMultiplier & scaleHeightMultiplier ", scaleMultiplier, scaleHeightMultiplier );
       var objects = canvas.getObjects();
       for (var i in objects) {
         //objects[i].width = objects[i].width * scaleMultiplier;
@@ -1281,6 +1288,7 @@ class NvisionSketchField extends PureComponent {
   updateObjectsInReduxAnimalTrackingKey = (scaleMultiplier, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions = false ) => {
     let scaleMultiplierForObjects = scaleMultiplier;
     let trackingArea = this.scaleObject(JSON.parse(JSON.stringify(this.props.trackingArea)), scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    console.log("[REACT SKETCH][updateObjectsInReduxAnimalTrackingKey] TRACKING AREA : ", trackingArea);
     this.props.saveDimesions(trackingArea);
     let lineShape = [];
     if(this.props.lineShape.length){
@@ -1288,8 +1296,8 @@ class NvisionSketchField extends PureComponent {
     }
     this.props.updateLineShape(lineShape);
     let zones = [];
-    this.props.zones.map(zone => {
-      let scaledObject = this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
+    this.props.zones.map(async zone => {
+      let scaledObject = await this.scaleObject(zone, scaleMultiplierForObjects, scaleMultiplierForObjects, scaleHeightMultiplier,cWidth, cHeight, updateCanvasDimensions);
       zones.push(scaledObject);
     })
     this.props.updateArenaZoneShapesList(zones);
@@ -1367,7 +1375,7 @@ class NvisionSketchField extends PureComponent {
     currCanvas.requestRenderAll();
     this.props.trackingCanvasHeight(currCanvas.getHeight());
     this.props.trackingCanvasWidth(currCanvas.getWidth());
-        console.log("[Tracking Settings][Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
+    console.log("[Tracking Settings][Sketch Field][resize Canvas][width and height of canvas after resize] :", currCanvas.getWidth(),currCanvas.getHeight());
   }
 
   setCanvasWidthHeightInRedux = () => {
@@ -1849,13 +1857,9 @@ class NvisionSketchField extends PureComponent {
       {
         centeredRotation: true,
         centeredScaling: false,
-        //id: "roi-canvas"
-      } /*, {
- preserveObjectStacking: false,
- renderOnAddRemove: false,
- skipTargetFind: true
- }*/
-    ))
+        id: "roi-canvas"
+      } 
+    ));
     canvas.centeredScaling = false;
     this._initTools(canvas)
 
@@ -1904,13 +1908,52 @@ class NvisionSketchField extends PureComponent {
       // this.addImg(image);
       // }
       // initialize canvas with controlled value if exists
-      ; (value || defaultValue) && this.fromJSON(value || defaultValue)
+    (value || defaultValue) && this.fromJSON(value || defaultValue);
 
+
+    if (this.internalRef.current) {
+            
+            this.resizeObserver = new ResizeObserver(entries => {
+                if (entries.length > 0) {
+                    const lastEntry = entries[entries.length - 1]; 
+                    
+                    if (lastEntry.target === this.internalRef.current) {
+                        const { width, height } = lastEntry.contentRect;
+                        console.log("[nVisionSketchField] [TRACKING SETTING] [componentDidMount] width, height : ", width, height)
+                        this.handleResize(Math.round(width), Math.round(height));
+                    }
+                }
+            });
+
+            this.resizeObserver.observe(this.internalRef.current);
+        }
+
+  }
+  resizeTimeout = null; 
+    
+  handleResize(width, height) {
+      const DEBOUNCE_DELAY = 50; 
+      if (this.resizeTimeout) {
+          clearTimeout(this.resizeTimeout);
+      }
+      console.log("[TRACKING SETTING] [handleResize] width, height before timeout : ", width, height)
+      this.resizeTimeout = setTimeout(() => {
+        console.log("[TRACKING SETTING] [handleResize] width, height after timeout : ", width, height)
+          this.onChangeSize(width, height);
+          this.resizeTimeout = null; 
+      }, DEBOUNCE_DELAY);
   }
 
   componentWillUnmount = () => {
     window.removeEventListener('resize', this._resize)
     executeCanvasResize = false;
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+
+    if (this.resizeTimeout) {
+      clearTimeout(this.resizeTimeout);
+    }
   }
     
 
@@ -2223,6 +2266,7 @@ class NvisionSketchField extends PureComponent {
       //width ? { width: this.state.canvasWidth } : { width: this.state.canvasWidth },
       height ? { height: this.state.canvasHeight } : { height: this.state.canvasHeight }
     )
+    let canvasResizeObserver = { width: `${this._fc && this._fc.getWidth() ? this._fc.getWidth()+"px" : "100%"}`, height: `${this._fc && this._fc.getHeight() ? this._fc.getHeight()+"px" : "100%" }` }
 // console.log("TRACKLING SETTINGS NVISION SKETCH FIELD LINK");
     return (
       <RefWrapper refCallback={(ref) => this._container = ref.current} >
@@ -2231,27 +2275,29 @@ class NvisionSketchField extends PureComponent {
           style={canvasDivStyle}
           id="onep-twop-container-2"
         >
-          <div style={{ position: 'absolute' }}>
-            <canvas
-              //id={uuid4()}
-              id="tracking-canvas"
-              // style={{
-              // margin: "0 auto",
-              // position: "absolute",
-              // opacity: 1,
-              // width: "100%",
-              // height: "100%",
-              // maxHeight: 800,
-              // maxWidth: 1280,
-              // backgroundRepeat: "no-repeat",
-              // backgroundPosition: "center",
-              // backgroundSize: "contain",
-              // zIndex: 1
-              // }}
-              ref={c => (this._canvas = c)}
-            >
-            </canvas>
+          <div ref={this.internalRef} style={canvasResizeObserver}>
+            <div style={{ position: 'absolute' }}>
+              <canvas
+                //id={uuid4()}
+                id="tracking-canvas"
+                // style={{
+                // margin: "0 auto",
+                // position: "absolute",
+                // opacity: 1,
+                // width: "100%",
+                // height: "100%",
+                // maxHeight: 800,
+                // maxWidth: 1280,
+                // backgroundRepeat: "no-repeat",
+                // backgroundPosition: "center",
+                // backgroundSize: "contain",
+                // zIndex: 1
+                // }}
+                ref={c => (this._canvas = c)}
+              >
+              </canvas>
             </div>
+          </div>
           {this._fc !== null && this._fc.item(0) && this.props.from === undefined &&
             <NvistaRoiSettings
               canvasProps={this._fc}

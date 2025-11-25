@@ -16,7 +16,7 @@ function containsObject(obj, list) {
   return false;
 }
 
-const externals = [];
+const externals = ["react","react-dom"];
 const internals = ['fabric', 'canvas'];
 
 module.exports = {
@@ -35,6 +35,7 @@ module.exports = {
     extensions: ['.js', '.jsx']
   },
   cache: true,
+  externals: externals,
   module: {
     rules: [
       {
